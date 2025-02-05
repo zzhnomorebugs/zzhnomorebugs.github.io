@@ -10,8 +10,17 @@ redirect_from:
 Publications
 ======
 
-## 2025
-* __Zhou Zihan__, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. ["Generating Physical Dynamics under Priors."](https://arxiv.org/abs/2409.00730) **ICLR 2025**
+## Conference papers
+* __Zhou Zihan__, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. [Generating Physical Dynamics under Priors](https://arxiv.org/abs/2409.00730). **ICLR 2025**.
+
+* __Zhou Zihan__, Tianshu Yu<sup>#</sup>. [Learning to decouple complex systems](https://arxiv.org/abs/2302.01581). **ICML2023**.
+
+## Preprint
+* __Zhou Zihan__, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. [On Diffusion Process in SE(3)-invariant Space](https://arxiv.org/abs/2403.01430). arXiv:2403.01430, 2024.
+
+* __Zhou Zihan__, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu<sup>#</sup>. [Molecule Conformation Generation via Shifting Scores](https://arxiv.org/abs/2309.09985). arXiv:2309.09985, 2023.
+
+
 
 <sup>#</sup> corresponding author; \* equal contribution
 
