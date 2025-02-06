@@ -1,5 +1,6 @@
 ---
 title: "Learning to Decouple Complex Systems"
+authors: "* __Zhou Zihan__, Tianshu Yu<sup>#</sup>*"
 collection: publications
 category: conferences
 permalink: /publication/learning-to-decouple-complex-system
