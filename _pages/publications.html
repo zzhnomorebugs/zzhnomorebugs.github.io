@@ -7,25 +7,14 @@ author_profile: true
 
 <div class="wordwrap"> <sup>#</sup> corresponding author; \* equal contribution .</div>
 
+
 {% include base_path %}
 
-
+<!-- New style rendering if publication categories are defined -->
 {% if site.publication_category %}
   {% for category in site.publication_category  %}
     {% assign title_shown = false %}
-
-    {% assign posts_with_order = "" %}
-    {% for post in site.publications %}
-      {% assign order_value = post.order | default: 0 %}
-      {% assign posts_with_order = posts_with_order | append: post.url | append: "|" | append: order_value | append: ";" %}
-    {% endfor %}
-
-    {% assign sorted_posts = posts_with_order | split: ";" | sort: 1 | reverse %}
-
-    {% for sorted_post in sorted_posts %}
-      {% assign post_url = sorted_post | split: "|" | first %}
-      {% assign post = site.publications | where: "url", post_url | first %}
-
+    {% for post in site.publications reversed %}
       {% if post.category != category[0] %}
         {% continue %}
       {% endif %}
@@ -37,7 +26,7 @@ author_profile: true
     {% endfor %}
   {% endfor %}
 {% else %}
-  {% for post in sorted_posts %}
+  {% for post in site.publications reversed %}
     {% include archive-single.html %}
   {% endfor %}
 {% endif %}
