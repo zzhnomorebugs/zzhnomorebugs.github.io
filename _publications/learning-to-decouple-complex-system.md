@@ -9,6 +9,4 @@ excerpt: 'This work addresses the challenge of learning from cluttered and irreg
 
 venue: 'ICML2023'
 paperurl: 'https://arxiv.org/pdf/2302.01581'
-citation: 'Zhou, Zihan, and Tianshu Yu. "Learning to decouple complex systems." International Conference on Machine Learning. PMLR, 2023.'
 ---
-
