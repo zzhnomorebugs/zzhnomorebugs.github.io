@@ -1,4 +1,5 @@
 ---
+date: 2024-03-01
 title: "On Diffusion Process in SE(3)-invariant Space"
 authors: "<strong>Zhou Zihan</strong>, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu<sup>#</sup>"
 collection: publications

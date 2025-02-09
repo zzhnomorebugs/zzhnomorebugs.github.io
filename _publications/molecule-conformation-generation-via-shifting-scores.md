@@ -1,4 +1,5 @@
 ---
+date: 2023-09-01
 title: "Molecule Conformation Generation via Shifting Scores"
 authors: "<strong>Zhou Zihan</strong>, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu<sup>#</sup>"
 collection: publications
