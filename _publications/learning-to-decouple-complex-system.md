@@ -1,7 +1,7 @@
 ---
 date: 2023-02-01
 title: "Learning to Decouple Complex Systems"
-authors: "<strong>Zhou Zihan</strong>, Tianshu Yu<sup>#</sup>"
+authors: "<strong>Zihan Zhou</strong>, Tianshu Yu<sup>#</sup>"
 collection: publications
 category: conferences
 permalink: /publication/learning-to-decouple-complex-system

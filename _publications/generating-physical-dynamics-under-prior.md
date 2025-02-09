@@ -1,7 +1,7 @@
 ---
 date: 2024-09-01
 title: "Generating Physical Dynamics under Priors"
-authors: "<strong>Zhou Zihan</strong>, Xiaoxue Wang, Tianshu Yu<sup>#</sup>"
+authors: "<strong>Zihan Zhou</strong>, Xiaoxue Wang, Tianshu Yu<sup>#</sup>"
 collection: publications
 category: conferences
 permalink: /publication/generating-physical-dynamics-under-prior
