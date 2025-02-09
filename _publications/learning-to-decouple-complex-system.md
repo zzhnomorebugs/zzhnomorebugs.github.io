@@ -1,4 +1,5 @@
 ---
+order: 1
 title: "Learning to Decouple Complex Systems"
 authors: "<strong>Zhou Zihan</strong>, Tianshu Yu<sup>#</sup>"
 collection: publications
