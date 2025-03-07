@@ -9,45 +9,6 @@ redirect_from:
 
 {% include base_path %}
 
-<!-- Education
-======
-* Ph.D in Version Control Theory, GitHub University, 2018 (expected)
-* M.S. in Jekyll, GitHub University, 2014
-* B.S. in GitHub, GitHub University, 2012
-
-Work experience
-======
-* Spring 2024: Academic Pages Collaborator
-  * GitHub University
-  * Duties includes: Updates and improvements to template
-  * Supervisor: The Users
-
-* Fall 2015: Research Assistant
-  * GitHub University
-  * Duties included: Merging pull requests
-  * Supervisor: Professor Hub
-
-* Summer 2015: Research Assistant
-  * GitHub University
-  * Duties included: Tagging issues
-  * Supervisor: Professor Git
-  
-Skills
-======
-* Skill 1
-* Skill 2
-  * Sub-skill 2.1
-  * Sub-skill 2.2
-  * Sub-skill 2.3
-* Skill 3
-
-Publications
-======
-  <ul>{% for post in site.publications reversed %}
-    {% include archive-single-cv.html %}
-  {% endfor %}</ul>
-   -->
-
 
 # Zihan Zhou
 
@@ -123,13 +84,6 @@ Publications
 - Collected and preprocessed 1K+ images of infested crops.
 - Trained and validated models like VGG-19, ResNet, and GoogLeNet, attaining 89.8% accuracy.
 
-## Work Experiences
-
-**Algorithm Engineer Intern | Beijing ByteDance Technology Co., Ltd., China**  
-*06/2022 – 07/2022*
-- Implemented and deployed NLP algorithms and deep learning models for blogger popularity analysis.
-- Built a transformer architecture for text classification, achieving 92% accuracy.
-- Conducted keyword extraction and semantic clustering for publication analysis.
 
 ## Course Projects
 
