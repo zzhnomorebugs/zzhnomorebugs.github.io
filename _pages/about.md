@@ -11,9 +11,9 @@ redirect_from:
 
 # Personal Information
 - Ph.D. student in Data Science at The Chinese University of Hong Kong, Shenzhen
-- Supervisor: Prof. Tianshu Yu
+- Supervisor: [Prof. Tianshu Yu](https://mypage.cuhk.edu.cn/academics/yutianshu/)
 - Phone: +86 13098696800  
-- Email: zhouzihan1@link.cuhk.edu.cn
+- Email: [zhouzihan1@link.cuhk.edu.cn](zhouzihan1@link.cuhk.edu.cn)
 
 # Education
 - Bachelor of Science in Mathematics and Applied Mathematics at The Chinese University of Hong Kong, Shenzhen
