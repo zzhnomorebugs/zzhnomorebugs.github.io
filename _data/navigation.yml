@@ -11,8 +11,8 @@ main:
   # - title: "Talks"
   #   url: /talks/    
 
-  # - title: "Teaching"
-  #   url: /teaching/    
+  - title: "Scholar's Corner"
+    url: /scholar/    
     
   # - title: "Portfolio"
   #   url: /portfolio/
