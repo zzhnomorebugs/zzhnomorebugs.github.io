@@ -10,4 +10,5 @@ excerpt: 'This paper addresses the challenge of generating physically feasible d
 
 venue: 'ICLR2025'
 paperurl: 'https://arxiv.org/pdf/2409.00730v3'
+slidesurl: 'https://iclr.cc/media/iclr-2025/Slides/28929.pdf'
 ---
