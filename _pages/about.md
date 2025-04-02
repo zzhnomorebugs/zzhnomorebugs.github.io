@@ -17,7 +17,4 @@ redirect_from:
 
 - Bachelor of Science in Mathematics and Applied Mathematics at The Chinese University of Hong Kong, Shenzhen
 
-afa
-
-
-gs
+test
