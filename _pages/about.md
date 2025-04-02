@@ -17,4 +17,10 @@ redirect_from:
 
 - Bachelor of Science in Mathematics and Applied Mathematics at The Chinese University of Hong Kong, Shenzhen
 
-test again and again?
+# **Research Interests**
+
+- **Solving PDE Dynamics:** Neural differential equations & projection operators & neural operators.
+- **Physics-Informed Generation:** Diffusion models with geometric (SE(3)-invariance) and physical priors (PDEs, conservation laws) for 3D structures (molecules, poses) and dynamics.
+- **Manifold-Aware Learning:** Projection-free SDE/ODE solvers on SE(3)-invariant manifolds for efficient 3D coordinate generation.
+
+*Applications:* Irregular time-series modeling, molecular conformation, and physics simulations (fluids, climate).
