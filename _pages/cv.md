@@ -28,8 +28,9 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 - *Learning to decouple complex systems*. **Zihan Zhou**, Tianshu Yu. **ICML2023**.
 
 ### Preprint:
-- *On diffusion process in SE(3)-invariant space*. **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu. arXiv preprint arXiv: 2403.01430, 2024
-- *Molecular conformation generation via shifting scores*. **Zihan Zhou**, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu. arXiv preprint arXiv:2309.09985, 2023.
+- *Incomplete Data, Complete Dynamics: A Diffusion Approach*. **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu. arXiv preprint arXiv:2509.20098, 2025.
+- *On diffusion process in SE(3)-invariant space*. **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu. arXiv preprint arXiv: 2403.01430, 2024.
+- *Molecular conformation generation via shifting scores*. **Zihan Zhou**, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu. arXiv preprint arXiv: 2309.09985, 2023.
 
 ## Research Interest
 - Design and analysis of diffusion processes
