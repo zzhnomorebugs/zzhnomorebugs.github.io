@@ -24,6 +24,7 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 ## Publications
 
 ### Conference Papers:
+- *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.* Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu, Mingchen Chen. **NeurIPS2025.**
 - *Generating physical dynamics under priors.* **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu. **ICLR2025.**
 - *Learning to decouple complex systems*. **Zihan Zhou**, Tianshu Yu. **ICML2023**.
 
@@ -33,7 +34,7 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 - *Molecular conformation generation via shifting scores*. **Zihan Zhou**, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu. arXiv preprint arXiv: 2309.09985, 2023.
 
 ## Research Interest
-- Design and analysis of diffusion processes
+- Design and analysis of continuous/discrete diffusion processes
 - Solving PDE forward and inverse problems
 - Integration of physical priors and design of invariant/equivariant diffusion models
 - Generation of molecular conformations and modeling of protein dynamics
@@ -43,6 +44,18 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 ### Chromatography for Parameter Estimation | 06/2024 -- Present
 Apply deep learning methods to simulate the chromatography process, which is governed by PDEs and infer possible PDE parameters from observed wet lab results:
 - In process
+
+### TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles | 03/2025 -- 08/2025
+Propose a multi-scale autoregressive framework for generating temporally coherent protein conformational trajectories by explicitly modeling the hierarchical nature of protein dynamics:
+- Develop a two-scale architecture that decomposes protein motion into slow collective transitions (nanosecond to microsecond timescales) and fast local fluctuations (picosecond to nanosecond timescales), with each scale parameterized by stochastic differential equations (SDEs) to capture both deterministic drift dynamics and stochastic thermal fluctuations.
+- Model protein dynamics as a Markovian process using discrete-time SDE approximations, where a low-resolution model learns slow conformational transitions and a high-resolution model generates detailed atomic fluctuations conditioned on the slow-scale trajectory, preserving causal dependencies through autoregressive generation.
+- Experimentally validate the framework on mdCATH and ATLAS datasets, demonstrating state-of-the-art performance in structural accuracy (RMSD, RMSF), temporal coherence (principal component alignment, state transition fidelity), and computational efficiency compared to diffusion-based ensemble generation methods.
+
+### Incomplete Data, Complete Dynamics: A Diffusion Approach | 05/2025 -- 09/2025
+Propose a principled diffusion-based framework for learning physical dynamics directly from incomplete observations without requiring complete ground truth data:
+- Develop a conditional diffusion training paradigm that strategically partitions each incomplete sample into context and query components, with the partitioning strategy tailored to match the underlying observation pattern (e.g., pixel-wise vs. block-wise missing structures).
+- Provide theoretical guarantees demonstrating that the model trained on incomplete data with appropriate context-query partitioning asymptotically recovers the true complete data distribution, and introduce an ensemble sampling procedure that bridges the gap between training on partial contexts and inference on full observations.
+- Experimentally validate the framework across synthetic PDE systems (Shallow Water, Advection, Navier-Stokes) and real-world climate data (ERA5), achieving substantial improvements over existing baselines particularly in sparse observation regimes ranging from 1% to 20% coverage.
 
 ### Generating Physical Dynamics Under Priors | 06/2024 -- 01/2025
 Propose a framework for generating physically feasible dynamics by integrating physical priors into diffusion-based generative models:
@@ -67,3 +80,4 @@ Propose a sequential learning paradigm by decoupling a complex system for handli
 - Establish a deeply coupled differential equation set based on a decoupling mechanism that raises not only each latent sub-system but also another system capturing the evolving interactions between the sub-systems.
 - Model the system of interactions by a projected differential equation, followed by a generalization within the context of Bregman Divergence.
 - Experimentally validate the new approach using synthetic and real-world datasets, demonstrating its advantage in handling complex and clustered sequential data compared to the state-of-the-art.
+

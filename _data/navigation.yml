@@ -8,8 +8,8 @@ main:
   - title: "Publications"
     url: /publications/
 
-  - title: "Scholar's Corner"
-    url: /scholar/    
+  # - title: "Scholar's Corner"
+  #   url: /scholar/    
     
   - title: "CV"
     url: /cv/
