@@ -24,12 +24,12 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 ## Publications
 
 ### Conference Papers:
-- *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.* Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu, Mingchen Chen. **NeurIPS2025.**
-- *Generating physical dynamics under priors.* **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu. **ICLR2025.**
+- *Incomplete Data, Complete Dynamics: A Diffusion Approach*. **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu. **ICLR2026.**.
+- *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.* Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu, Mingchen Chen. **NeurIPS2025**.
+- *Generating physical dynamics under priors.* **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu. **ICLR2025**.
 - *Learning to decouple complex systems*. **Zihan Zhou**, Tianshu Yu. **ICML2023**.
 
 ### Preprint:
-- *Incomplete Data, Complete Dynamics: A Diffusion Approach*. **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu. arXiv preprint arXiv:2509.20098, 2025.
 - *On diffusion process in SE(3)-invariant space*. **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu. arXiv preprint arXiv: 2403.01430, 2024.
 - *Molecular conformation generation via shifting scores*. **Zihan Zhou**, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu. arXiv preprint arXiv: 2309.09985, 2023.
 
