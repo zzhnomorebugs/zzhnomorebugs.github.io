@@ -1,5 +1,5 @@
 ---
-date: 2025-09-24
+date: 2026-01-25
 title: "Incomplete Data, Complete Dynamics: A Diffusion Approach"
 authors: "<strong>Zihan Zhou</strong>, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu<sup>#</sup>"
 collection: publications
