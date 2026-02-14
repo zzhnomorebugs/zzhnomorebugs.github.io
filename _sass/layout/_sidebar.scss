@@ -18,6 +18,7 @@
     top: $masthead-height;
     max-height: calc(100vh - #{$masthead-height});
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   @include breakpoint($large) {
