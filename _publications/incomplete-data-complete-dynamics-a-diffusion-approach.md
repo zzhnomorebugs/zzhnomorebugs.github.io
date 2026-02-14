@@ -10,4 +10,6 @@ excerpt: 'This paper tackles the challenge of learning physical dynamics from in
 
 venue: 'ICLR2026'
 paperurl: 'https://arxiv.org/pdf/2509.20098'
+
+image: publications/incomplete_data.png
 ---

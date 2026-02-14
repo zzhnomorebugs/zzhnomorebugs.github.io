@@ -10,4 +10,5 @@ excerpt: 'This paper analyzes the diffusion process in SE(3)-invariant space usi
 
 venue: 'arxiv'
 paperurl: 'https://arxiv.org/pdf/2403.01430'
+image: publications/se3_diffusion.png
 ---

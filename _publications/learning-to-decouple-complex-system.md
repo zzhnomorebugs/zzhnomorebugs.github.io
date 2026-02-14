@@ -10,4 +10,5 @@ excerpt: 'This work addresses the challenge of learning from cluttered and irreg
 
 venue: 'ICML2023'
 paperurl: 'https://proceedings.mlr.press/v202/zhou23q/zhou23q.pdf'
+image: publications/learning_to_decouple.png
 ---

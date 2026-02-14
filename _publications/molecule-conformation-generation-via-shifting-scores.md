@@ -10,4 +10,6 @@ excerpt: 'This paper introduces SDDiff, a diffusion-based model for molecular co
 
 venue: 'arxiv'
 paperurl: 'https://arxiv.org/pdf/2309.09985'
+image: publications/shifting_score.png
+
 ---
