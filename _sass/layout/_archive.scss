@@ -260,17 +260,44 @@
 }
 
 /* ==========================================================================
+   PUBLICATIONS PAGE LAYOUT
+   ========================================================================== */
+
+.publications-page {
+  @include breakpoint($large) {
+    display: flex;
+    gap: 2em;
+  }
+
+  &__content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__nav {
+    display: none;
+
+    @include breakpoint($large) {
+      display: block;
+      width: 220px;
+      flex-shrink: 0;
+      position: sticky;
+      top: calc(#{$masthead-height} + 1em);
+      max-height: calc(100vh - #{$masthead-height} - 2em);
+      overflow-y: auto;
+      align-self: flex-start;
+    }
+  }
+}
+
+/* ==========================================================================
    PUBLICATIONS NAVIGATION
    ========================================================================== */
 
 .publications-nav {
-  margin-top: 2em;
-  padding-top: 2em;
-  border-top: 1px solid var(--global-border-color);
-
-  @include breakpoint($large) {
-    display: block;
-  }
+  margin: 0;
+  padding: 0;
+  border-top: none;
 
   &__header {
     margin-bottom: 1em;
@@ -318,7 +345,7 @@
   }
 
   &__item {
-    margin-bottom: 0.5em;
+    margin-bottom: 0.25em;
 
     &:last-child {
       margin-bottom: 0;
@@ -327,24 +354,25 @@
 
   &__link {
     display: block;
-    padding: 0.5em 0;
+    padding: 0.35em 0.5em;
     color: var(--global-text-color-light);
     text-decoration: none;
     transition: all 0.2s ease-in-out;
-    line-height: 1.5;
-    font-size: $type-size-6;
+    line-height: 1.4;
+    font-size: $type-size-7;
+    border-radius: $border-radius;
 
     &:hover {
       color: var(--global-link-color);
       text-decoration: none;
-      padding-left: 0.5em;
+      background: rgba(0, 0, 0, 0.03);
     }
 
     &.active {
       color: var(--global-link-color);
       font-weight: 500;
-      padding-left: 0.5em;
       border-left: 2px solid var(--global-link-color);
+      background: rgba(0, 0, 0, 0.02);
     }
   }
 }

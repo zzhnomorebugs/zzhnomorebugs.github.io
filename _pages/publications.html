@@ -5,31 +5,35 @@ permalink: /publications/
 author_profile: true
 ---
 
-<div class="wordwrap"> <sup>#</sup> corresponding author; \* equal contribution .</div>
-
-
 {% include base_path %}
 
-<!-- New style rendering if publication categories are defined -->
-{% if site.publication_category %}
-  {% for category in site.publication_category  %}
-    {% assign title_shown = false %}
-    {% for post in site.publications reversed %}
-      {% if post.category != category[0] %}
-        {% continue %}
-      {% endif %}
-      {% unless title_shown %}
-        <h2>{{ category[1].title }}</h2><hr />
-        {% assign title_shown = true %}
-      {% endunless %}
-      {% include archive-single.html %}
-    {% endfor %}
-  {% endfor %}
-{% else %}
-  {% for post in site.publications reversed %}
-    {% include archive-single.html %}
-  {% endfor %}
-{% endif %}
+<div class="publications-page">
+  <div class="publications-page__content">
+    <div class="wordwrap"> <sup>#</sup> corresponding author; \* equal contribution .</div>
 
+    <!-- New style rendering if publication categories are defined -->
+    {% if site.publication_category %}
+      {% for category in site.publication_category  %}
+        {% assign title_shown = false %}
+        {% for post in site.publications reversed %}
+          {% if post.category != category[0] %}
+            {% continue %}
+          {% endif %}
+          {% unless title_shown %}
+            <h2>{{ category[1].title }}</h2><hr />
+            {% assign title_shown = true %}
+          {% endunless %}
+          {% include archive-single.html %}
+        {% endfor %}
+      {% endfor %}
+    {% else %}
+      {% for post in site.publications reversed %}
+        {% include archive-single.html %}
+      {% endfor %}
+    {% endif %}
+  </div>
 
-
+  <aside class="publications-page__nav">
+    {% include publications-nav.html %}
+  </aside>
+</div>
