@@ -19,11 +19,12 @@
   &__inner-wrap {
     @include container;
     @include clearfix;
-    padding: 1em 1em 1em;
+    padding: 1em 1.5em;
     font-family: $sans-serif-narrow;
 
     @include breakpoint($x-large) {
       max-width: $x-large;
+      padding: 1em 2em;
     }
 
     nav {
@@ -32,6 +33,12 @@
 
     a {
       text-decoration: none;
+      color: var(--global-masthead-link-color);
+      transition: color 0.2s ease-in-out;
+
+      &:hover {
+        color: var(--global-masthead-link-color-hover);
+      }
     }
   }
 }
@@ -51,9 +58,17 @@
   display: block;
   list-style-type: none;
   white-space: nowrap;
+  font-size: 0.95em;
 
   &--lg {
-    padding-right: 2em;
-    font-weight: 700;
+    padding-right: 2.5em;
+    font-weight: 600;
+    font-size: 1.05em;
+    letter-spacing: -0.01em;
+  }
+
+  a {
+    padding: 0.5em 0.75em;
+    display: inline-block;
   }
 }
