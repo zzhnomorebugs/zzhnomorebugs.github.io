@@ -66,6 +66,31 @@
   }
 }
 
+.archive__item-image {
+  margin: 1.5em 0;
+  text-align: center;
+
+  .publication-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: $border-radius;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease-in-out;
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    @include breakpoint($medium) {
+      max-width: 80%;
+    }
+
+    @include breakpoint($large) {
+      max-width: 70%;
+    }
+  }
+}
+
 .archive__item-teaser {
   border-radius: $border-radius;
   overflow: hidden;

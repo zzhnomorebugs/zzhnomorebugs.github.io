@@ -66,6 +66,19 @@
     <p class="archive__item-excerpt" itemprop="description"><p>{{ post.excerpt | markdownify | remove: '<p>' | remove: '</p>' }}<strong><a href="{{ base_path }}{{ post.url }}" rel="permalink"> Read more</a></strong></p></p>
     {% endif %}
     
+    {% if post.image %}
+    <div class="archive__item-image">
+      <img src=
+        {% if post.image contains "://" %}
+          "{{ post.image }}"
+        {% else %}
+          "{{ post.image | prepend: "/images/" | prepend: base_path }}"
+        {% endif %}
+        alt="{{ post.title }}"
+        class="publication-image">
+    </div>
+    {% endif %}
+    
     <!-- {% if post.paperurl and post.slidesurl %}
       <p>Download Paper</a> | <a href="{{ post.slidesurl }}">Download Slides</a></p>
     {% elsif post.paperurl %}

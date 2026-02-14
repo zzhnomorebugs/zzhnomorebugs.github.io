@@ -11,4 +11,5 @@ excerpt: 'This paper addresses the challenge of generating temporally coherent a
 venue: 'NeurIPS2025'
 paperurl: 'https://arxiv.org/pdf/2511.05510'
 # slidesurl: ''
+image: 'tempo.png'  # Image filename in /images/ directory
 ---
