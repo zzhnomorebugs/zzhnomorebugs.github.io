@@ -1,0 +1,38 @@
+{% include base_path %}
+
+{% if page.permalink == "/publications/" %}
+<nav class="publications-nav" id="publications-nav">
+  <div class="publications-nav__header">
+    <h3>Publications</h3>
+  </div>
+  <ul class="publications-nav__list">
+    {% if site.publication_category %}
+      {% for category in site.publication_category %}
+        {% assign category_posts = site.publications | where: "category", category[0] | reverse %}
+        {% if category_posts.size > 0 %}
+          <li class="publications-nav__category">
+            <span class="publications-nav__category-title">{{ category[1].title }}</span>
+            <ul class="publications-nav__items">
+              {% for post in category_posts %}
+                <li class="publications-nav__item">
+                  <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
+                    {{ post.title | truncate: 60 }}
+                  </a>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+        {% endif %}
+      {% endfor %}
+    {% else %}
+      {% for post in site.publications reversed %}
+        <li class="publications-nav__item">
+          <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
+            {{ post.title | truncate: 60 }}
+          </a>
+        </li>
+      {% endfor %}
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}

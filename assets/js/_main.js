@@ -72,4 +72,54 @@ $(document).ready(function(){
     midClick: true // allow opening popup on middle mouse click. Always set it to true if you don't provide alternative source.
   });
 
+  // Publications navigation scroll highlighting
+  if ($('#publications-nav').length > 0) {
+    var publicationsNav = $('#publications-nav');
+    var navLinks = publicationsNav.find('.publications-nav__link');
+    var publications = $('.archive__item[id^="publication-"]');
+    
+    function updateActiveNav() {
+      var scrollTop = $(window).scrollTop();
+      var mastheadHeight = 64; // Should match $masthead-height
+      var offset = mastheadHeight + 100;
+      
+      var current = '';
+      publications.each(function() {
+        var publication = $(this);
+        var publicationTop = publication.offset().top - offset;
+        
+        if (scrollTop >= publicationTop) {
+          current = publication.attr('id');
+        }
+      });
+      
+      navLinks.removeClass('active');
+      if (current) {
+        navLinks.filter('[href="#' + current + '"]').addClass('active');
+      }
+    }
+    
+    // Update on scroll
+    $(window).on('scroll', function() {
+      updateActiveNav();
+    });
+    
+    // Update on page load
+    updateActiveNav();
+    
+    // Smooth scroll for nav links
+    navLinks.on('click', function(e) {
+      e.preventDefault();
+      var target = $(this).attr('href');
+      if (target) {
+        var targetElement = $(target);
+        if (targetElement.length) {
+          $('html, body').animate({
+            scrollTop: targetElement.offset().top - 64
+          }, 500);
+        }
+      }
+    });
+  }
+
 });
