@@ -24,7 +24,7 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 ## Publications
 
 ### Conference Papers:
-- *Incomplete Data, Complete Dynamics: A Diffusion Approach*. **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu. **ICLR2026.**.
+- *Incomplete Data, Complete Dynamics: A Diffusion Approach*. **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu. **ICLR2026**.
 - *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.* Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu, Mingchen Chen. **NeurIPS2025**.
 - *Generating physical dynamics under priors.* **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu. **ICLR2025**.
 - *Learning to decouple complex systems*. **Zihan Zhou**, Tianshu Yu. **ICML2023**.
