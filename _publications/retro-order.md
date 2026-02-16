@@ -1,5 +1,5 @@
 ---
-date: 2024-03-01
+date: 2026-01-28
 title: "Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching"
 authors: "Chenguang Wang*, <strong>Zihan Zhou*</strong>, Lei Bai, Tianshu Yu<sup>#</sup>"
 collection: publications
