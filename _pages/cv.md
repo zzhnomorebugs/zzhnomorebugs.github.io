@@ -46,6 +46,12 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 Apply deep learning methods to simulate the chromatography process, which is governed by PDEs and infer possible PDE parameters from observed wet lab results:
 - In process
 
+### Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching | 07/2025 -- 01/2026
+Propose a structure-aware template-free framework that encodes the two-stage nature of chemical reactions as a positional inductive bias through reaction-center-guided atom ordering, eliminating the need for explicit templates or completion rules:
+- Introduce a reaction-center-rooted atom ordering strategy that places chemically critical atoms at the sequence head via graph traversal, transforming implicit chemical knowledge into explicit positional patterns that the model can directly capture through rotary position embeddings (RoPE).
+- Develop RetroDiT, a graph transformer backbone equipped with discrete flow matching that decouples training from sampling, enabling efficient generation in 20-50 steps (versus 500 steps for prior diffusion methods) while achieving 6× faster training convergence.
+- Validate the framework on USPTO-50k and USPTO-Full benchmarks, achieving state-of-the-art performance (61.2% and 51.3% top-1 accuracy with predicted centers; 71.1% and 63.4% with oracle centers) and demonstrating that structural priors outperform brute-force scaling—a 280K-parameter model with proper ordering matches a 65M-parameter model without it.
+
 ### TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles | 03/2025 -- 08/2025
 Propose a multi-scale autoregressive framework for generating temporally coherent protein conformational trajectories by explicitly modeling the hierarchical nature of protein dynamics:
 - Develop a two-scale architecture that decomposes protein motion into slow collective transitions (nanosecond to microsecond timescales) and fast local fluctuations (picosecond to nanosecond timescales), with each scale parameterized by stochastic differential equations (SDEs) to capture both deterministic drift dynamics and stochastic thermal fluctuations.
