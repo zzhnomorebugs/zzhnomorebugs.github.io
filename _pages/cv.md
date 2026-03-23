@@ -21,6 +21,13 @@ MPhil-PhD in Data Science | Cum GPA: 3.811/4.0 | Supervisor: Prof. Tianshu Yu
 **The Chinese University of Hong Kong, Shenzhen** | 09/2019 -- 06/2023  
 B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First Class
 
+## Research Interest
+- Design and analysis of continuous/discrete diffusion processes
+- Solving PDE forward and inverse problems
+- Integration of physical priors and design of invariant/equivariant diffusion models
+- Generation of molecular conformations and modeling of protein dynamics
+
+
 ## Publications
 
 ### Conference Papers:
@@ -34,11 +41,14 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 - *On diffusion process in SE(3)-invariant space*. **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. arXiv preprint arXiv: 2403.01430, 2024.
 - *Molecular conformation generation via shifting scores*. **Zihan Zhou**, Ruiying Liu, Chaolong Ying, Ruimao Zhang, Tianshu Yu<sup>#</sup>. arXiv preprint arXiv: 2309.09985, 2023.
 
-## Research Interest
-- Design and analysis of continuous/discrete diffusion processes
-- Solving PDE forward and inverse problems
-- Integration of physical priors and design of invariant/equivariant diffusion models
-- Generation of molecular conformations and modeling of protein dynamics
+## Experience
+
+### Shanghai Artificial Intelligence Laboratory (Shanghai AI Lab) | 06/2025 -- 12/2025
+Research Intern, AI4Science
+- **Protein Sequence Generation:** Redesigned the ESM-2 Transformer into a Diffusion Transformer (DiT) architecture, and systematically evaluated the impact of various conditional embedding strategies.
+- **Large-Scale Discrete Generative Modeling:** Processed a dataset of 33 million protein sequences and trained a 650M-parameter generative model. Conducted comparative studies on discrete generative frameworks, including Bayesian Flow Network (BFN) and Discrete Flow Matching (DFM), along with various sampling strategies to optimize generation quality.
+- **Performance Breakthrough:** Achieved significant improvements in structural generation compared to the previous generation model, boosting pLDDT from 56.46 to 78.24 and pTM from 0.55 to 0.75.
+- **LLM SFT Data Synthesis:** Explored Large Language Model (LLM) Supervised Fine-Tuning (SFT) pipelines by utilizing advanced LLMs to synthesize targeted protein Q&A datasets, aiming to improve model accuracy on specific downstream tasks.
 
 ## Research Projects
 
