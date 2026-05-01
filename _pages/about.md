@@ -23,8 +23,8 @@ My work spans several interconnected areas at the intersection of machine learni
 
 ## Recent Highlights
 
-- **ICLR 2026:** *Incomplete Data, Complete Dynamics: A Diffusion Approach* (first author)
 - **ICML 2026:** *Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching* (co-first author)
+- **ICLR 2026:** *Incomplete Data, Complete Dynamics: A Diffusion Approach* (first author)
 - **NeurIPS 2025:** *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles* (co-author)
 - **ICLR 2025:** *Generating physical dynamics under priors* (first author)
 - **ICML 2023:** *Learning to decouple complex systems* (first author)
