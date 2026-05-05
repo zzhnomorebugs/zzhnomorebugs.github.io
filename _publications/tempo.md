@@ -10,6 +10,7 @@ excerpt: 'This paper addresses the challenge of generating temporally coherent a
 
 venue: 'NeurIPS2025'
 paperurl: 'https://arxiv.org/pdf/2511.05510'
+githuburl: 'https://github.com/LOGO-CUHKSZ/TEMPO'
 # slidesurl: ''
 image: publications/tempo.png
 ---

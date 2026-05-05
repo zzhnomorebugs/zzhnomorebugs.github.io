@@ -11,6 +11,8 @@ excerpt: 'This paper addresses the challenge of generating physically feasible d
 venue: 'ICLR2025'
 paperurl: 'https://arxiv.org/pdf/2409.00730v3'
 slidesurl: 'https://iclr.cc/media/iclr-2025/Slides/28929.pdf'
+posterurl: 'https://iclr.cc/media/PosterPDFs/ICLR%202025/28929.png?t=1743674153.1185303'
+githuburl: 'https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors'
 
 image: publications/generating_under_prior.png
 ---

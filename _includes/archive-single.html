@@ -86,8 +86,13 @@
     {% elsif post.slidesurl %}
       <p><a href="{{ post.slidesurl }}">Download Slides</a></p>
     {% endif %} -->
-    {% if post.slidesurl %}
-      <p><a href="{{ post.slidesurl }}">Download Slides</a></p>
+    {% if post.paperurl or post.slidesurl or post.posterurl or post.githuburl %}
+      <p>
+        {% if post.paperurl %}<a href="{{ post.paperurl }}">Download Paper</a>{% endif %}
+        {% if post.slidesurl %}{% if post.paperurl %} | {% endif %}<a href="{{ post.slidesurl }}">Download Slides</a>{% endif %}
+        {% if post.posterurl %}{% if post.paperurl or post.slidesurl %} | {% endif %}<a href="{{ post.posterurl }}">Download Poster</a>{% endif %}
+        {% if post.githuburl %}{% if post.paperurl or post.slidesurl or post.posterurl %} | {% endif %}<a href="{{ post.githuburl }}">Code</a>{% endif %}
+      </p>
     {% endif %}
 
 

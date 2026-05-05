@@ -47,12 +47,13 @@ layout: default
       <section class="page__content" itemprop="text">
         {{ content }}
 
-        {% if page.paperurl and page.slidesurl %}
-          <p style="font-size: smaller"><a href="{{ page.paperurl }}">Download Paper</a> | <a href="{{ page.slidesurl }}">Download Slides</a></p>
-        {% elsif page.paperurl %}
-          <p style="font-size: smaller"><a href="{{ page.paperurl }}">Download Paper</a></p>
-        {% elsif page.slidesurl %}
-          <p style="font-size: smaller"><a href="{{ page.slidesurl }}">Download Slides</a></p>
+        {% if page.paperurl or page.slidesurl or page.posterurl or page.githuburl %}
+          <p style="font-size: smaller">
+            {% if page.paperurl %}<a href="{{ page.paperurl }}">Download Paper</a>{% endif %}
+            {% if page.slidesurl %}{% if page.paperurl %} | {% endif %}<a href="{{ page.slidesurl }}">Download Slides</a>{% endif %}
+            {% if page.posterurl %}{% if page.paperurl or page.slidesurl %} | {% endif %}<a href="{{ page.posterurl }}">Download Poster</a>{% endif %}
+            {% if page.githuburl %}{% if page.paperurl or page.slidesurl or page.posterurl %} | {% endif %}<a href="{{ page.githuburl }}">Code</a>{% endif %}
+          </p>
         {% endif %}
 
         {% if page.link %}<div><a href="{{ page.link }}" class="btn">{{ site.data.ui-text[site.locale].ext_link_label | default: "Direct Link" }}</a></div>{% endif %}
