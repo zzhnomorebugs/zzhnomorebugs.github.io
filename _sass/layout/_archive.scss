@@ -399,6 +399,12 @@ a.publication-link-btn {
   text-decoration: none;
   transition: all 0.2s ease;
 
+  &:visited {
+    color: var(--global-text-color);
+    border-color: var(--global-border-color);
+    background: var(--global-bg-color);
+  }
+
   &:hover {
     text-decoration: none;
     color: var(--global-link-color);
@@ -409,7 +415,9 @@ a.publication-link-btn {
 }
 
 a.publication-link-btn--code {
-  border-color: var(--global-link-color);
-  color: var(--global-link-color);
-  background: rgba(38, 139, 210, 0.06);
+  &:visited {
+    color: var(--global-text-color);
+    border-color: var(--global-border-color);
+    background: var(--global-bg-color);
+  }
 }
