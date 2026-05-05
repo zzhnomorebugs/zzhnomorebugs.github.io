@@ -87,12 +87,12 @@
       <p><a href="{{ post.slidesurl }}">Download Slides</a></p>
     {% endif %} -->
     {% if post.paperurl or post.slidesurl or post.posterurl or post.githuburl %}
-      <p>
-        {% if post.paperurl %}<a href="{{ post.paperurl }}">Download Paper</a>{% endif %}
-        {% if post.slidesurl %}{% if post.paperurl %} | {% endif %}<a href="{{ post.slidesurl }}">Download Slides</a>{% endif %}
-        {% if post.posterurl %}{% if post.paperurl or post.slidesurl %} | {% endif %}<a href="{{ post.posterurl }}">Download Poster</a>{% endif %}
-        {% if post.githuburl %}{% if post.paperurl or post.slidesurl or post.posterurl %} | {% endif %}<a href="{{ post.githuburl }}">Code</a>{% endif %}
-      </p>
+      <div class="publication-links">
+        {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}">Paper</a>{% endif %}
+        {% if post.slidesurl %}<a class="publication-link-btn" href="{{ post.slidesurl }}">Slides</a>{% endif %}
+        {% if post.posterurl %}<a class="publication-link-btn" href="{{ post.posterurl }}">Poster</a>{% endif %}
+        {% if post.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ post.githuburl }}">Code</a>{% endif %}
+      </div>
     {% endif %}
 
 

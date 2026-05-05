@@ -376,3 +376,40 @@
     }
   }
 }
+
+.publication-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0.75rem 0 0.5rem;
+}
+
+a.publication-link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--global-border-color);
+  border-radius: 999px;
+  background: var(--global-bg-color);
+  color: var(--global-text-color);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: all 0.2s ease;
+
+  &:hover {
+    text-decoration: none;
+    color: var(--global-link-color);
+    border-color: var(--global-link-color);
+    background: rgba(38, 139, 210, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+a.publication-link-btn--code {
+  border-color: var(--global-link-color);
+  color: var(--global-link-color);
+  background: rgba(38, 139, 210, 0.06);
+}

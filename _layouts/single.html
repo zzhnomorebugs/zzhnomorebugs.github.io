@@ -48,12 +48,12 @@ layout: default
         {{ content }}
 
         {% if page.paperurl or page.slidesurl or page.posterurl or page.githuburl %}
-          <p style="font-size: smaller">
-            {% if page.paperurl %}<a href="{{ page.paperurl }}">Download Paper</a>{% endif %}
-            {% if page.slidesurl %}{% if page.paperurl %} | {% endif %}<a href="{{ page.slidesurl }}">Download Slides</a>{% endif %}
-            {% if page.posterurl %}{% if page.paperurl or page.slidesurl %} | {% endif %}<a href="{{ page.posterurl }}">Download Poster</a>{% endif %}
-            {% if page.githuburl %}{% if page.paperurl or page.slidesurl or page.posterurl %} | {% endif %}<a href="{{ page.githuburl }}">Code</a>{% endif %}
-          </p>
+          <div class="publication-links">
+            {% if page.paperurl %}<a class="publication-link-btn" href="{{ page.paperurl }}">Paper</a>{% endif %}
+            {% if page.slidesurl %}<a class="publication-link-btn" href="{{ page.slidesurl }}">Slides</a>{% endif %}
+            {% if page.posterurl %}<a class="publication-link-btn" href="{{ page.posterurl }}">Poster</a>{% endif %}
+            {% if page.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ page.githuburl }}">Code</a>{% endif %}
+          </div>
         {% endif %}
 
         {% if page.link %}<div><a href="{{ page.link }}" class="btn">{{ site.data.ui-text[site.locale].ext_link_label | default: "Direct Link" }}</a></div>{% endif %}
