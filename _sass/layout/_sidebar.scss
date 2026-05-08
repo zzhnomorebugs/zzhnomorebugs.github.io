@@ -276,10 +276,11 @@
     display: inline;
     margin: 0;
     padding: 0;
-    color: var(--global-link-color);
+    color: var(--global-text-color-light);
 
     &:hover {
-      text-decoration: underline;
+      text-decoration: none;
+      color: var(--global-text-color);
     }
   }
 
