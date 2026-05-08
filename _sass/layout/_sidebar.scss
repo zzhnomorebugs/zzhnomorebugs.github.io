@@ -268,3 +268,22 @@
     }
   }
 }
+
+.author__language-toggle {
+  white-space: nowrap;
+
+  a {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    color: var(--global-link-color);
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  strong {
+    color: var(--global-text-color);
+  }
+}
