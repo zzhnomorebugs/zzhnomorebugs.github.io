@@ -19,3 +19,13 @@ main:
     
   # - title: "Guide"
   #   url: /markdown/
+
+main_zh:
+  - title: "论文发表"
+    url: /zh/publications/
+
+  - title: "经历"
+    url: /zh/experience/
+
+  - title: "简历"
+    url: /zh/cv/

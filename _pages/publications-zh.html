@@ -1,18 +1,18 @@
 ---
 layout: archive
-title: "Publications"
-permalink: /publications/
+title: "论文发表"
+permalink: /zh/publications/
 author_profile: true
-lang_switch_url: /zh/publications/
+lang: zh-CN
+lang_switch_url: /publications/
 ---
 
 {% include base_path %}
 
 <div class="publications-page">
   <div class="publications-page__content">
-    <div class="wordwrap"> <sup>#</sup> corresponding author; * equal contribution.</div>
+    <div class="wordwrap"> <sup>#</sup> 通讯作者；* 共同贡献。</div>
 
-    <!-- New style rendering if publication categories are defined -->
     {% if site.publication_category %}
       {% for category in site.publication_category  %}
         {% assign title_shown = false %}
@@ -21,7 +21,7 @@ lang_switch_url: /zh/publications/
             {% continue %}
           {% endif %}
           {% unless title_shown %}
-            <h2>{{ category[1].title }}</h2><hr />
+            <h2>{{ category[1].title_zh | default: category[1].title }}</h2><hr />
             {% assign title_shown = true %}
           {% endunless %}
           {% include archive-single.html %}

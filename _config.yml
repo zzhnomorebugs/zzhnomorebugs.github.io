@@ -68,10 +68,13 @@ author:
 publication_category:
   books:
     title: 'Books'
+    title_zh: '书籍'
   conferences:
     title: 'Conference Papers'
+    title_zh: '会议论文'
   preprint:
-    title: 'Preprint'  
+    title: 'Preprint'
+    title_zh: '预印本'
 
 # Site Settings
 teaser                   :  # filename of teaser fallback teaser image placed in /images/, .e.g. "500x300.png"

@@ -45,25 +45,31 @@
     </h2>
     
     {% if post.authors %}
-      <p>Authors: {{ post.authors | raw }}</p>
+      <p>{% if page.lang == "zh-CN" %}作者：{% else %}Authors: {% endif %}{{ post.authors | raw }}</p>
     {% endif %}
 
     {% if post.read_time %}
       <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
     {% endif %}
 
+        {% assign current_locale = page.lang | default: site.locale %}
         {% if post.collection == 'scholar' %}
           <p> {{ post.type }}, <i>{{ post.venue }}</i>, {{ post.date | default: "1900-01-01" | date: "%Y" }} </p>
         {% elsif post.collection == 'publications' %}
-          <p>Published in <i><strong></strong>{{ post.venue }}<strong></strong></i></p>
+          <p>{% if page.lang == "zh-CN" %}发表于 {% else %}Published in {% endif %}<i><strong></strong>{{ post.venue }}<strong></strong></i></p>
         {% elsif post.date %}
-         <p class="page__date"><strong><i class="fa fa-fw fa-calendar" aria-hidden="true"></i> {{ site.data.ui-text[site.locale].date_label | default: "Published:" }}</strong> <time datetime="{{ post.date | default: "1900-01-01" | date_to_xmlschema }}">{{ post.date | default: "1900-01-01" | date: "%B %d, %Y" }}</time></p>
+         <p class="page__date"><strong><i class="fa fa-fw fa-calendar" aria-hidden="true"></i> {{ site.data.ui-text[current_locale].date_label | default: "Published:" }}</strong> <time datetime="{{ post.date | default: "1900-01-01" | date_to_xmlschema }}">{{ post.date | default: "1900-01-01" | date: "%B %d, %Y" }}</time></p>
         {% endif %}
 
-    {% if post.excerpt and site.read_more != 'enabled' %}
-    <p class="archive__item-excerpt" itemprop="description">{{ post.excerpt | markdownify }}</p>
-    {% elsif post.excerpt and site.read_more == 'enabled' %}
-    <p class="archive__item-excerpt" itemprop="description"><p>{{ post.excerpt | markdownify | remove: '<p>' | remove: '</p>' }}<strong><a href="{{ base_path }}{{ post.url }}" rel="permalink"> Read more</a></strong></p></p>
+    {% if page.lang == "zh-CN" and post.excerpt_zh %}
+      {% assign display_excerpt = post.excerpt_zh %}
+    {% else %}
+      {% assign display_excerpt = post.excerpt %}
+    {% endif %}
+    {% if display_excerpt and site.read_more != 'enabled' %}
+    <p class="archive__item-excerpt" itemprop="description">{{ display_excerpt | markdownify }}</p>
+    {% elsif display_excerpt and site.read_more == 'enabled' %}
+    <p class="archive__item-excerpt" itemprop="description"><p>{{ display_excerpt | markdownify | remove: '<p>' | remove: '</p>' }}<strong><a href="{{ base_path }}{{ post.url }}" rel="permalink"> {% if page.lang == "zh-CN" %}阅读更多{% else %}Read more{% endif %}</a></strong></p></p>
     {% endif %}
     
     {% if post.image %}

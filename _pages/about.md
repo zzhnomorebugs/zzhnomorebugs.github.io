@@ -2,6 +2,7 @@
 permalink: /
 title: "Zihan Zhou"
 author_profile: true
+lang_switch_url: /zh/
 redirect_from: 
   - /about/
   - /about.html

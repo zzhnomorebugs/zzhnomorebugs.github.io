@@ -3,6 +3,7 @@ layout: archive
 title: "Experience"
 permalink: /experience/
 author_profile: true
+lang_switch_url: /zh/experience/
 ---
 
 {% include base_path %}
