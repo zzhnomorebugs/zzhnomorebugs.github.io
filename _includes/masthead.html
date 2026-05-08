@@ -3,13 +3,9 @@
 {% if page.lang == "zh-CN" %}
   {% assign nav_links = site.data.navigation.main_zh %}
   {% assign home_url = "/zh/" %}
-  {% assign lang_toggle_label = "EN" %}
-  {% assign lang_toggle_url = page.lang_switch_url | default: "/" %}
 {% else %}
   {% assign nav_links = site.data.navigation.main %}
   {% assign home_url = "/" %}
-  {% assign lang_toggle_label = "中文" %}
-  {% assign lang_toggle_url = page.lang_switch_url | default: "/zh/" %}
 {% endif %}
 
 <div class="masthead">
@@ -27,7 +23,6 @@
             {% endif %}
             <li class="masthead__menu-item"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
           {% endfor %}
-          <li class="masthead__menu-item"><a href="{{ base_path }}{{ lang_toggle_url }}">{{ lang_toggle_label }}</a></li>
         </ul>
         <ul class="hidden-links hidden"></ul>
       </nav>

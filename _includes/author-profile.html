@@ -156,7 +156,16 @@
       {% endif %}
       {% if author.zhihu %}
       <li><a href="https://www.zhihu.com/people/{{ author.zhihu }}"><i class="fab fa-fw fa-zhihu icon-pad-right" aria-hidden="true"></i>Zhihu</a></li>
-      {% endif %}      
+      {% endif %}
+
+      <li class="author__language-toggle">
+        <i class="fa-solid fa-language icon-pad-right" aria-hidden="true"></i>
+        {% if page.lang == "zh-CN" %}
+          <a href="{{ base_path }}{{ page.lang_switch_url | default: '/' }}">English</a> · <strong>中文</strong>
+        {% else %}
+          <strong>English</strong> · <a href="{{ base_path }}{{ page.lang_switch_url | default: '/zh/' }}">中文</a>
+        {% endif %}
+      </li>
     </ul>
   </div>
 </div>
