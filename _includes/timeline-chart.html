@@ -32,7 +32,6 @@
     "start": {{ project.start | jsonify }},
     "end": {% if project.end %}{{ project.end | jsonify }}{% else %}null{% endif %},
     "url": {% if pub_url %}{{ pub_url | jsonify }}{% else %}null{% endif %},
-    "color": {% if project.color %}{{ project.color | jsonify }}{% else %}null{% endif %},
     "lane": {{ project.lane }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
@@ -50,7 +49,9 @@
 [
 {% for col in timeline.columns %}
   {
-    "label": {% if page.lang == "zh-CN" %}{{ col.label | jsonify }}{% else %}{{ col.label_en | default: col.label | jsonify }}{% endif %}
+    "label": {% if page.lang == "zh-CN" %}{{ col.label | jsonify }}{% else %}{{ col.label_en | default: col.label | jsonify }}{% endif %},
+    "color": {{ col.color | jsonify }},
+    "palette": {{ col.palette | jsonify }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]

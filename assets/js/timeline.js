@@ -1,17 +1,47 @@
 (function () {
   "use strict";
 
-  var LABEL_RESERVE_PCT = 14;
+  var HEADER_RESERVE_PCT = 16;
+  var FOOTER_RESERVE_PCT = 14;
 
-  var DEFAULT_COLORS = [
-    "#3d7ea6",
-    "#6a8f7a",
-    "#7a6b9e",
-    "#9e7a5b",
-    "#8f5b7a",
-    "#5b7c99",
-    "#4a8f6e"
-  ];
+  function hexToRgb(hex) {
+    var h = hex.replace("#", "");
+    if (h.length === 3) {
+      h = h.split("").map(function (c) {
+        return c + c;
+      }).join("");
+    }
+    return {
+      r: parseInt(h.slice(0, 2), 16),
+      g: parseInt(h.slice(2, 4), 16),
+      b: parseInt(h.slice(4, 6), 16)
+    };
+  }
+
+  function isLightColor(hex) {
+    var c = hexToRgb(hex);
+    var lum = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
+    return lum > 0.58;
+  }
+
+  function assignColumnColors(projects, columns) {
+    if (!columns || !columns.length) return;
+
+    columns.forEach(function (col, laneIdx) {
+      var palette = col.palette && col.palette.length ? col.palette : [col.color];
+      var laneProjects = projects
+        .filter(function (p) {
+          return p.lane === laneIdx;
+        })
+        .sort(function (a, b) {
+          return a.startIdx - b.startIdx;
+        });
+
+      laneProjects.forEach(function (p, i) {
+        p.color = palette[Math.min(i, palette.length - 1)];
+      });
+    });
+  }
 
   function parseJsonEl(id) {
     var el = document.getElementById(id);
@@ -135,17 +165,26 @@
     return lane * (geom.laneWidth + geom.gap);
   }
 
+  function createColumnLabel(col, index, geom, placement) {
+    var el = document.createElement("div");
+    el.className = "timeline__col-label timeline__col-label--" + placement;
+    el.style.left = laneLeft(index, geom) + "%";
+    el.style.width = geom.laneWidth + "%";
+    el.textContent = col.label;
+    if (col.color) {
+      el.style.setProperty("--timeline-col-color", col.color);
+      el.style.color = col.color;
+    }
+    return el;
+  }
+
   function renderColumnLabels(chartEl, columns, laneCount) {
     if (!columns || !columns.length) return;
     var geom = laneGeometry(laneCount);
     columns.forEach(function (col, i) {
       if (i >= laneCount) return;
-      var el = document.createElement("div");
-      el.className = "timeline__col-label";
-      el.style.left = laneLeft(i, geom) + "%";
-      el.style.width = geom.laneWidth + "%";
-      el.textContent = col.label;
-      chartEl.appendChild(el);
+      chartEl.appendChild(createColumnLabel(col, i, geom, "top"));
+      chartEl.appendChild(createColumnLabel(col, i, geom, "bottom"));
     });
   }
 
@@ -156,13 +195,14 @@
 
     var geom = laneGeometry(laneCount);
 
-    var plotScale = (100 - LABEL_RESERVE_PCT) / 100;
+    var plotSpanPct = 100 - HEADER_RESERVE_PCT - FOOTER_RESERVE_PCT;
+    var plotScale = plotSpanPct / 100;
 
     projects.forEach(function (p, i) {
       var rawBottom = ((p.startIdx - t0) / span) * 100;
       var rawHeight = ((p.endIdx - p.startIdx + 1) / span) * 100;
       rawHeight = Math.max(rawHeight, 2);
-      var bottomPct = LABEL_RESERVE_PCT + rawBottom * plotScale;
+      var bottomPct = FOOTER_RESERVE_PCT + rawBottom * plotScale;
       var heightPct = rawHeight * plotScale;
 
       var leftPct = laneLeft(p.lane, geom);
@@ -183,7 +223,11 @@
       el.style.height = heightPct + "%";
       el.style.left = leftPct + "%";
       el.style.width = geom.laneWidth + "%";
-      el.style.backgroundColor = p.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      el.style.backgroundColor = p.color;
+      el.style.borderColor = "rgba(0, 0, 0, 0.12)";
+      if (isLightColor(p.color)) {
+        el.classList.add("timeline__bar--light");
+      }
       el.title = title;
       el.setAttribute("aria-label", title);
 
@@ -229,11 +273,8 @@
       t1 = now;
     }
 
-    projects.forEach(function (p, i) {
-      if (!p.color) p.color = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
-    });
-
     assignLanes(projects);
+    assignColumnColors(projects, columns);
 
     var laneCount = columns && columns.length
       ? columns.length

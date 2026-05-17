@@ -63,23 +63,35 @@
   justify-content: center;
   padding: 0.25em 0.5em;
   border-radius: $border-radius;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   color: #fff;
   text-decoration: none;
   font-size: $type-size-7;
   font-weight: 600;
   line-height: 1.2;
   overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
   min-height: 2.75rem;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 
   &:hover,
   &:focus {
-    filter: brightness(1.08);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.22);
+    filter: brightness(1.06) saturate(1.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
     transform: scale(1.01);
     color: #fff;
     text-decoration: none;
+  }
+
+  &--light {
+    color: var(--global-text-color);
+    text-shadow: none;
+
+    &:hover,
+    &:focus {
+      color: var(--global-text-color);
+    }
   }
 
   &--static {
@@ -93,22 +105,34 @@
 
 .timeline__col-label {
   position: absolute;
-  bottom: 0;
   box-sizing: border-box;
-  padding: 0.35em 0.25em 0;
+  padding: 0.35em 0.3em;
   font-size: $type-size-7;
   font-weight: 700;
   line-height: 1.25;
   text-align: center;
-  color: var(--global-text-color);
   word-break: break-word;
   hyphens: auto;
-  border-top: 2px solid var(--global-border-color);
   background: var(--global-bg-color);
-  min-height: 3.25rem;
+  z-index: 2;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
+  &--top {
+    top: 0;
+    min-height: 3.5rem;
+    border-bottom: 3px solid var(--timeline-col-color, var(--global-border-color));
+    align-items: flex-end;
+    padding-bottom: 0.4em;
+  }
+
+  &--bottom {
+    bottom: 0;
+    min-height: 3.25rem;
+    border-top: 3px solid var(--timeline-col-color, var(--global-border-color));
+    align-items: flex-start;
+    padding-top: 0.4em;
+  }
 }
 
 .timeline__bar-label {
@@ -172,7 +196,14 @@
 
   .timeline__col-label {
     font-size: 0.6rem;
-    min-height: 2.75rem;
+
+    &--top {
+      min-height: 3rem;
+    }
+
+    &--bottom {
+      min-height: 2.5rem;
+    }
   }
 }
 
