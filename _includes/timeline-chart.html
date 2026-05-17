@@ -1,0 +1,52 @@
+{% include base_path %}
+
+{% assign timeline = site.data.timeline %}
+{% if page.lang == "zh-CN" %}
+  {% assign publications_base = "/zh/publications/" %}
+{% else %}
+  {% assign publications_base = "/publications/" %}
+{% endif %}
+
+<div class="timeline" id="timeline">
+  <div class="timeline__inner">
+    <div class="timeline__axis" id="timeline-axis" aria-hidden="true"></div>
+    <div class="timeline__chart" id="timeline-chart" role="img" aria-label="Research project timeline"></div>
+  </div>
+  <ul class="timeline__legend" id="timeline-legend" aria-label="Project list"></ul>
+</div>
+
+<script type="application/json" id="timeline-data">
+[
+{% for project in timeline.projects %}
+  {% assign pub_url = project.link %}
+  {% if project.publication and pub_url == nil %}
+    {% assign pub_slug = project.publication %}
+    {% assign pub = site.publications | where_exp: "p", "p.path contains pub_slug" | first %}
+    {% if pub %}
+      {% capture pub_anchor %}#publication-{{ pub.title | slugify }}{% endcapture %}
+      {% assign pub_url = publications_base | append: pub_anchor %}
+    {% endif %}
+  {% endif %}
+  {% if page.lang == "zh-CN" %}
+    {% assign display_name = project.name_zh | default: project.name %}
+  {% else %}
+    {% assign display_name = project.name %}
+  {% endif %}
+  {
+    "name": {{ display_name | jsonify }},
+    "start": {{ project.start | jsonify }},
+    "end": {% if project.end %}{{ project.end | jsonify }}{% else %}null{% endif %},
+    "url": {% if pub_url %}{{ pub_url | jsonify }}{% else %}null{% endif %},
+    "color": {% if project.color %}{{ project.color | jsonify }}{% else %}null{% endif %},
+    "lane": {% if project.lane != nil %}{{ project.lane }}{% else %}null{% endif %}
+  }{% unless forloop.last %},{% endunless %}
+{% endfor %}
+]
+</script>
+
+<script type="application/json" id="timeline-range">
+{
+  "start": {% if timeline.range.start %}{{ timeline.range.start | jsonify }}{% else %}null{% endif %},
+  "end": {% if timeline.range.end %}{{ timeline.range.end | jsonify }}{% else %}null{% endif %}
+}
+</script>

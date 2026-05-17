@@ -1,0 +1,222 @@
+(function () {
+  "use strict";
+
+  var DEFAULT_COLORS = [
+    "#3d7ea6",
+    "#6a8f7a",
+    "#7a6b9e",
+    "#9e7a5b",
+    "#8f5b7a",
+    "#5b7c99",
+    "#4a8f6e"
+  ];
+
+  function parseJsonEl(id) {
+    var el = document.getElementById(id);
+    if (!el) return null;
+    try {
+      return JSON.parse(el.textContent);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function parseMonth(str) {
+    if (!str) return null;
+    var parts = str.split("-");
+    var y = parseInt(parts[0], 10);
+    var m = parseInt(parts[1], 10) || 1;
+    return y * 12 + (m - 1);
+  }
+
+  function formatMonth(idx) {
+    var y = Math.floor(idx / 12);
+    var m = (idx % 12) + 1;
+    return y + "-" + String(m).padStart(2, "0");
+  }
+
+  function formatLabel(idx) {
+    var y = Math.floor(idx / 12);
+    var m = (idx % 12) + 1;
+    if (m === 1) return String(y);
+    return y + "/" + m;
+  }
+
+  function currentMonth() {
+    var now = new Date();
+    return now.getFullYear() * 12 + now.getMonth();
+  }
+
+  function assignLanes(projects) {
+    var manual = projects.every(function (p) {
+      return p.lane !== null && p.lane !== undefined;
+    });
+    if (manual) return projects;
+
+    var sorted = projects.slice().sort(function (a, b) {
+      return a.startIdx - b.startIdx;
+    });
+    var laneEnds = [];
+
+    sorted.forEach(function (p) {
+      var placed = false;
+      for (var i = 0; i < laneEnds.length; i++) {
+        if (p.startIdx >= laneEnds[i]) {
+          p.lane = i;
+          laneEnds[i] = p.endIdx + 1;
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        p.lane = laneEnds.length;
+        laneEnds.push(p.endIdx + 1);
+      }
+    });
+
+    return projects;
+  }
+
+  function renderAxis(axisEl, t0, t1) {
+    axisEl.innerHTML = "";
+    var span = t1 - t0;
+    if (span <= 0) return;
+
+    var step = span > 48 ? 12 : span > 24 ? 6 : 3;
+    var startTick = Math.ceil(t0 / step) * step;
+
+    for (var tick = startTick; tick <= t1; tick += step) {
+      var pct = ((tick - t0) / span) * 100;
+      var item = document.createElement("div");
+      item.className = "timeline__tick";
+      item.style.bottom = pct + "%";
+      item.innerHTML =
+        '<span class="timeline__tick-line"></span>' +
+        '<span class="timeline__tick-label">' +
+        formatLabel(tick) +
+        "</span>";
+      axisEl.appendChild(item);
+    }
+  }
+
+  function renderLegend(legendEl, projects) {
+    legendEl.innerHTML = "";
+    projects.forEach(function (p) {
+      var li = document.createElement("li");
+      li.className = "timeline__legend-item";
+      var swatch = document.createElement("span");
+      swatch.className = "timeline__legend-swatch";
+      swatch.style.backgroundColor = p.color;
+      var label = document.createElement("span");
+      label.className = "timeline__legend-label";
+      if (p.url) {
+        var a = document.createElement("a");
+        a.href = p.url;
+        a.textContent = p.name;
+        label.appendChild(a);
+      } else {
+        label.textContent = p.name;
+      }
+      li.appendChild(swatch);
+      li.appendChild(label);
+      legendEl.appendChild(li);
+    });
+  }
+
+  function renderBars(chartEl, projects, t0, t1, laneCount) {
+    chartEl.innerHTML = "";
+    var span = t1 - t0;
+    if (span <= 0) return;
+
+    var gap = 0.04;
+    var laneWidth = (100 - gap * (laneCount - 1)) / laneCount;
+
+    projects.forEach(function (p, i) {
+      var bottomPct = ((p.startIdx - t0) / span) * 100;
+      var heightPct = ((p.endIdx - p.startIdx + 1) / span) * 100;
+      heightPct = Math.max(heightPct, 2);
+
+      var leftPct = p.lane * (laneWidth + gap);
+      var el;
+      var title =
+        p.name + " (" + formatMonth(p.startIdx) + " – " + formatMonth(p.endIdx) + ")";
+
+      if (p.url) {
+        el = document.createElement("a");
+        el.href = p.url;
+        el.className = "timeline__bar";
+      } else {
+        el = document.createElement("div");
+        el.className = "timeline__bar timeline__bar--static";
+      }
+
+      el.style.bottom = bottomPct + "%";
+      el.style.height = heightPct + "%";
+      el.style.left = leftPct + "%";
+      el.style.width = laneWidth + "%";
+      el.style.backgroundColor = p.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+      el.title = title;
+      el.setAttribute("aria-label", title);
+
+      var text = document.createElement("span");
+      text.className = "timeline__bar-label";
+      text.textContent = p.name;
+      el.appendChild(text);
+
+      chartEl.appendChild(el);
+    });
+  }
+
+  function init() {
+    var projects = parseJsonEl("timeline-data");
+    var range = parseJsonEl("timeline-range");
+    if (!projects || !projects.length) return;
+
+    var chartEl = document.getElementById("timeline-chart");
+    var axisEl = document.getElementById("timeline-axis");
+    var legendEl = document.getElementById("timeline-legend");
+    if (!chartEl || !axisEl) return;
+
+    var now = currentMonth();
+
+    projects.forEach(function (p) {
+      p.startIdx = parseMonth(p.start);
+      p.endIdx = p.end ? parseMonth(p.end) : now;
+      if (p.endIdx < p.startIdx) p.endIdx = p.startIdx;
+    });
+
+    var t0 = range && range.start ? parseMonth(range.start) : null;
+    var t1 = range && range.end ? parseMonth(range.end) : now;
+
+    if (t0 === null) {
+      t0 = projects.reduce(function (min, p) {
+        return Math.min(min, p.startIdx);
+      }, projects[0].startIdx);
+    }
+    if (t1 === null) {
+      t1 = now;
+    }
+
+    projects.forEach(function (p, i) {
+      if (!p.color) p.color = DEFAULT_COLORS[i % DEFAULT_COLORS.length];
+    });
+
+    assignLanes(projects);
+
+    var laneCount = projects.reduce(function (max, p) {
+      return Math.max(max, p.lane + 1);
+    }, 1);
+
+    chartEl.style.setProperty("--timeline-lanes", laneCount);
+
+    renderAxis(axisEl, t0, t1);
+    renderBars(chartEl, projects, t0, t1, laneCount);
+    if (legendEl) renderLegend(legendEl, projects);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
