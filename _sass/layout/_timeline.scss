@@ -71,9 +71,9 @@
   line-height: 1.2;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  transition: filter 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
   min-height: 2.75rem;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 
   &:hover,
   &:focus {
@@ -82,6 +82,37 @@
     transform: scale(1.01);
     color: #fff;
     text-decoration: none;
+  }
+
+  &--has-image {
+    background-color: var(--timeline-col-color, #3c5488);
+    padding: 0;
+
+    &:hover,
+    &:focus {
+      filter: none;
+      transform: scale(1.01);
+
+      .timeline__bar-media {
+        transform: scale(1.04);
+      }
+
+      .timeline__bar-overlay {
+        opacity: 1;
+        background:
+          linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.28) 0%,
+            rgba(0, 0, 0, 0.52) 55%,
+            rgba(0, 0, 0, 0.78) 100%
+          ),
+          linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--timeline-col-color, #000) 30%, transparent),
+            color-mix(in srgb, var(--timeline-col-color, #000) 50%, transparent)
+          );
+      }
+    }
   }
 
   &--light {
@@ -101,6 +132,35 @@
       transform: none;
     }
   }
+}
+
+.timeline__bar-media {
+  position: absolute;
+  inset: 0;
+  background-image: var(--timeline-bar-image);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transition: transform 0.2s ease;
+}
+
+.timeline__bar-overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.2) 0%,
+      rgba(0, 0, 0, 0.45) 55%,
+      rgba(0, 0, 0, 0.72) 100%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--timeline-col-color, #000) 25%, transparent),
+      color-mix(in srgb, var(--timeline-col-color, #000) 40%, transparent)
+    );
+  transition: background 0.2s ease, opacity 0.2s ease;
+  pointer-events: none;
 }
 
 .timeline__col-label {
@@ -136,6 +196,8 @@
 }
 
 .timeline__bar-label {
+  position: relative;
+  z-index: 1;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
@@ -143,6 +205,7 @@
   text-align: center;
   word-break: break-word;
   hyphens: auto;
+  padding: 0.25em 0.5em;
 }
 
 .timeline__legend {
@@ -166,6 +229,13 @@
   width: 0.75rem;
   height: 0.75rem;
   border-radius: 2px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+
+  &--image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
 }
 
 .timeline__legend-label a {

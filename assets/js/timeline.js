@@ -131,6 +131,41 @@
     }
   }
 
+  function cssUrl(value) {
+    return 'url("' + String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '")';
+  }
+
+  function appendBarContent(el, p) {
+    var text = document.createElement("span");
+    text.className = "timeline__bar-label";
+    text.textContent = p.name;
+
+    if (p.image) {
+      el.classList.add("timeline__bar--has-image");
+      el.style.setProperty("--timeline-col-color", p.color);
+      el.style.setProperty("--timeline-bar-image", cssUrl(p.image));
+
+      var media = document.createElement("span");
+      media.className = "timeline__bar-media";
+      media.setAttribute("aria-hidden", "true");
+
+      var overlay = document.createElement("span");
+      overlay.className = "timeline__bar-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+
+      el.appendChild(media);
+      el.appendChild(overlay);
+      el.appendChild(text);
+      return;
+    }
+
+    el.style.backgroundColor = p.color;
+    if (isLightColor(p.color)) {
+      el.classList.add("timeline__bar--light");
+    }
+    el.appendChild(text);
+  }
+
   function renderLegend(legendEl, projects) {
     legendEl.innerHTML = "";
     projects.forEach(function (p) {
@@ -138,7 +173,13 @@
       li.className = "timeline__legend-item";
       var swatch = document.createElement("span");
       swatch.className = "timeline__legend-swatch";
-      swatch.style.backgroundColor = p.color;
+      if (p.image) {
+        swatch.classList.add("timeline__legend-swatch--image");
+        swatch.style.backgroundImage = cssUrl(p.image);
+        swatch.style.backgroundColor = p.color;
+      } else {
+        swatch.style.backgroundColor = p.color;
+      }
       var label = document.createElement("span");
       label.className = "timeline__legend-label";
       if (p.url) {
@@ -223,18 +264,11 @@
       el.style.height = heightPct + "%";
       el.style.left = leftPct + "%";
       el.style.width = geom.laneWidth + "%";
-      el.style.backgroundColor = p.color;
       el.style.borderColor = "rgba(0, 0, 0, 0.12)";
-      if (isLightColor(p.color)) {
-        el.classList.add("timeline__bar--light");
-      }
       el.title = title;
       el.setAttribute("aria-label", title);
 
-      var text = document.createElement("span");
-      text.className = "timeline__bar-label";
-      text.textContent = p.name;
-      el.appendChild(text);
+      appendBarContent(el, p);
 
       chartEl.appendChild(el);
     });

@@ -18,13 +18,28 @@
 <script type="application/json" id="timeline-data">
 [
 {% for project in timeline.projects %}
+  {% assign pub = nil %}
   {% assign pub_url = project.link %}
-  {% if project.publication and pub_url == nil %}
+  {% assign img_url = nil %}
+  {% if project.publication %}
     {% assign pub_slug = project.publication %}
     {% assign pub = site.publications | where_exp: "p", "p.path contains pub_slug" | first %}
-    {% if pub %}
+    {% if pub and pub_url == nil %}
       {% capture pub_anchor %}#publication-{{ pub.title | slugify }}{% endcapture %}
       {% assign pub_url = publications_base | append: pub_anchor %}
+    {% endif %}
+  {% endif %}
+  {% if project.image %}
+    {% if project.image contains "://" %}
+      {% assign img_url = project.image %}
+    {% else %}
+      {% assign img_url = project.image | prepend: "/images/" | prepend: base_path %}
+    {% endif %}
+  {% elsif pub and pub.image %}
+    {% if pub.image contains "://" %}
+      {% assign img_url = pub.image %}
+    {% else %}
+      {% assign img_url = pub.image | prepend: "/images/" | prepend: base_path %}
     {% endif %}
   {% endif %}
   {
@@ -32,6 +47,7 @@
     "start": {{ project.start | jsonify }},
     "end": {% if project.end %}{{ project.end | jsonify }}{% else %}null{% endif %},
     "url": {% if pub_url %}{{ pub_url | jsonify }}{% else %}null{% endif %},
+    "image": {% if img_url %}{{ img_url | jsonify }}{% else %}null{% endif %},
     "lane": {{ project.lane }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
