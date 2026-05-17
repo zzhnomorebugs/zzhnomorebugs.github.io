@@ -1,53 +1,53 @@
 range:
-  start: "2022-09"
+  start: "2022-10"
   end: null
 
 projects:
-  - name: "SE(3) Diffusion"
-    name_zh: "SE(3) 扩散"
-    start: "2022-09"
-    end: "2023-12"
-    publication: se3-diffusion
-    color: "#5b7c99"
-
-  - name: "Learning to Decouple"
-    name_zh: "Learning to Decouple"
-    start: "2023-06"
-    end: "2024-03"
+  - name: "Learning to Decouple Complex Systems"
+    name_zh: "Learning to Decouple Complex Systems"
+    start: "2022-10"
+    end: "2023-04"
     publication: learning-to-decouple
     color: "#6a8f7a"
 
-  - name: "Generating under Prior"
+  - name: "Molecule Conformation Generation via Shifting Scores"
+    name_zh: "Molecule Conformation Generation via Shifting Scores"
+    start: "2023-05"
+    end: "2023-09"
+    publication: shifting-score
+    color: "#4a8f6e"
+
+  - name: "On Diffusion Process in SE(3)-invariant Space"
+    name_zh: "On Diffusion Process in SE(3)-invariant Space"
+    start: "2023-09"
+    end: "2024-03"
+    publication: se3-diffusion
+    color: "#5b7c99"
+
+  - name: "Generating Physical Dynamics under Priors"
     name_zh: "物理先验下的动力学生成"
-    start: "2024-01"
-    end: "2025-01"
+    start: "2024-03"
+    end: "2024-09"
     publication: generating-under-prior
     color: "#7a6b9e"
 
-  - name: "Incomplete Data, Complete Dynamics"
-    name_zh: "不完整数据下的完整动力学"
-    start: "2024-06"
-    end: "2026-01"
-    publication: incomplet-data
-    color: "#9e7a5b"
-
   - name: "TEMPO"
     name_zh: "TEMPO"
-    start: "2024-03"
+    start: "2024-12"
     end: "2025-10"
     publication: tempo
     color: "#3d7ea6"
 
-  - name: "Shifting Score"
-    name_zh: "Shifting Score"
-    start: "2024-09"
-    end: "2025-06"
-    publication: shifting-score
-    color: "#4a8f6e"
-
-  - name: "Retro Order"
-    name_zh: "Retro Order"
-    start: "2024-06"
-    end: null
+  - name: "Order Matters in Retrosynthesis"
+    name_zh: "Order Matters in Retrosynthesis"
+    start: "2025-07"
+    end: "2026-03"
     publication: retro-order
     color: "#8f5b7a"
+
+  - name: "Incomplete Data, Complete Dynamics"
+    name_zh: "不完整数据下的完整动力学"
+    start: "2025-08"
+    end: "2026-01"
+    publication: incomplet-data
+    color: "#9e7a5b"
