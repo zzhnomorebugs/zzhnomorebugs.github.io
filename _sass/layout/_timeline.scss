@@ -98,18 +98,17 @@
       }
 
       .timeline__bar-overlay {
-        opacity: 1;
         background:
           linear-gradient(
             180deg,
-            rgba(0, 0, 0, 0.28) 0%,
-            rgba(0, 0, 0, 0.52) 55%,
-            rgba(0, 0, 0, 0.78) 100%
+            rgba(0, 0, 0, 0.12) 0%,
+            rgba(0, 0, 0, 0.28) 55%,
+            rgba(0, 0, 0, 0.48) 100%
           ),
           linear-gradient(
             180deg,
-            color-mix(in srgb, var(--timeline-col-color, #000) 30%, transparent),
-            color-mix(in srgb, var(--timeline-col-color, #000) 50%, transparent)
+            color-mix(in srgb, var(--timeline-col-color, #000) 15%, transparent),
+            color-mix(in srgb, var(--timeline-col-color, #000) 28%, transparent)
           );
       }
     }
@@ -150,17 +149,23 @@
   background:
     linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.2) 0%,
-      rgba(0, 0, 0, 0.45) 55%,
-      rgba(0, 0, 0, 0.72) 100%
+      rgba(0, 0, 0, 0.06) 0%,
+      rgba(0, 0, 0, 0.18) 55%,
+      rgba(0, 0, 0, 0.38) 100%
     ),
     linear-gradient(
       180deg,
-      color-mix(in srgb, var(--timeline-col-color, #000) 25%, transparent),
-      color-mix(in srgb, var(--timeline-col-color, #000) 40%, transparent)
+      color-mix(in srgb, var(--timeline-col-color, #000) 10%, transparent),
+      color-mix(in srgb, var(--timeline-col-color, #000) 18%, transparent)
     );
-  transition: background 0.2s ease, opacity 0.2s ease;
+  transition: background 0.2s ease;
   pointer-events: none;
+}
+
+.timeline__bar--has-image .timeline__bar-label {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.55),
+    0 0 12px rgba(0, 0, 0, 0.35);
 }
 
 .timeline__col-label {
@@ -206,44 +211,6 @@
   word-break: break-word;
   hyphens: auto;
   padding: 0.25em 0.5em;
-}
-
-.timeline__legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  margin: 1.25em 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: $type-size-6;
-}
-
-.timeline__legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.timeline__legend-swatch {
-  flex: 0 0 0.75rem;
-  width: 0.75rem;
-  height: 0.75rem;
-  border-radius: 2px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-
-  &--image {
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-  }
-}
-
-.timeline__legend-label a {
-  text-decoration: underline;
-
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 @include breakpoint($small) {

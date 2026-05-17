@@ -166,36 +166,6 @@
     el.appendChild(text);
   }
 
-  function renderLegend(legendEl, projects) {
-    legendEl.innerHTML = "";
-    projects.forEach(function (p) {
-      var li = document.createElement("li");
-      li.className = "timeline__legend-item";
-      var swatch = document.createElement("span");
-      swatch.className = "timeline__legend-swatch";
-      if (p.image) {
-        swatch.classList.add("timeline__legend-swatch--image");
-        swatch.style.backgroundImage = cssUrl(p.image);
-        swatch.style.backgroundColor = p.color;
-      } else {
-        swatch.style.backgroundColor = p.color;
-      }
-      var label = document.createElement("span");
-      label.className = "timeline__legend-label";
-      if (p.url) {
-        var a = document.createElement("a");
-        a.href = p.url;
-        a.textContent = p.name;
-        label.appendChild(a);
-      } else {
-        label.textContent = p.name;
-      }
-      li.appendChild(swatch);
-      li.appendChild(label);
-      legendEl.appendChild(li);
-    });
-  }
-
   function laneGeometry(laneCount) {
     var gap = 0.04;
     var laneWidth = (100 - gap * (laneCount - 1)) / laneCount;
@@ -284,7 +254,6 @@
 
     var chartEl = document.getElementById("timeline-chart");
     var axisEl = document.getElementById("timeline-axis");
-    var legendEl = document.getElementById("timeline-legend");
     if (!chartEl || !axisEl) return;
 
     var now = currentMonth();
@@ -320,7 +289,6 @@
 
     renderAxis(axisEl, t0, t1);
     renderBars(chartEl, projects, t0, t1, laneCount, columns);
-    if (legendEl) renderLegend(legendEl, projects);
   }
 
   if (document.readyState === "loading") {
