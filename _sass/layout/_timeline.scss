@@ -90,28 +90,22 @@
   }
 
   &--has-image {
-    background-color: var(--timeline-col-color, #3c5488);
+    background-color: var(--global-bg-color);
     padding: 0;
-    align-items: flex-end;
-    justify-content: center;
+    align-items: stretch;
+    justify-content: flex-start;
+    color: var(--global-text-color);
+    min-height: 6.75rem;
+    text-shadow: none;
 
     &:hover,
     &:focus {
       filter: none;
       transform: translateY(-2px);
+      color: var(--global-text-color);
 
       .timeline__bar-media {
         transform: scale(1.03);
-      }
-
-      .timeline__bar-overlay {
-        background:
-          linear-gradient(
-            180deg,
-            rgba(15, 23, 42, 0.1) 0%,
-            rgba(15, 23, 42, 0.28) 55%,
-            rgba(15, 23, 42, 0.68) 100%
-          );
       }
     }
   }
@@ -136,32 +130,30 @@
 }
 
 .timeline__bar-media {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 3.2rem;
+  width: 100%;
   background-image: var(--timeline-bar-image);
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  filter: saturate(0.8) contrast(0.92);
+  border-bottom: 3px solid var(--timeline-col-color, rgba(15, 23, 42, 0.12));
+  filter: saturate(0.96) contrast(0.98);
   transition: transform 0.2s ease;
 }
 
-.timeline__bar-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(15, 23, 42, 0.08) 0%,
-    rgba(15, 23, 42, 0.24) 50%,
-    rgba(15, 23, 42, 0.66) 100%
-  );
-  transition: background 0.2s ease;
-  pointer-events: none;
+.timeline__bar--has-image .timeline__bar-label {
+  align-self: center;
+  color: var(--global-text-color);
+  margin-top: 0.45rem;
+  text-shadow: none;
 }
 
-.timeline__bar--has-image .timeline__bar-label {
-  align-self: flex-end;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
+.timeline__bar--has-image .timeline__bar-period {
+  color: var(--global-text-color-light);
+  margin-bottom: 0.5rem;
 }
 
 .timeline__col-label {

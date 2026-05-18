@@ -152,12 +152,7 @@
       media.className = "timeline__bar-media";
       media.setAttribute("aria-hidden", "true");
 
-      var overlay = document.createElement("span");
-      overlay.className = "timeline__bar-overlay";
-      overlay.setAttribute("aria-hidden", "true");
-
       el.appendChild(media);
-      el.appendChild(overlay);
       el.appendChild(text);
       el.appendChild(period);
       return;
