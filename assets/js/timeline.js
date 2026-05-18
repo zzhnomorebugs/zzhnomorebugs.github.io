@@ -152,7 +152,12 @@
       media.className = "timeline__bar-media";
       media.setAttribute("aria-hidden", "true");
 
+      var overlay = document.createElement("span");
+      overlay.className = "timeline__bar-overlay";
+      overlay.setAttribute("aria-hidden", "true");
+
       el.appendChild(media);
+      el.appendChild(overlay);
       el.appendChild(text);
       el.appendChild(period);
       return;
@@ -211,7 +216,7 @@
     projects.forEach(function (p, i) {
       var rawBottom = ((p.startIdx - t0) / span) * 100;
       var rawHeight = ((p.endIdx - p.startIdx + 1) / span) * 100;
-      rawHeight = Math.max(rawHeight, 2);
+      rawHeight = Math.max(rawHeight * 1.14, 3.2);
       var bottomPct = FOOTER_RESERVE_PCT + rawBottom * plotScale;
       var heightPct = rawHeight * plotScale;
 
