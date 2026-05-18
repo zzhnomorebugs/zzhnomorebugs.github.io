@@ -2,7 +2,6 @@
 layout: archive
 title: "简历"
 permalink: /zh/cv/
-author_profile: true
 lang: zh-CN
 lang_switch_url: /cv/
 ---

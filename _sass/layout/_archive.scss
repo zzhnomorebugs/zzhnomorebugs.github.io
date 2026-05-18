@@ -13,6 +13,12 @@
     @include span(10 of 12 last);
   }
 
+  .main--no-sidebar & {
+    @include breakpoint($large) {
+      @include span(12 of 12 last);
+    }
+  }
+
   a {
     text-decoration: underline;
 

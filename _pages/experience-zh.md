@@ -2,7 +2,6 @@
 layout: archive
 title: "经历"
 permalink: /zh/experience/
-author_profile: true
 lang: zh-CN
 lang_switch_url: /experience/
 ---

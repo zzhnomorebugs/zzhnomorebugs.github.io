@@ -16,6 +16,14 @@
     padding-left: 2em;
     padding-right: 2em;
   }
+
+  &.main--no-sidebar {
+    .page {
+      @include breakpoint($large) {
+        @include span(12 of 12 last);
+      }
+    }
+  }
 }
 
 .page {
