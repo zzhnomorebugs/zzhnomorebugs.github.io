@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  var HEADER_RESERVE_PCT = 16;
-  var FOOTER_RESERVE_PCT = 14;
+  var HEADER_RESERVE_PCT = 13;
+  var FOOTER_RESERVE_PCT = 5;
 
   function hexToRgb(hex) {
     var h = hex.replace("#", "");
@@ -114,10 +114,9 @@
     var span = t1 - t0;
     if (span <= 0) return;
 
-    var step = span > 48 ? 12 : span > 24 ? 6 : 3;
-    var startTick = Math.ceil(t0 / step) * step;
+    var startYear = Math.ceil(t0 / 12) * 12;
 
-    for (var tick = startTick; tick <= t1; tick += step) {
+    for (var tick = startYear; tick <= t1; tick += 12) {
       var pct = ((tick - t0) / span) * 100;
       var item = document.createElement("div");
       item.className = "timeline__tick";
@@ -140,6 +139,10 @@
     text.className = "timeline__bar-label";
     text.textContent = p.name;
 
+    var period = document.createElement("span");
+    period.className = "timeline__bar-period";
+    period.textContent = formatMonth(p.startIdx) + " - " + formatMonth(p.endIdx);
+
     if (p.image) {
       el.classList.add("timeline__bar--has-image");
       el.style.setProperty("--timeline-col-color", p.color);
@@ -156,6 +159,7 @@
       el.appendChild(media);
       el.appendChild(overlay);
       el.appendChild(text);
+      el.appendChild(period);
       return;
     }
 
@@ -164,6 +168,7 @@
       el.classList.add("timeline__bar--light");
     }
     el.appendChild(text);
+    el.appendChild(period);
   }
 
   function laneGeometry(laneCount) {
@@ -195,7 +200,6 @@
     columns.forEach(function (col, i) {
       if (i >= laneCount) return;
       chartEl.appendChild(createColumnLabel(col, i, geom, "top"));
-      chartEl.appendChild(createColumnLabel(col, i, geom, "bottom"));
     });
   }
 
