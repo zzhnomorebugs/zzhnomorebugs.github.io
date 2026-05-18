@@ -1,29 +1,6 @@
 (function () {
   "use strict";
 
-  var HEADER_RESERVE_PCT = 13;
-  var FOOTER_RESERVE_PCT = 5;
-
-  function hexToRgb(hex) {
-    var h = hex.replace("#", "");
-    if (h.length === 3) {
-      h = h.split("").map(function (c) {
-        return c + c;
-      }).join("");
-    }
-    return {
-      r: parseInt(h.slice(0, 2), 16),
-      g: parseInt(h.slice(2, 4), 16),
-      b: parseInt(h.slice(4, 6), 16)
-    };
-  }
-
-  function isLightColor(hex) {
-    var c = hexToRgb(hex);
-    var lum = (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255;
-    return lum > 0.58;
-  }
-
   function assignColumnColors(projects, columns) {
     if (!columns || !columns.length) return;
 
@@ -67,13 +44,6 @@
     return y + "-" + String(m).padStart(2, "0");
   }
 
-  function formatLabel(idx) {
-    var y = Math.floor(idx / 12);
-    var m = (idx % 12) + 1;
-    if (m === 1) return String(y);
-    return y + "/" + m;
-  }
-
   function currentMonth() {
     var now = new Date();
     return now.getFullYear() * 12 + now.getMonth();
@@ -109,29 +79,39 @@
     return projects;
   }
 
-  function renderAxis(axisEl, t0, t1) {
-    axisEl.innerHTML = "";
-    var span = t1 - t0;
-    if (span <= 0) return;
-
-    var startYear = Math.ceil(t0 / 12) * 12;
-
-    for (var tick = startYear; tick <= t1; tick += 12) {
-      var pct = ((tick - t0) / span) * 100;
-      var item = document.createElement("div");
-      item.className = "timeline__tick";
-      item.style.bottom = pct + "%";
-      item.innerHTML =
-        '<span class="timeline__tick-line"></span>' +
-        '<span class="timeline__tick-label">' +
-        formatLabel(tick) +
-        "</span>";
-      axisEl.appendChild(item);
-    }
+  function createYearTick(year, top) {
+    var item = document.createElement("div");
+    item.className = "timeline__tick";
+    item.style.top = top + "px";
+    item.innerHTML =
+      '<span class="timeline__tick-line"></span>' +
+      '<span class="timeline__tick-label">' +
+      year +
+      "</span>";
+    return item;
   }
 
-  function cssUrl(value) {
-    return 'url("' + String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"') + '")';
+  function renderAxis(axisEl, chartEl) {
+    axisEl.innerHTML = "";
+    var cards = Array.prototype.slice.call(chartEl.querySelectorAll(".timeline__bar"));
+    var years = {};
+    var chartTop = chartEl.getBoundingClientRect().top;
+
+    cards.forEach(function (card) {
+      var year = card.getAttribute("data-year");
+      var top = card.getBoundingClientRect().top - chartTop;
+      if (!Object.prototype.hasOwnProperty.call(years, year) || top < years[year]) {
+        years[year] = top;
+      }
+    });
+
+    Object.keys(years)
+      .sort(function (a, b) {
+        return Number(b) - Number(a);
+      })
+      .forEach(function (year) {
+        axisEl.appendChild(createYearTick(year, years[year]));
+      });
   }
 
   function appendBarContent(el, p) {
@@ -146,46 +126,39 @@
     if (p.image) {
       el.classList.add("timeline__bar--has-image");
       el.style.setProperty("--timeline-col-color", p.color);
-      el.style.setProperty("--timeline-bar-image", cssUrl(p.image));
 
       var media = document.createElement("span");
       media.className = "timeline__bar-media";
-      media.setAttribute("aria-hidden", "true");
 
-      var overlay = document.createElement("span");
-      overlay.className = "timeline__bar-overlay";
-      overlay.setAttribute("aria-hidden", "true");
+      var img = document.createElement("img");
+      img.className = "timeline__bar-image";
+      img.src = p.image;
+      img.alt = "";
+      img.loading = "lazy";
 
+      var content = document.createElement("span");
+      content.className = "timeline__bar-content";
+
+      media.appendChild(img);
+      content.appendChild(text);
+      content.appendChild(period);
       el.appendChild(media);
-      el.appendChild(overlay);
-      el.appendChild(text);
-      el.appendChild(period);
+      el.appendChild(content);
       return;
     }
 
-    el.style.backgroundColor = p.color;
-    if (isLightColor(p.color)) {
-      el.classList.add("timeline__bar--light");
-    }
-    el.appendChild(text);
-    el.appendChild(period);
+    el.style.setProperty("--timeline-col-color", p.color);
+
+    var fallbackContent = document.createElement("span");
+    fallbackContent.className = "timeline__bar-content";
+    fallbackContent.appendChild(text);
+    fallbackContent.appendChild(period);
+    el.appendChild(fallbackContent);
   }
 
-  function laneGeometry(laneCount) {
-    var gap = 0.04;
-    var laneWidth = (100 - gap * (laneCount - 1)) / laneCount;
-    return { gap: gap, laneWidth: laneWidth };
-  }
-
-  function laneLeft(lane, geom) {
-    return lane * (geom.laneWidth + geom.gap);
-  }
-
-  function createColumnLabel(col, index, geom, placement) {
+  function createColumnLabel(col) {
     var el = document.createElement("div");
-    el.className = "timeline__col-label timeline__col-label--" + placement;
-    el.style.left = laneLeft(index, geom) + "%";
-    el.style.width = geom.laneWidth + "%";
+    el.className = "timeline__col-label";
     el.textContent = col.label;
     if (col.color) {
       el.style.setProperty("--timeline-col-color", col.color);
@@ -194,65 +167,70 @@
     return el;
   }
 
-  function renderColumnLabels(chartEl, columns, laneCount) {
-    if (!columns || !columns.length) return;
-    var geom = laneGeometry(laneCount);
-    columns.forEach(function (col, i) {
-      if (i >= laneCount) return;
-      chartEl.appendChild(createColumnLabel(col, i, geom, "top"));
-    });
+  function createBar(p) {
+    var el;
+    var title =
+      p.name + " (" + formatMonth(p.startIdx) + " - " + formatMonth(p.endIdx) + ")";
+
+    if (p.url) {
+      el = document.createElement("a");
+      el.href = p.url;
+      el.className = "timeline__bar";
+    } else {
+      el = document.createElement("div");
+      el.className = "timeline__bar timeline__bar--static";
+    }
+
+    el.title = title;
+    el.setAttribute("aria-label", title);
+    el.setAttribute("data-year", Math.floor(p.endIdx / 12));
+    if (p.color) {
+      el.style.setProperty("--timeline-col-color", p.color);
+    }
+    appendBarContent(el, p);
+    return el;
   }
 
-  function renderBars(chartEl, projects, t0, t1, laneCount, columns) {
+  function renderBars(chartEl, projects, laneCount, columns) {
     chartEl.innerHTML = "";
-    var span = t1 - t0;
-    if (span <= 0) return;
+    var labels = document.createElement("div");
+    labels.className = "timeline__columns";
 
-    var geom = laneGeometry(laneCount);
+    var grid = document.createElement("div");
+    grid.className = "timeline__grid";
 
-    var plotSpanPct = 100 - HEADER_RESERVE_PCT - FOOTER_RESERVE_PCT;
-    var plotScale = plotSpanPct / 100;
+    for (var i = 0; i < laneCount; i++) {
+      var col = columns && columns[i] ? columns[i] : null;
+      var lane = document.createElement("div");
+      lane.className = "timeline__lane";
 
-    projects.forEach(function (p, i) {
-      var rawBottom = ((p.startIdx - t0) / span) * 100;
-      var rawHeight = ((p.endIdx - p.startIdx + 1) / span) * 100;
-      rawHeight = Math.max(rawHeight * 1.14, 3.2);
-      var bottomPct = FOOTER_RESERVE_PCT + rawBottom * plotScale;
-      var heightPct = rawHeight * plotScale;
-
-      var leftPct = laneLeft(p.lane, geom);
-      var el;
-      var title =
-        p.name + " (" + formatMonth(p.startIdx) + " – " + formatMonth(p.endIdx) + ")";
-
-      if (p.url) {
-        el = document.createElement("a");
-        el.href = p.url;
-        el.className = "timeline__bar";
+      if (col) {
+        labels.appendChild(createColumnLabel(col));
       } else {
-        el = document.createElement("div");
-        el.className = "timeline__bar timeline__bar--static";
+        labels.appendChild(document.createElement("div"));
       }
 
-      el.style.bottom = bottomPct + "%";
-      el.style.height = heightPct + "%";
-      el.style.left = leftPct + "%";
-      el.style.width = geom.laneWidth + "%";
-      el.style.borderColor = "rgba(0, 0, 0, 0.12)";
-      el.title = title;
-      el.setAttribute("aria-label", title);
+      projects
+        .filter(function (p) {
+          return p.lane === i;
+        })
+        .sort(function (a, b) {
+          if (b.endIdx !== a.endIdx) return b.endIdx - a.endIdx;
+          return b.startIdx - a.startIdx;
+        })
+        .forEach(function (p) {
+          lane.appendChild(createBar(p));
+        });
 
-      appendBarContent(el, p);
+      grid.appendChild(lane);
+    }
 
-      chartEl.appendChild(el);
-    });
-
-    renderColumnLabels(chartEl, columns, laneCount);
+    chartEl.appendChild(labels);
+    chartEl.appendChild(grid);
   }
 
   function init() {
     var projects = parseJsonEl("timeline-data");
-    var range = parseJsonEl("timeline-range");
     var columns = parseJsonEl("timeline-columns");
     if (!projects || !projects.length) return;
 
@@ -268,18 +246,6 @@
       if (p.endIdx < p.startIdx) p.endIdx = p.startIdx;
     });
 
-    var t0 = range && range.start ? parseMonth(range.start) : null;
-    var t1 = range && range.end ? parseMonth(range.end) : now;
-
-    if (t0 === null) {
-      t0 = projects.reduce(function (min, p) {
-        return Math.min(min, p.startIdx);
-      }, projects[0].startIdx);
-    }
-    if (t1 === null) {
-      t1 = now;
-    }
-
     assignLanes(projects);
     assignColumnColors(projects, columns);
 
@@ -291,8 +257,21 @@
 
     chartEl.style.setProperty("--timeline-lanes", laneCount);
 
-    renderAxis(axisEl, t0, t1);
-    renderBars(chartEl, projects, t0, t1, laneCount, columns);
+    renderBars(chartEl, projects, laneCount, columns);
+    renderAxis(axisEl, chartEl);
+
+    Array.prototype.slice.call(chartEl.querySelectorAll("img")).forEach(function (img) {
+      if (img.complete) {
+        renderAxis(axisEl, chartEl);
+      }
+      img.addEventListener("load", function () {
+        renderAxis(axisEl, chartEl);
+      });
+    });
+
+    window.addEventListener("resize", function () {
+      renderAxis(axisEl, chartEl);
+    });
   }
 
   if (document.readyState === "loading") {
