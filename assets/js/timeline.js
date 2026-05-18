@@ -53,6 +53,37 @@
     return now.getFullYear() * 12 + now.getMonth();
   }
 
+  function buildActiveMonths(projects, t0, t1) {
+    var active = {};
+
+    projects.forEach(function (p) {
+      var start = Math.max(p.startIdx, t0);
+      var end = Math.min(p.endIdx, t1);
+
+      for (var month = start; month <= end; month++) {
+        active[month] = true;
+      }
+    });
+
+    return Object.keys(active)
+      .map(function (month) {
+        return Number(month);
+      })
+      .sort(function (a, b) {
+        return a - b;
+      });
+  }
+
+  function activeMonthRanks(activeMonths) {
+    var ranks = {};
+
+    activeMonths.forEach(function (month, i) {
+      ranks[month] = i;
+    });
+
+    return ranks;
+  }
+
   function assignLanes(projects) {
     var manual = projects.every(function (p) {
       return p.lane !== null && p.lane !== undefined;
@@ -95,18 +126,31 @@
     return item;
   }
 
-  function renderAxis(axisEl, t0, t1, scale, gridTop) {
+  function renderAxis(axisEl, activeMonths, ranks, scale, gridTop) {
     axisEl.innerHTML = "";
-    var span = t1 - t0;
-    var startYear = Math.ceil(t0 / 12) * 12;
-    var axisHeight = gridTop + CHART_PADDING * 2 + span * scale;
+    var activeCount = activeMonths.length;
+    var years = {};
+    var axisHeight = gridTop + CHART_PADDING * 2 + activeCount * scale;
+
     axisEl.style.height = axisHeight + "px";
 
-    for (var tick = startYear; tick <= t1; tick += 12) {
-      var year = Math.floor(tick / 12);
-      var top = gridTop + CHART_PADDING + (t1 - tick) * scale;
-      axisEl.appendChild(createYearTick(year, top));
-    }
+    activeMonths.forEach(function (month) {
+      var year = Math.floor(month / 12);
+      var rank = ranks[month];
+      var top = gridTop + CHART_PADDING + (activeCount - 1 - rank) * scale;
+
+      if (!Object.prototype.hasOwnProperty.call(years, year) || top < years[year]) {
+        years[year] = top;
+      }
+    });
+
+    Object.keys(years)
+      .sort(function (a, b) {
+        return Number(b) - Number(a);
+      })
+      .forEach(function (year) {
+        axisEl.appendChild(createYearTick(year, years[year]));
+      });
   }
 
   function appendBarContent(el, p) {
@@ -178,8 +222,8 @@
 
     el.title = title;
     el.setAttribute("aria-label", title);
-    el.setAttribute("data-start-idx", p.startIdx);
-    el.setAttribute("data-end-idx", p.endIdx);
+    el.setAttribute("data-start-idx", p.layoutStartIdx);
+    el.setAttribute("data-end-idx", p.layoutEndIdx);
     el.setAttribute("data-lane", p.lane);
     if (p.color) {
       el.style.setProperty("--timeline-col-color", p.color);
@@ -209,7 +253,7 @@
 
       projects
         .filter(function (p) {
-          return p.lane === i;
+          return p.lane === i && p.layoutStartIdx <= p.layoutEndIdx;
         })
         .sort(function (a, b) {
           if (b.endIdx !== a.endIdx) return b.endIdx - a.endIdx;
@@ -226,11 +270,11 @@
     chartEl.appendChild(grid);
   }
 
-  function requiredScale(cards) {
+  function requiredScale(cards, ranks) {
     var scale = cards.reduce(function (value, card) {
       var startIdx = Number(card.getAttribute("data-start-idx"));
       var endIdx = Number(card.getAttribute("data-end-idx"));
-      var duration = Math.max(endIdx - startIdx + 1, 1);
+      var duration = Math.max(ranks[endIdx] - ranks[startIdx] + 1, 1);
       var cardHeight = card.offsetHeight;
       return Math.max(value, (cardHeight + CARD_INTERVAL_PADDING) / duration);
     }, BASE_MONTH_HEIGHT);
@@ -248,8 +292,12 @@
         var aEnd = Number(a.getAttribute("data-end-idx"));
         var bStart = Number(b.getAttribute("data-start-idx"));
         var bEnd = Number(b.getAttribute("data-end-idx"));
-        var aCenter = aEnd - (aEnd - aStart + 1) / 2;
-        var bCenter = bEnd - (bEnd - bStart + 1) / 2;
+        var aStartRank = ranks[aStart];
+        var aEndRank = ranks[aEnd];
+        var bStartRank = ranks[bStart];
+        var bEndRank = ranks[bEnd];
+        var aCenter = aEndRank - (aEndRank - aStartRank + 1) / 2;
+        var bCenter = bEndRank - (bEndRank - bStartRank + 1) / 2;
         return bCenter - aCenter;
       });
 
@@ -260,8 +308,12 @@
         var prevEnd = Number(prev.getAttribute("data-end-idx"));
         var nextStart = Number(next.getAttribute("data-start-idx"));
         var nextEnd = Number(next.getAttribute("data-end-idx"));
-        var prevCenter = prevEnd - (prevEnd - prevStart + 1) / 2;
-        var nextCenter = nextEnd - (nextEnd - nextStart + 1) / 2;
+        var prevStartRank = ranks[prevStart];
+        var prevEndRank = ranks[prevEnd];
+        var nextStartRank = ranks[nextStart];
+        var nextEndRank = ranks[nextEnd];
+        var prevCenter = prevEndRank - (prevEndRank - prevStartRank + 1) / 2;
+        var nextCenter = nextEndRank - (nextEndRank - nextStartRank + 1) / 2;
         var distance = prevCenter - nextCenter;
 
         if (distance > 0) {
@@ -276,28 +328,30 @@
     return scale;
   }
 
-  function layoutTimeline(axisEl, chartEl, t0, t1) {
+  function layoutTimeline(axisEl, chartEl, activeMonths, ranks) {
     var grid = chartEl.querySelector(".timeline__grid");
     if (!grid) return;
 
     var cards = Array.prototype.slice.call(chartEl.querySelectorAll(".timeline__bar"));
-    var span = t1 - t0;
-    if (span <= 0) return;
+    var activeCount = activeMonths.length;
+    if (activeCount <= 0) return;
 
-    var scale = requiredScale(cards);
-    var gridHeight = CHART_PADDING * 2 + span * scale;
+    var scale = requiredScale(cards, ranks);
+    var gridHeight = CHART_PADDING * 2 + activeCount * scale;
     grid.style.height = gridHeight + "px";
 
     cards.forEach(function (card) {
       var startIdx = Number(card.getAttribute("data-start-idx"));
       var endIdx = Number(card.getAttribute("data-end-idx"));
-      var intervalTop = CHART_PADDING + (t1 - endIdx) * scale;
-      var intervalHeight = (endIdx - startIdx + 1) * scale;
+      var startRank = ranks[startIdx];
+      var endRank = ranks[endIdx];
+      var intervalTop = CHART_PADDING + (activeCount - 1 - endRank) * scale;
+      var intervalHeight = (endRank - startRank + 1) * scale;
       var top = intervalTop + Math.max((intervalHeight - card.offsetHeight) / 2, 0);
       card.style.top = top + "px";
     });
 
-    renderAxis(axisEl, t0, t1, scale, grid.offsetTop);
+    renderAxis(axisEl, activeMonths, ranks, scale, grid.offsetTop);
   }
 
   function init() {
@@ -330,6 +384,14 @@
       t1 = now;
     }
 
+    projects.forEach(function (p) {
+      p.layoutStartIdx = Math.max(p.startIdx, t0);
+      p.layoutEndIdx = Math.min(p.endIdx, t1);
+    });
+
+    var activeMonths = buildActiveMonths(projects, t0, t1);
+    var ranks = activeMonthRanks(activeMonths);
+
     assignLanes(projects);
     assignColumnColors(projects, columns);
 
@@ -342,19 +404,19 @@
     chartEl.style.setProperty("--timeline-lanes", laneCount);
 
     renderBars(chartEl, projects, laneCount, columns);
-    layoutTimeline(axisEl, chartEl, t0, t1);
+    layoutTimeline(axisEl, chartEl, activeMonths, ranks);
 
     Array.prototype.slice.call(chartEl.querySelectorAll("img")).forEach(function (img) {
       if (img.complete) {
-        layoutTimeline(axisEl, chartEl, t0, t1);
+        layoutTimeline(axisEl, chartEl, activeMonths, ranks);
       }
       img.addEventListener("load", function () {
-        layoutTimeline(axisEl, chartEl, t0, t1);
+        layoutTimeline(axisEl, chartEl, activeMonths, ranks);
       });
     });
 
     window.addEventListener("resize", function () {
-      layoutTimeline(axisEl, chartEl, t0, t1);
+      layoutTimeline(axisEl, chartEl, activeMonths, ranks);
     });
   }
 
