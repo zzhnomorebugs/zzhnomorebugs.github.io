@@ -1,6 +1,10 @@
 (function () {
   "use strict";
 
+  var BASE_MONTH_HEIGHT = 24;
+  var CARD_INTERVAL_PADDING = 32;
+  var CHART_PADDING = 24;
+
   function assignColumnColors(projects, columns) {
     if (!columns || !columns.length) return;
 
@@ -91,27 +95,18 @@
     return item;
   }
 
-  function renderAxis(axisEl, chartEl) {
+  function renderAxis(axisEl, t0, t1, scale, gridTop) {
     axisEl.innerHTML = "";
-    var cards = Array.prototype.slice.call(chartEl.querySelectorAll(".timeline__bar"));
-    var years = {};
-    var chartTop = chartEl.getBoundingClientRect().top;
+    var span = t1 - t0;
+    var startYear = Math.ceil(t0 / 12) * 12;
+    var axisHeight = gridTop + CHART_PADDING * 2 + span * scale;
+    axisEl.style.height = axisHeight + "px";
 
-    cards.forEach(function (card) {
-      var year = card.getAttribute("data-year");
-      var top = card.getBoundingClientRect().top - chartTop;
-      if (!Object.prototype.hasOwnProperty.call(years, year) || top < years[year]) {
-        years[year] = top;
-      }
-    });
-
-    Object.keys(years)
-      .sort(function (a, b) {
-        return Number(b) - Number(a);
-      })
-      .forEach(function (year) {
-        axisEl.appendChild(createYearTick(year, years[year]));
-      });
+    for (var tick = startYear; tick <= t1; tick += 12) {
+      var year = Math.floor(tick / 12);
+      var top = gridTop + CHART_PADDING + (t1 - tick) * scale;
+      axisEl.appendChild(createYearTick(year, top));
+    }
   }
 
   function appendBarContent(el, p) {
@@ -183,7 +178,9 @@
 
     el.title = title;
     el.setAttribute("aria-label", title);
-    el.setAttribute("data-year", Math.floor(p.endIdx / 12));
+    el.setAttribute("data-start-idx", p.startIdx);
+    el.setAttribute("data-end-idx", p.endIdx);
+    el.setAttribute("data-lane", p.lane);
     if (p.color) {
       el.style.setProperty("--timeline-col-color", p.color);
     }
@@ -229,8 +226,83 @@
     chartEl.appendChild(grid);
   }
 
+  function requiredScale(cards) {
+    var scale = cards.reduce(function (value, card) {
+      var startIdx = Number(card.getAttribute("data-start-idx"));
+      var endIdx = Number(card.getAttribute("data-end-idx"));
+      var duration = Math.max(endIdx - startIdx + 1, 1);
+      var cardHeight = card.offsetHeight;
+      return Math.max(value, (cardHeight + CARD_INTERVAL_PADDING) / duration);
+    }, BASE_MONTH_HEIGHT);
+
+    var lanes = {};
+    cards.forEach(function (card) {
+      var lane = card.getAttribute("data-lane");
+      if (!lanes[lane]) lanes[lane] = [];
+      lanes[lane].push(card);
+    });
+
+    Object.keys(lanes).forEach(function (lane) {
+      var laneCards = lanes[lane].sort(function (a, b) {
+        var aStart = Number(a.getAttribute("data-start-idx"));
+        var aEnd = Number(a.getAttribute("data-end-idx"));
+        var bStart = Number(b.getAttribute("data-start-idx"));
+        var bEnd = Number(b.getAttribute("data-end-idx"));
+        var aCenter = aEnd - (aEnd - aStart + 1) / 2;
+        var bCenter = bEnd - (bEnd - bStart + 1) / 2;
+        return bCenter - aCenter;
+      });
+
+      for (var i = 1; i < laneCards.length; i++) {
+        var prev = laneCards[i - 1];
+        var next = laneCards[i];
+        var prevStart = Number(prev.getAttribute("data-start-idx"));
+        var prevEnd = Number(prev.getAttribute("data-end-idx"));
+        var nextStart = Number(next.getAttribute("data-start-idx"));
+        var nextEnd = Number(next.getAttribute("data-end-idx"));
+        var prevCenter = prevEnd - (prevEnd - prevStart + 1) / 2;
+        var nextCenter = nextEnd - (nextEnd - nextStart + 1) / 2;
+        var distance = prevCenter - nextCenter;
+
+        if (distance > 0) {
+          scale = Math.max(
+            scale,
+            (CARD_INTERVAL_PADDING + (prev.offsetHeight + next.offsetHeight) / 2) / distance
+          );
+        }
+      }
+    });
+
+    return scale;
+  }
+
+  function layoutTimeline(axisEl, chartEl, t0, t1) {
+    var grid = chartEl.querySelector(".timeline__grid");
+    if (!grid) return;
+
+    var cards = Array.prototype.slice.call(chartEl.querySelectorAll(".timeline__bar"));
+    var span = t1 - t0;
+    if (span <= 0) return;
+
+    var scale = requiredScale(cards);
+    var gridHeight = CHART_PADDING * 2 + span * scale;
+    grid.style.height = gridHeight + "px";
+
+    cards.forEach(function (card) {
+      var startIdx = Number(card.getAttribute("data-start-idx"));
+      var endIdx = Number(card.getAttribute("data-end-idx"));
+      var intervalTop = CHART_PADDING + (t1 - endIdx) * scale;
+      var intervalHeight = (endIdx - startIdx + 1) * scale;
+      var top = intervalTop + Math.max((intervalHeight - card.offsetHeight) / 2, 0);
+      card.style.top = top + "px";
+    });
+
+    renderAxis(axisEl, t0, t1, scale, grid.offsetTop);
+  }
+
   function init() {
     var projects = parseJsonEl("timeline-data");
+    var range = parseJsonEl("timeline-range");
     var columns = parseJsonEl("timeline-columns");
     if (!projects || !projects.length) return;
 
@@ -246,6 +318,18 @@
       if (p.endIdx < p.startIdx) p.endIdx = p.startIdx;
     });
 
+    var t0 = range && range.start ? parseMonth(range.start) : null;
+    var t1 = range && range.end ? parseMonth(range.end) : now;
+
+    if (t0 === null) {
+      t0 = projects.reduce(function (min, p) {
+        return Math.min(min, p.startIdx);
+      }, projects[0].startIdx);
+    }
+    if (t1 === null) {
+      t1 = now;
+    }
+
     assignLanes(projects);
     assignColumnColors(projects, columns);
 
@@ -258,19 +342,19 @@
     chartEl.style.setProperty("--timeline-lanes", laneCount);
 
     renderBars(chartEl, projects, laneCount, columns);
-    renderAxis(axisEl, chartEl);
+    layoutTimeline(axisEl, chartEl, t0, t1);
 
     Array.prototype.slice.call(chartEl.querySelectorAll("img")).forEach(function (img) {
       if (img.complete) {
-        renderAxis(axisEl, chartEl);
+        layoutTimeline(axisEl, chartEl, t0, t1);
       }
       img.addEventListener("load", function () {
-        renderAxis(axisEl, chartEl);
+        layoutTimeline(axisEl, chartEl, t0, t1);
       });
     });
 
     window.addEventListener("resize", function () {
-      renderAxis(axisEl, chartEl);
+      layoutTimeline(axisEl, chartEl, t0, t1);
     });
   }
 

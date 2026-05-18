@@ -59,17 +59,20 @@
 }
 
 .timeline__grid {
-  align-items: start;
+  position: relative;
+  align-items: stretch;
 }
 
 .timeline__lane {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  position: relative;
+  min-width: 0;
+  height: 100%;
 }
 
 .timeline__bar {
-  position: relative;
+  position: absolute;
+  left: 0;
+  right: 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
@@ -210,10 +213,6 @@
   .timeline__columns,
   .timeline__grid {
     gap: 0.65rem;
-  }
-
-  .timeline__lane {
-    gap: 1.25rem;
   }
 
   .timeline__bar {
