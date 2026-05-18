@@ -61,10 +61,22 @@ projects:
     publication: generating-under-prior
     lane: 1
 
+  - name: "Physics-Mediated Diffusion"
+    start: "2025-10"
+    end: "2026-01"
+    publication: physics-mediated-diffusion
+    lane: 1
+
   - name: "Incomplete Data, Complete Dynamics"
     start: "2025-08"
     end: "2026-01"
     publication: incomplet-data
+    lane: 2
+
+  - name: "Observation-Aligned Mask Priors"
+    start: "2026-02"
+    end: "2026-05"
+    publication: ocean-imputation-mask
     lane: 2
 
   - name: "Order Matters in Retrosynthesis"

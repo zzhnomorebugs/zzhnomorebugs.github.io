@@ -1,5 +1,5 @@
 ---
-date: 2026-05-19
+date: 2026-05-12
 title: "Observation-Aligned Mask Priors for Learning Physical Dynamics from Authentic Occlusions"
 authors: "Chiyuan Ma, <strong>Zihan Zhou</strong><sup>+</sup>, Tianshu Yu<sup>#</sup>"
 collection: publications

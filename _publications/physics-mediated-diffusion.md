@@ -1,5 +1,5 @@
 ---
-date: 2026-05-19
+date: 2026-01-15
 title: "Physics-Mediated Diffusion: Leveraging Intermediate Field Representations for Sparse PDE Inversion"
 authors: "<strong>Zihan Zhou*</strong>, Chiyuan Ma*, Tianshu Yu<sup>#</sup>"
 collection: publications
