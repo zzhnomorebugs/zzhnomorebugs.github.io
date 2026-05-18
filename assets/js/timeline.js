@@ -126,18 +126,76 @@
     return item;
   }
 
-  function renderAxis(axisEl, activeMonths, ranks, scale, gridTop) {
+  function compressedPosition(y, gaps) {
+    var offset = 0;
+
+    for (var i = 0; i < gaps.length; i++) {
+      if (y >= gaps[i].end) {
+        offset += gaps[i].end - gaps[i].start;
+      } else if (y > gaps[i].start) {
+        return gaps[i].start - offset;
+      } else {
+        break;
+      }
+    }
+
+    return y - offset;
+  }
+
+  function emptyGaps(cards, gridHeight) {
+    var intervals = cards
+      .map(function (card) {
+        var top = Number(card.style.top.replace("px", ""));
+        return {
+          start: top,
+          end: top + card.offsetHeight
+        };
+      })
+      .sort(function (a, b) {
+        return a.start - b.start;
+      });
+
+    var merged = [];
+    intervals.forEach(function (interval) {
+      var last = merged[merged.length - 1];
+      if (last && interval.start <= last.end) {
+        last.end = Math.max(last.end, interval.end);
+      } else {
+        merged.push({
+          start: interval.start,
+          end: interval.end
+        });
+      }
+    });
+
+    var gaps = [];
+    for (var i = 1; i < merged.length; i++) {
+      if (merged[i].start > merged[i - 1].end) {
+        gaps.push({
+          start: merged[i - 1].end,
+          end: merged[i].start
+        });
+      }
+    }
+
+    return {
+      gaps: gaps,
+      height: compressedPosition(gridHeight, gaps)
+    };
+  }
+
+  function renderAxis(axisEl, activeMonths, ranks, scale, gridTop, gaps) {
     axisEl.innerHTML = "";
     var activeCount = activeMonths.length;
     var years = {};
-    var axisHeight = gridTop + CHART_PADDING * 2 + activeCount * scale;
+    var axisHeight = gridTop + compressedPosition(CHART_PADDING * 2 + activeCount * scale, gaps);
 
     axisEl.style.height = axisHeight + "px";
 
     activeMonths.forEach(function (month) {
       var year = Math.floor(month / 12);
       var rank = ranks[month];
-      var top = gridTop + CHART_PADDING + (activeCount - 1 - rank) * scale;
+      var top = gridTop + compressedPosition(CHART_PADDING + (activeCount - 1 - rank) * scale, gaps);
 
       if (!Object.prototype.hasOwnProperty.call(years, year) || top < years[year]) {
         years[year] = top;
@@ -351,7 +409,15 @@
       card.style.top = top + "px";
     });
 
-    renderAxis(axisEl, activeMonths, ranks, scale, grid.offsetTop);
+    var compression = emptyGaps(cards, gridHeight);
+    grid.style.height = compression.height + "px";
+
+    cards.forEach(function (card) {
+      var top = Number(card.style.top.replace("px", ""));
+      card.style.top = compressedPosition(top, compression.gaps) + "px";
+    });
+
+    renderAxis(axisEl, activeMonths, ranks, scale, grid.offsetTop, compression.gaps);
   }
 
   function init() {
