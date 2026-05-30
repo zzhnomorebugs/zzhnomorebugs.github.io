@@ -1,0 +1,38 @@
+{% include base_path %}
+
+{% assign items = site.publications | where_exp: "p", "p.poster_image" | sort: "date" | reverse %}
+
+<div class="recent-highlights">
+  {% for post in items %}
+    {% assign venue_label = post.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " %}
+    {% assign poster_link = post.posterurl | default: post.paperurl %}
+    {% assign img_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
+    <article class="recent-highlight-card">
+      <div class="recent-highlight-card__poster">
+        {% if poster_link %}
+          <a href="{{ poster_link }}" target="_blank" rel="noopener noreferrer">
+            <img src="{{ img_src }}" alt="{{ post.title | escape }}" loading="lazy">
+          </a>
+        {% else %}
+          <img src="{{ img_src }}" alt="{{ post.title | escape }}" loading="lazy">
+        {% endif %}
+      </div>
+      <div class="recent-highlight-card__body">
+        <p class="recent-highlight-card__meta">
+          <strong>{{ venue_label }}:</strong>
+          {% if post.paperurl %}
+            <a href="{{ post.paperurl }}"><em>{{ post.title }}</em></a>
+          {% else %}
+            <em>{{ post.title }}</em>
+          {% endif %}
+        </p>
+        {% if post.paperurl or post.posterurl %}
+          <div class="publication-links recent-highlight-card__links">
+            {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}">Paper</a>{% endif %}
+            {% if post.posterurl %}<a class="publication-link-btn" href="{{ post.posterurl }}">Poster</a>{% endif %}
+          </div>
+        {% endif %}
+      </div>
+    </article>
+  {% endfor %}
+</div>

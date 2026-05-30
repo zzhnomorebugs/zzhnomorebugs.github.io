@@ -22,10 +22,6 @@ lang_switch_url: /
 
 ## 近期亮点
 
-- **ICML 2026：** *Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching*（共同一作）
-- **ICLR 2026：** *Incomplete Data, Complete Dynamics: A Diffusion Approach*（第一作者）
-- **NeurIPS 2025：** *TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles*（合作作者）
-- **ICLR 2025：** *Generating physical dynamics under priors*（第一作者）
-- **ICML 2023：** *Learning to decouple complex systems*（第一作者）
+{% include recent-highlights.html %}
 
 完整的论文列表请见 [论文发表](/zh/publications/) 页面。
