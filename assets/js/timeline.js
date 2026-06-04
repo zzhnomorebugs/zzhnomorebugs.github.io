@@ -328,14 +328,45 @@
     chartEl.appendChild(grid);
   }
 
+  function barDurationRanks(card, ranks) {
+    var startIdx = Number(card.getAttribute("data-start-idx"));
+    var endIdx = Number(card.getAttribute("data-end-idx"));
+    var startRank = ranks[startIdx];
+    var endRank = ranks[endIdx];
+    return Math.max(endRank - startRank + 1, 1);
+  }
+
+  function barIntervalHeight(card, ranks, scale) {
+    return barDurationRanks(card, ranks) * scale;
+  }
+
+  function measureMinBarHeight(card) {
+    card.style.height = "";
+    card.style.top = "";
+    return card.offsetHeight;
+  }
+
+  function sortLaneCardsByCenter(laneCards, ranks) {
+    return laneCards.sort(function (a, b) {
+      var aStart = Number(a.getAttribute("data-start-idx"));
+      var aEnd = Number(a.getAttribute("data-end-idx"));
+      var bStart = Number(b.getAttribute("data-start-idx"));
+      var bEnd = Number(b.getAttribute("data-end-idx"));
+      var aStartRank = ranks[aStart];
+      var aEndRank = ranks[aEnd];
+      var bStartRank = ranks[bStart];
+      var bEndRank = ranks[bEnd];
+      var aCenter = aEndRank - (aEndRank - aStartRank + 1) / 2;
+      var bCenter = bEndRank - (bEndRank - bStartRank + 1) / 2;
+      return bCenter - aCenter;
+    });
+  }
+
   function requiredScale(cards, ranks) {
-    var scale = cards.reduce(function (value, card) {
-      var startIdx = Number(card.getAttribute("data-start-idx"));
-      var endIdx = Number(card.getAttribute("data-end-idx"));
-      var duration = Math.max(ranks[endIdx] - ranks[startIdx] + 1, 1);
-      var cardHeight = card.offsetHeight;
-      return Math.max(value, (cardHeight + CARD_INTERVAL_PADDING) / duration);
-    }, BASE_MONTH_HEIGHT);
+    var minHeights = new WeakMap();
+    cards.forEach(function (card) {
+      minHeights.set(card, measureMinBarHeight(card));
+    });
 
     var lanes = {};
     cards.forEach(function (card) {
@@ -344,44 +375,51 @@
       lanes[lane].push(card);
     });
 
-    Object.keys(lanes).forEach(function (lane) {
-      var laneCards = lanes[lane].sort(function (a, b) {
-        var aStart = Number(a.getAttribute("data-start-idx"));
-        var aEnd = Number(a.getAttribute("data-end-idx"));
-        var bStart = Number(b.getAttribute("data-start-idx"));
-        var bEnd = Number(b.getAttribute("data-end-idx"));
-        var aStartRank = ranks[aStart];
-        var aEndRank = ranks[aEnd];
-        var bStartRank = ranks[bStart];
-        var bEndRank = ranks[bEnd];
-        var aCenter = aEndRank - (aEndRank - aStartRank + 1) / 2;
-        var bCenter = bEndRank - (bEndRank - bStartRank + 1) / 2;
-        return bCenter - aCenter;
+    var scale = BASE_MONTH_HEIGHT;
+
+    for (var iter = 0; iter < 8; iter++) {
+      var nextScale = cards.reduce(function (value, card) {
+        var duration = barDurationRanks(card, ranks);
+        var minH = minHeights.get(card) || card.offsetHeight;
+        return Math.max(value, (minH + CARD_INTERVAL_PADDING) / duration);
+      }, BASE_MONTH_HEIGHT);
+
+      Object.keys(lanes).forEach(function (laneKey) {
+        var laneCards = sortLaneCardsByCenter(lanes[laneKey].slice(), ranks);
+
+        for (var j = 1; j < laneCards.length; j++) {
+          var prevCard = laneCards[j - 1];
+          var nextCard = laneCards[j];
+          var prevStartIdx = Number(prevCard.getAttribute("data-start-idx"));
+          var prevEndIdx = Number(prevCard.getAttribute("data-end-idx"));
+          var nextStartIdx = Number(nextCard.getAttribute("data-start-idx"));
+          var nextEndIdx = Number(nextCard.getAttribute("data-end-idx"));
+          var prevStartRank = ranks[prevStartIdx];
+          var prevEndRank = ranks[prevEndIdx];
+          var nextStartRank = ranks[nextStartIdx];
+          var nextEndRank = ranks[nextEndIdx];
+          var prevCenter = prevEndRank - (prevEndRank - prevStartRank + 1) / 2;
+          var nextCenter = nextEndRank - (nextEndRank - nextStartRank + 1) / 2;
+          var gap = prevCenter - nextCenter;
+
+          if (gap > 0) {
+            nextScale = Math.max(
+              nextScale,
+              (CARD_INTERVAL_PADDING +
+                (barIntervalHeight(prevCard, ranks, nextScale) +
+                  barIntervalHeight(nextCard, ranks, nextScale)) /
+                  2) /
+                gap
+            );
+          }
+        }
       });
 
-      for (var i = 1; i < laneCards.length; i++) {
-        var prev = laneCards[i - 1];
-        var next = laneCards[i];
-        var prevStart = Number(prev.getAttribute("data-start-idx"));
-        var prevEnd = Number(prev.getAttribute("data-end-idx"));
-        var nextStart = Number(next.getAttribute("data-start-idx"));
-        var nextEnd = Number(next.getAttribute("data-end-idx"));
-        var prevStartRank = ranks[prevStart];
-        var prevEndRank = ranks[prevEnd];
-        var nextStartRank = ranks[nextStart];
-        var nextEndRank = ranks[nextEnd];
-        var prevCenter = prevEndRank - (prevEndRank - prevStartRank + 1) / 2;
-        var nextCenter = nextEndRank - (nextEndRank - nextStartRank + 1) / 2;
-        var distance = prevCenter - nextCenter;
-
-        if (distance > 0) {
-          scale = Math.max(
-            scale,
-            (CARD_INTERVAL_PADDING + (prev.offsetHeight + next.offsetHeight) / 2) / distance
-          );
-        }
+      if (Math.abs(nextScale - scale) < 0.5) {
+        return nextScale;
       }
-    });
+      scale = nextScale;
+    }
 
     return scale;
   }
@@ -405,8 +443,9 @@
       var endRank = ranks[endIdx];
       var intervalTop = CHART_PADDING + (activeCount - 1 - endRank) * scale;
       var intervalHeight = (endRank - startRank + 1) * scale;
-      var top = intervalTop + Math.max((intervalHeight - card.offsetHeight) / 2, 0);
-      card.style.top = top + "px";
+      card.style.top = intervalTop + "px";
+      card.style.height = Math.max(intervalHeight, 1) + "px";
+      card.classList.add("timeline__bar--span");
     });
 
     var compression = emptyGaps(cards, gridHeight);
