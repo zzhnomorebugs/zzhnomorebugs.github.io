@@ -3,13 +3,17 @@ range:
   end: null
 
 columns:
-  - label: "分子/蛋白质生成/预测"
-    label_en: "Molecular / protein generation && prediction"
-    color: "#3C5488"
+  - label: "逆合成结构生成"
+    label_en: "Retrosynthesis structure generation"
+    color: "#7E6148"
     palette:
-      - "#8491B4"
-      - "#3C5488"
-      - "#4DBBD5"
+      - "#7E6148"
+
+  - label: "不完整数据下的动力学建模"
+    label_en: "Dynamics under incomplete observations"
+    color: "#E64B35"
+    palette:
+      - "#E64B35"
 
   - label: "dynamics预测"
     label_en: "Dynamics prediction"
@@ -18,75 +22,71 @@ columns:
       - "#91D1C2"
       - "#00A087"
 
-  - label: "不完整数据下的动力学建模"
-    label_en: "Dynamics under incomplete observations"
-    color: "#E64B35"
+  - label: "分子/蛋白质生成/预测"
+    label_en: "Molecular / protein generation && prediction"
+    color: "#3C5488"
     palette:
-      - "#E64B35"
-
-  - label: "逆合成结构生成"
-    label_en: "Retrosynthesis structure generation"
-    color: "#7E6148"
-    palette:
-      - "#7E6148"
+      - "#8491B4"
+      - "#3C5488"
+      - "#4DBBD5"
 
 projects:
   - name: "Molecule Conformation Generation via Shifting Scores"
     start: "2023-05"
     end: "2023-09"
     publication: shifting-score
-    lane: 0
+    lane: 3
 
   - name: "On Diffusion Process in SE(3)-invariant Space"
     start: "2023-09"
     end: "2024-03"
     publication: se3-diffusion
-    lane: 0
+    lane: 3
 
   - name: "TEMPO"
     start: "2024-12"
     end: "2025-10"
     publication: tempo
-    lane: 0
+    lane: 3
 
   - name: "AMix-2"
     start: "2025-06"
     end: "2025-11"
     publication: amix-2
-    lane: 0
+    lane: 3
 
   - name: "Learning to Decouple Complex Systems"
     start: "2022-10"
     end: "2023-04"
     publication: learning-to-decouple
-    lane: 1
+    lane: 2
 
   - name: "Generating Physical Dynamics under Priors"
     start: "2024-03"
     end: "2024-09"
     publication: generating-under-prior
-    lane: 1
+    lane: 2
 
   - name: "Physics-Mediated Diffusion"
     start: "2025-10"
     end: "2026-01"
     publication: physics-mediated-diffusion
-    lane: 1
+    lane: 2
 
   - name: "Incomplete Data, Complete Dynamics"
     start: "2025-08"
     end: "2026-01"
     publication: incomplet-data
-    lane: 2
+    lane: 1
 
   - name: "Observation-Aligned Mask Priors"
     start: "2026-02"
     end: "2026-05"
     publication: ocean-imputation-mask
-    lane: 2
+    lane: 1
 
   - name: "Order Matters in Retrosynthesis"
     start: "2025-07"
     end: "2026-03"
     publication: retro-order
-    lane: 3
+    lane: 0
