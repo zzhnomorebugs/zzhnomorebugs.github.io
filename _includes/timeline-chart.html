@@ -32,13 +32,13 @@
     {% if project.image contains "://" %}
       {% assign img_url = project.image %}
     {% else %}
-      {% assign img_url = project.image | prepend: "/images/" | prepend: base_path %}
+      {% assign img_url = project.image | prepend: '/images/' | relative_url %}
     {% endif %}
   {% elsif pub and pub.image %}
     {% if pub.image contains "://" %}
       {% assign img_url = pub.image %}
     {% else %}
-      {% assign img_url = pub.image | prepend: "/images/" | prepend: base_path %}
+      {% assign img_url = pub.image | prepend: '/images/' | relative_url %}
     {% endif %}
   {% endif %}
   {

@@ -1,10 +1,10 @@
 .timeline {
-  margin: 1em 0 1.25em;
+  margin: 1.75em 0 2.5em;
 }
 
 .timeline__inner {
   display: flex;
-  gap: 0.65rem;
+  gap: 1rem;
   align-items: stretch;
 }
 
@@ -43,19 +43,19 @@
   flex: 1;
   min-width: 0;
   border-left: 1px solid rgba(148, 163, 184, 0.35);
-  border-radius: 14px;
-  padding: 0.35rem 0 0.15rem 0.65rem;
+  border-radius: 18px;
+  padding: 0.65rem 0 0.25rem 1rem;
 }
 
 .timeline__columns,
 .timeline__grid {
   display: grid;
   grid-template-columns: repeat(var(--timeline-lanes), minmax(0, 1fr));
-  gap: 0.55rem;
+  gap: 1rem;
 }
 
 .timeline__columns {
-  margin-bottom: 0.65rem;
+  margin-bottom: 1.25rem;
 }
 
 .timeline__grid {
@@ -78,7 +78,7 @@
   flex-direction: column;
   padding: 0;
   min-height: 0;
-  border-radius: 10px;
+  border-radius: 14px;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-left: 3px solid var(--timeline-col-color, rgba(15, 23, 42, 0.2));
   background: var(--global-bg-color);
@@ -86,9 +86,9 @@
   text-decoration: none;
   font-size: $type-size-7;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.2;
   overflow: hidden;
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.07);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
   text-shadow: none;
 
@@ -166,7 +166,7 @@
 .timeline__bar-media {
   display: block;
   flex: 0 0 auto;
-  padding: 0.35rem;
+  padding: 0.55rem;
   background: rgba(248, 250, 252, 0.82);
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
   transition: background 0.2s ease;
@@ -192,10 +192,10 @@
 
 .timeline__col-label {
   box-sizing: border-box;
-  padding: 0.35em 0.45em;
+  padding: 0.45em 0.55em;
   font-size: $type-size-7;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.25;
   text-align: center;
   word-break: break-word;
   hyphens: auto;
@@ -205,9 +205,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 999px;
-  min-height: 2.2rem;
+  min-height: 2.65rem;
   border: 1px solid currentColor;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
 }
 
 .timeline__bar-content {
@@ -215,8 +215,8 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  padding: 0.45rem 0.55rem 0.5rem;
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem 0.85rem;
 }
 
 .timeline__bar-label {

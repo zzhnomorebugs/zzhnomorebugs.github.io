@@ -33,7 +33,7 @@ columns:
 projects:
   - name: "Molecule Conformation Generation via Shifting Scores"
     start: "2023-05"
-    end: "2023-09"
+    end: "2023-08"
     publication: shifting-score
     lane: 3
 
@@ -45,7 +45,7 @@ projects:
 
   - name: "TEMPO"
     start: "2024-12"
-    end: "2025-10"
+    end: "2025-05"
     publication: tempo
     lane: 3
 
