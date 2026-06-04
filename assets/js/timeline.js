@@ -1,8 +1,8 @@
 (function () {
   "use strict";
 
-  var CHART_PADDING = 16;
-  var BAR_GAP = 10;
+  var CHART_PADDING = 10;
+  var BAR_GAP = 6;
 
   function assignColumnColors(projects, columns) {
     if (!columns || !columns.length) return;
@@ -95,6 +95,7 @@
   }
 
   function measureMinBarHeight(card) {
+    card.classList.remove("timeline__bar--span");
     card.style.height = "";
     card.style.top = "";
     return card.offsetHeight;
@@ -178,14 +179,12 @@
         y -= height;
         card.style.top = y + "px";
         card.style.height = height + "px";
-        card.classList.add("timeline__bar--span");
         y -= BAR_GAP;
       });
     });
 
     if (maxLaneHeight <= 0) return;
 
-    grid.style.height = maxLaneHeight + "px";
     renderAxisFromBars(axisEl, chartEl, grid);
   }
 
