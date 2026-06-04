@@ -3,8 +3,8 @@ range:
   end: null
 
 columns:
-  - label: "分子/蛋白质结构生成/预测"
-    label_en: "Molecular / protein structure generation & prediction"
+  - label: "分子/蛋白质生成/预测"
+    label_en: "Molecular / protein generation && prediction"
     color: "#3C5488"
     palette:
       - "#8491B4"
@@ -47,6 +47,12 @@ projects:
     start: "2024-12"
     end: "2025-10"
     publication: tempo
+    lane: 0
+
+  - name: "AMix-2"
+    start: "2025-06"
+    end: "2025-11"
+    publication: amix-2
     lane: 0
 
   - name: "Learning to Decouple Complex Systems"
