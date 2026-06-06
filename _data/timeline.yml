@@ -74,8 +74,8 @@ projects:
     lane: 2
 
   - name: "Incomplete Data, Complete Dynamics"
-    start: "2025-08"
-    end: "2026-01"
+    start: "2025-05"
+    end: "2025-10"
     publication: incomplet-data
     lane: 1
 
@@ -87,6 +87,6 @@ projects:
 
   - name: "Order Matters in Retrosynthesis"
     start: "2025-07"
-    end: "2026-03"
+    end: "2026-02"
     publication: retro-order
     lane: 0
