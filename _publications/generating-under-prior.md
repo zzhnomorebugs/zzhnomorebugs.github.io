@@ -10,6 +10,10 @@ excerpt: 'This paper addresses the challenge of generating physically feasible d
 
 excerpt_zh: '本文将物理先验融入扩散生成模型，解决在数据驱动场景下生成物理可行动力学的难题。传统生成方法往往难以满足基本物理规律，而本文提出的框架同时整合两类先验：分布性先验（如旋转-平移不变性）与物理可行性先验（如守恒律与偏微分方程约束）。通过将这些先验嵌入生成过程，该方法能够高效地生成真实合理的物理动力学，例如轨迹与流场。在多种物理系统上的实验验证了其有效性，展现了在 AI 驱动科学建模方向的潜力。'
 
+tldr: 'A framework that embeds distributional priors (e.g., roto-translational invariance) and physical feasibility priors (conservation laws, PDE constraints) into diffusion models to generate physically realistic dynamics.'
+
+tldr_zh: '将分布性先验（如旋转-平移不变性）与物理可行性先验（守恒律、偏微分方程约束）嵌入扩散模型，生成物理上真实合理的动力学。'
+
 venue: 'ICLR2025'
 paperurl: 'https://arxiv.org/pdf/2409.00730v3'
 slidesurl: 'https://iclr.cc/media/iclr-2025/Slides/28929.pdf'

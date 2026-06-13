@@ -10,6 +10,10 @@ excerpt: 'This paper tackles the challenge of learning physical dynamics from in
 
 excerpt_zh: '本文研究如何从不完整的观测数据中学习物理动力学——这是真实科学应用中普遍存在的根本性约束，因为完整测量往往无法获得。所提出的扩散式框架通过自适应于观测模式的"上下文-查询"切分策略，直接从部分观测中学习。理论分析证明该方法在渐近意义下收敛到真实的完整数据分布；在合成偏微分方程数据与 ERA5 气候数据上的实验表明，相较各类基线方法有显著提升，尤其在稀疏观测（覆盖率 1%–20%）的情形下优势更为明显。本工作为部分观测动力学的填补提供了一条具有坚实理论保障与广泛实用价值的方法路径。'
 
+tldr: 'A principled diffusion framework for learning physical dynamics from incomplete observations, with theoretical convergence guarantees.'
+
+tldr_zh: '一种具有理论收敛保障的原则性扩散框架，用于从不完整观测中学习物理动力学。'
+
 venue: 'ICLR2026'
 paperurl: 'https://arxiv.org/pdf/2509.20098'
 posterurl: 'https://iclr.cc/media/PosterPDFs/ICLR%202026/10009854.png'

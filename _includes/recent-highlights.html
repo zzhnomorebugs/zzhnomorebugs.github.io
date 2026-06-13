@@ -26,6 +26,18 @@
             <em>{{ post.title }}</em>
           {% endif %}
         </p>
+        {% if page.lang == "zh-CN" %}
+          {% assign display_tldr = post.tldr_zh | default: post.excerpt_zh %}
+          {% assign tldr_label = "太长不看" %}
+        {% else %}
+          {% assign display_tldr = post.tldr | default: post.excerpt %}
+          {% assign tldr_label = "TL;DR" %}
+        {% endif %}
+        {% if display_tldr %}
+          <p class="recent-highlight-card__tldr">
+            <strong>{{ tldr_label }}:</strong> {{ display_tldr | markdownify | remove: '<p>' | remove: '</p>' }}
+          </p>
+        {% endif %}
         {% if post.paperurl or post.posterurl %}
           <div class="publication-links recent-highlight-card__links">
             {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}">Paper</a>{% endif %}

@@ -56,6 +56,14 @@
   }
 }
 
+.recent-highlight-card__tldr {
+  margin: 0 0 0.75em;
+  text-indent: 0;
+  line-height: 1.55;
+  font-size: 0.95em;
+  color: var(--global-text-color-light, #666);
+}
+
 .recent-highlight-card__links {
   margin: 0;
 }
