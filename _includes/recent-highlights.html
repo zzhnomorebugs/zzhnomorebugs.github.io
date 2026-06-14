@@ -5,17 +5,12 @@
 <div class="recent-highlights">
   {% for post in items %}
     {% assign venue_label = post.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " %}
-    {% assign poster_link = post.posterurl | default: post.paperurl %}
     {% assign img_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
     <article class="recent-highlight-card">
       <div class="recent-highlight-card__poster">
-        {% if poster_link %}
-          <a href="{{ poster_link }}" target="_blank" rel="noopener noreferrer">
-            <img src="{{ img_src }}" alt="{{ post.title | escape }}" loading="lazy">
-          </a>
-        {% else %}
+        <a href="{{ img_src }}" class="image-popup">
           <img src="{{ img_src }}" alt="{{ post.title | escape }}" loading="lazy">
-        {% endif %}
+        </a>
       </div>
       <div class="recent-highlight-card__body">
         <p class="recent-highlight-card__meta">
