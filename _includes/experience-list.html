@@ -75,7 +75,7 @@
             </p>
             {% if pub.venue %}
               <p class="experience-entry__pub-venue">
-                {% if is_zh %}发表于{% else %}Published in{% endif %} {{ pub.venue }}
+                {{ pub.venue }}
               </p>
             {% endif %}
             {% if pub.paperurl %}
