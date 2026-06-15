@@ -1,0 +1,91 @@
+{% include base_path %}
+
+{% assign is_zh = page.lang == "zh-CN" %}
+
+<div class="experience-entries">
+  {% for entry in site.data.experience.entries %}
+    {% assign pub = site.publications | where_exp: "p", "p.path contains entry.publication" | first %}
+    {% assign pub_link = nil %}
+    {% if pub and pub.paperurl %}
+      {% assign pub_link = pub.paperurl %}
+    {% elsif pub %}
+      {% assign pub_link = pub.url | prepend: base_path %}
+    {% endif %}
+
+    <article class="experience-entry">
+      <header class="experience-entry__header">
+        {% if entry.logo %}
+          <div class="experience-entry__logo-wrap">
+            <img
+              src="{{ entry.logo | prepend: '/images/' | prepend: base_path }}"
+              alt="{{ entry.company.en }} logo"
+              class="experience-entry__logo"
+              loading="lazy">
+          </div>
+        {% endif %}
+        <div class="experience-entry__meta">
+          <h3 class="experience-entry__title">
+            {% if is_zh %}{{ entry.company.zh }}{% else %}{{ entry.company.en }}{% endif %}
+            <span class="experience-entry__period">
+              | {% if is_zh %}{{ entry.period.zh }}{% else %}{{ entry.period.en }}{% endif %}
+            </span>
+          </h3>
+          <p class="experience-entry__role">
+            {% if is_zh %}{{ entry.role.zh }}{% else %}{{ entry.role.en }}{% endif %}
+          </p>
+        </div>
+      </header>
+
+      <ul class="experience-entry__highlights">
+        {% if is_zh %}
+          {% assign highlights = entry.highlights.zh %}
+        {% else %}
+          {% assign highlights = entry.highlights.en %}
+        {% endif %}
+        {% for content in highlights %}
+          <li>{{ content | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+        {% endfor %}
+      </ul>
+
+      {% if pub %}
+        <div class="experience-entry__publication">
+          {% if pub.image %}
+            <div class="experience-entry__pub-image-wrap">
+              {% if pub_link %}
+                <a href="{{ pub_link }}">
+              {% endif %}
+              <img
+                src="{% if pub.image contains '://' %}{{ pub.image }}{% else %}{{ pub.image | prepend: '/images/' | prepend: base_path }}{% endif %}"
+                alt="{{ pub.title }}"
+                class="experience-entry__pub-image"
+                loading="lazy">
+              {% if pub_link %}
+                </a>
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="experience-entry__pub-body">
+            <p class="experience-entry__pub-title">
+              {% if pub_link %}
+                <a href="{{ pub_link }}">{{ pub.title }}</a>
+              {% else %}
+                {{ pub.title }}
+              {% endif %}
+            </p>
+            {% if pub.venue %}
+              <p class="experience-entry__pub-venue">
+                {% if is_zh %}发表于{% else %}Published in{% endif %} {{ pub.venue }}
+              </p>
+            {% endif %}
+            {% if pub.paperurl %}
+              <div class="publication-links experience-entry__pub-links">
+                <a class="publication-link-btn" href="{{ pub.paperurl }}">Paper</a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      {% endif %}
+    </article>
+  {% endfor %}
+</div>
