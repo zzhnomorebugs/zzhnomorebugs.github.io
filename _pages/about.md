@@ -14,13 +14,13 @@ I am a Ph.D. student in Data Science at [The Chinese University of Hong Kong, Sh
 
 My work spans several interconnected areas at the intersection of machine learning and scientific computing:
 
-- **Physics-Informed Machine Learning:** Developing diffusion models and neural operators that incorporate physical priors (PDEs, conservation laws) and geometric invariances (SE(3)-equivariance) for learning and generating physical dynamics.
+- **Physics-Informed Generative Modeling:** Designing diffusion, flow-matching, and neural differential equation models that integrate physical priors (PDEs, conservation laws) and geometric invariances (SE(3)-equivariance) for forward simulation and inverse inference of physical dynamics.
 
-- **Differential Equation Solving:** Designing neural differential equation solvers and projection operators for forward and inverse problems in partial differential equations.
+- **Learning from Incomplete Observations:** Developing principled generative frameworks to impute spatiotemporal fields and recover physical parameters from sparse, structured, or authentically occluded scientific data, with theoretical convergence guarantees.
 
-- **Manifold-Aware Generation:** Developing projection-free SDE/ODE solvers on SE(3)-invariant manifolds for efficient 3D structure generation (molecules, protein conformations).
+- **Structure-Aware Molecular & Protein Modeling:** Building geometric and sequence generative models for molecular conformations, retrosynthesis, multi-scale protein conformational ensembles, and protein–language foundation models.
 
-**Applications:** Molecular conformation generation, protein dynamics simulation, climate modeling, and irregular time-series analysis.
+**Applications:** Molecular design and conformation generation, protein dynamics simulation and sequence design, climate and oceanographic data reconstruction, PDE parameter inversion, and irregular time-series modeling.
 
 ## Recent Highlights
 

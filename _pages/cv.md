@@ -22,10 +22,10 @@ MPhil-PhD in Data Science | Cum GPA: 3.811/4.0 | Supervisor: Prof. Tianshu Yu
 B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First Class
 
 ## Research Interest
-- Design and analysis of continuous/discrete diffusion processes
-- Solving PDE forward and inverse problems
-- Integration of physical priors and design of invariant/equivariant diffusion models
-- Generation of molecular conformations and modeling of protein dynamics
+- Design and analysis of continuous/discrete diffusion and flow-matching processes
+- Learning physical dynamics and solving PDE inverse problems from incomplete or sparse observations
+- Integration of physical priors and design of invariant/equivariant generative models
+- Structure-aware generation for molecular conformations, retrosynthesis, and protein dynamics/foundation models
 
 ## Research Projects
 
