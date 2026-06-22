@@ -33,4 +33,8 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 Apply deep learning methods to simulate the chromatography process, which is governed by PDEs and infer possible PDE parameters from observed wet lab results:
 - In process
 
+## Academic Service
+
+**Conference Reviewer:** ICML, NeurIPS, ICLR  
+**Journal Reviewer:** TMLR
 
