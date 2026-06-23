@@ -38,7 +38,7 @@ Briefly explain how Stage 1 → Stage 2 → Stage 3 connect (inputs, outputs, an
 Formalize the problem: notation, input/output, objective, and constraints.
 
 $$
-\\min_\\theta \\; \\mathbb{E}\\big[ \\mathcal{L}(\\theta) \\big]
+\min_\theta \; \mathbb{E}\big[ \mathcal{L}(\theta) \big]
 $$
 
 ## 2. 背景与动机

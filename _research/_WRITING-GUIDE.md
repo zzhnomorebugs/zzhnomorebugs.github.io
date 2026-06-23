@@ -107,24 +107,33 @@ excerpt: "Research Notes 框架写作指南与注意事项。"
 | 类型 | 写法 | 示例 |
 |------|------|------|
 | 行内 | `\\( ... \\)` | `\\( \\mathcal{L}(\\theta) \\)` |
-| 独立行 | `$$ ... $$` 或 `\\[ ... \\]` | 见下 |
+| 独立行 | `$$ ... $$` | 见下 |
+
+**行内公式示例：**
+
+```
+\\(u_{obs} = M \\odot u_0\\)
+```
 
 **独立行公式示例：**
 
 ```
 $$
-\\mathcal{L} = \\mathbb{E}_{t, \\mathbf{x}_0, \\boldsymbol{\\epsilon}}
-\\left[ \\lVert \\boldsymbol{\\epsilon} - \\boldsymbol{\\epsilon}_\\theta(\\mathbf{x}_t, t) \\rVert^2 \\right]
+\mathcal{L} = \mathbb{E}_{t, \mathbf{x}_0, \boldsymbol{\epsilon}}
+\left[ \lVert \boldsymbol{\epsilon} - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) \rVert^2 \right]
 $$
 ```
 
 **常见坑（Kramdown + MathJax）：**
 
-1. **反斜杠要双写：** LaTeX 命令在 markdown 里写作 `\\nabla` 而非 `\nabla`
-2. **避免 `_` 被当成斜体：** 行内公式务必放在 `\\( \\)` 内；正文中的变量名用公式包裹
-3. **`{}` 在部分语境下被 Liquid 解析：** 若构建报错，可对整段公式使用 `{% raw %}...{% endraw %}` 包裹
-4. **多行对齐：** 可用 `\\begin{aligned}...\\end{aligned}` 放在 `$$` 块内
-5. **公式过多时：** 关键推导放正文，次要推导放附录小节 `## Appendix`
+1. **行内与独立行转义规则不同：**
+   - 行内 `\\( ... \\)`：LaTeX 命令用双反斜杠，如 `\\odot`、`\\mid`
+   - 独立行 `$$ ... $$`：LaTeX 命令用单反斜杠，如 `\odot`、`\mid`、`\sum`
+2. **行内公式里的 `_` 可能触发斜体：** 若出现 `_i = 1 \mid M_` 这类跨命令下划线，对「裸露」下划线写 `\_i`（如 `(M_{qry})\_i`）
+3. **独立行换行：** `\\[4pt]` 在 `$$` 块内保留双反斜杠
+4. **`{}` 在部分语境下被 Liquid 解析：** 若构建报错，可对整段公式使用 `{% raw %}...{% endraw %}` 包裹
+5. **多行对齐：** 可用 `\begin{aligned}...\end{aligned}` 放在 `$$` 块内
+6. **公式过多时：** 关键推导放正文，次要推导放附录小节 `## Appendix`
 
 ---
 

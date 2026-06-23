@@ -60,11 +60,42 @@
 
   .sidebar__right {
     @include breakpoint($large) {
-      width: 200px;
+      position: sticky;
+      top: $masthead-height;
+      float: right;
+      width: $right-sidebar-width-narrow;
+      min-width: $right-sidebar-width-narrow;
+      max-height: calc(100vh - #{$masthead-height});
+      overflow-y: auto;
     }
 
     @include breakpoint($x-large) {
-      width: 220px;
+      width: $right-sidebar-width;
+      min-width: $right-sidebar-width;
+    }
+
+    .toc {
+      text-transform: none;
+      letter-spacing: normal;
+
+      .nav__title {
+        letter-spacing: 0.04em;
+      }
+    }
+
+    .toc__menu a {
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: normal;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      hyphens: auto;
+    }
+
+    .toc__menu li ul > li a {
+      font-weight: 400;
+      font-size: 0.75rem;
+      padding-left: 1.25rem;
     }
   }
 
