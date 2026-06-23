@@ -1,0 +1,100 @@
+---
+layout: default
+---
+
+{% include base_path %}
+
+{% if page.url != "/" and site.breadcrumbs %}
+  {% unless paginator %}
+    {% include breadcrumbs.html %}
+  {% endunless %}
+{% endif %}
+
+<div id="main" role="main" class="main--no-sidebar">
+  <article class="page page--research" itemscope itemtype="http://schema.org/Article">
+    {% if page.title %}<meta itemprop="headline" content="{{ page.title | markdownify | strip_html | strip_newlines | escape_once }}">{% endif %}
+    {% if page.excerpt %}<meta itemprop="description" content="{{ page.excerpt | markdownify | strip_html | strip_newlines | escape_once }}">{% endif %}
+    {% if page.date %}<meta itemprop="datePublished" content="{{ page.date | date: "%B %d, %Y" }}">{% endif %}
+
+    <div class="page__inner-wrap">
+      <header class="research-header">
+        {% if page.title %}
+          <h1 class="page__title" itemprop="headline">{{ page.title | markdownify | remove: "<p>" | remove: "</p>" }}</h1>
+        {% endif %}
+
+        <div class="research-header__meta">
+          {% if page.read_time %}
+            <span class="research-header__read-time">
+              <i class="fa fa-clock" aria-hidden="true"></i>
+              {% include read-time.html %}
+            </span>
+          {% endif %}
+          {% if page.date %}
+            <span class="research-header__date">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
+            </span>
+          {% endif %}
+        </div>
+
+        {% if page.tags.size > 0 %}
+          <div class="research-header__tags">
+            {% for tag in page.tags %}
+              <span class="research-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if page.lang == "zh-CN" %}
+          {% assign display_tldr = page.tldr_zh | default: page.tldr %}
+        {% else %}
+          {% assign display_tldr = page.tldr %}
+        {% endif %}
+        {% if display_tldr %}
+          <blockquote class="research-tldr">
+            <strong>{% if page.lang == "zh-CN" %}太长不看{% else %}TL;DR{% endif %}:</strong>
+            {{ display_tldr | markdownify | remove: '<p>' | remove: '</p>' }}
+          </blockquote>
+        {% endif %}
+      </header>
+
+      <section class="page__content research-content" itemprop="articleBody">
+        {{ content }}
+      </section>
+
+      {% if page.papers.size > 0 or page.paperurl or page.githuburl or page.slidesurl %}
+        <footer class="research-footer">
+          {% if page.papers.size > 0 %}
+            <div class="research-footer__papers">
+              <h4>{% if page.lang == "zh-CN" %}相关论文{% else %}Related Papers{% endif %}</h4>
+              <ul>
+                {% for slug in page.papers %}
+                  {% assign pub = site.publications | where_exp: "p", "p.path contains slug" | first %}
+                  {% if pub %}
+                    <li>
+                      {% if pub.paperurl %}
+                        <a href="{{ pub.paperurl }}"{% include paper-link-target.html %}>{{ pub.title }}</a>
+                      {% else %}
+                        <a href="{{ base_path }}{{ pub.url }}">{{ pub.title }}</a>
+                      {% endif %}
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          {% if page.paperurl or page.githuburl or page.slidesurl %}
+            <div class="publication-links research-footer__links">
+              {% if page.paperurl %}<a class="publication-link-btn" href="{{ page.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
+              {% if page.slidesurl %}<a class="publication-link-btn" href="{{ page.slidesurl }}"{% include paper-link-target.html %}>Slides</a>{% endif %}
+              {% if page.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ page.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
+            </div>
+          {% endif %}
+        </footer>
+      {% endif %}
+
+      {% include research-pagination.html %}
+    </div>
+  </article>
+</div>

@@ -1,0 +1,62 @@
+{% include base_path %}
+
+{% assign items = site.research | where_exp: "item", "item.published != false" | sort: "order" %}
+
+{% if items.size > 0 %}
+  <div class="research-index">
+    {% for post in items %}
+      <article class="research-index-card">
+        <header class="research-index-card__header">
+          <h2 class="research-index-card__title">
+            <a href="{{ base_path }}{{ post.url }}">{{ post.title }}</a>
+          </h2>
+          {% if post.read_time and site.words_per_minute %}
+            <p class="research-index-card__meta">
+              <i class="fa fa-clock" aria-hidden="true"></i>
+              {% assign words = post.content | strip_html | number_of_words %}
+              {% if words < 180 %}
+                {% if page.lang == "zh-CN" %}不到 1 分钟{% else %}less than 1 minute read{% endif %}
+              {% elsif words < 360 %}
+                {% if page.lang == "zh-CN" %}约 1 分钟{% else %}1 minute read{% endif %}
+              {% else %}
+                {% assign minutes = words | divided_by: site.words_per_minute %}
+                {% if page.lang == "zh-CN" %}约 {{ minutes }} 分钟{% else %}{{ minutes }} minute read{% endif %}
+              {% endif %}
+            </p>
+          {% endif %}
+        </header>
+
+        {% if post.tags.size > 0 %}
+          <div class="research-index-card__tags">
+            {% for tag in post.tags %}
+              <span class="research-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% if page.lang == "zh-CN" %}
+          {% assign display_excerpt = post.excerpt_zh | default: post.excerpt %}
+        {% else %}
+          {% assign display_excerpt = post.excerpt %}
+        {% endif %}
+        {% if display_excerpt %}
+          <p class="research-index-card__excerpt">{{ display_excerpt | markdownify | strip_html | truncate: 320 }}</p>
+        {% endif %}
+
+        <p class="research-index-card__more">
+          <a href="{{ base_path }}{{ post.url }}">
+            {% if page.lang == "zh-CN" %}阅读全文{% else %}Read full note{% endif %} &rarr;
+          </a>
+        </p>
+      </article>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="research-index-empty">
+    {% if page.lang == "zh-CN" %}
+      暂无已发布的研究笔记。请复制 <code>_research/_template.md</code> 创建新文章，并参考 <code>_research/WRITING-GUIDE.md</code>。
+    {% else %}
+      No published research notes yet. Copy <code>_research/_template.md</code> to start a new note, and see <code>_research/WRITING-GUIDE.md</code> for guidelines.
+    {% endif %}
+  </p>
+{% endif %}

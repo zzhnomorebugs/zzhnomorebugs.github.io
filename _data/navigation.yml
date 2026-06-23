@@ -8,6 +8,9 @@ main:
   - title: "Publications"
     url: /publications/
 
+  - title: "Research"
+    url: /research/
+
   - title: "Experience"
     url: /experience/
 
@@ -26,6 +29,9 @@ main:
 main_zh:
   - title: "论文发表"
     url: /zh/publications/
+
+  - title: "研究笔记"
+    url: /zh/research/
 
   - title: "经历"
     url: /zh/experience/

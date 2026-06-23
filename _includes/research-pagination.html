@@ -1,0 +1,43 @@
+{% include base_path %}
+
+{% assign research_items = site.research | where_exp: "item", "item.published != false" | sort: "order" %}
+{% assign prev_item = nil %}
+{% assign next_item = nil %}
+{% assign found = false %}
+
+{% for item in research_items %}
+  {% if found %}
+    {% assign next_item = item %}
+    {% break %}
+  {% endif %}
+  {% if item.url == page.url %}
+    {% assign found = true %}
+  {% else %}
+    {% assign prev_item = item %}
+  {% endif %}
+{% endfor %}
+
+{% if prev_item or next_item %}
+  <nav class="pagination research-pagination" aria-label="{% if page.lang == 'zh-CN' %}研究笔记导航{% else %}Research notes navigation{% endif %}">
+  {% if prev_item %}
+    <a href="{{ base_path }}{{ prev_item.url }}" class="pagination--pager research-pagination__prev" title="{{ prev_item.title | markdownify | strip_html }}">
+      <span class="research-pagination__label">{% if page.lang == "zh-CN" %}上一篇{% else %}Previous{% endif %}</span>
+      <span class="research-pagination__title">{{ prev_item.title | markdownify | remove: "<p>" | remove: "</p>" }}</span>
+    </a>
+  {% else %}
+    <a href="{{ base_path }}{% if page.lang == 'zh-CN' %}/zh/research/{% else %}/research/{% endif %}" class="pagination--pager research-pagination__prev">
+      <span class="research-pagination__label">{% if page.lang == "zh-CN" %}返回目录{% else %}Back to index{% endif %}</span>
+    </a>
+  {% endif %}
+  {% if next_item %}
+    <a href="{{ base_path }}{{ next_item.url }}" class="pagination--pager research-pagination__next" title="{{ next_item.title | markdownify | strip_html }}">
+      <span class="research-pagination__label">{% if page.lang == "zh-CN" %}下一篇{% else %}Next{% endif %}</span>
+      <span class="research-pagination__title">{{ next_item.title | markdownify | remove: "<p>" | remove: "</p>" }}</span>
+    </a>
+  {% else %}
+    <span class="pagination--pager disabled research-pagination__next">
+      <span class="research-pagination__label">{% if page.lang == "zh-CN" %}已是最后一篇{% else %}No more notes{% endif %}</span>
+    </span>
+  {% endif %}
+  </nav>
+{% endif %}
