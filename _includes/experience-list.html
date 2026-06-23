@@ -7,7 +7,8 @@
     {% assign pub = site.publications | where_exp: "p", "p.path contains entry.publication" | first %}
     {% assign pub_link = nil %}
     {% if pub and pub.paperurl %}
-      {% assign pub_link = pub.paperurl %}
+      {% capture pub_link %}{% include paper-url.html url=pub.paperurl %}{% endcapture %}
+      {% assign pub_link = pub_link | strip %}
     {% elsif pub %}
       {% assign pub_link = pub.url | prepend: base_path %}
     {% endif %}
@@ -52,7 +53,7 @@
           {% if pub.image %}
             <div class="experience-entry__pub-image-wrap">
               {% if pub_link %}
-                <a href="{{ pub_link }}">
+                <a href="{{ pub_link }}"{% include paper-link-target.html %}>
               {% endif %}
               <img
                 src="{% if pub.image contains '://' %}{{ pub.image }}{% else %}{{ pub.image | prepend: '/images/' | prepend: base_path }}{% endif %}"
@@ -68,14 +69,14 @@
           <div class="experience-entry__pub-body">
             <p class="experience-entry__pub-title">
               {% if pub_link %}
-                <a href="{{ pub_link }}">{{ pub.title }}</a>
+                <a href="{{ pub_link }}"{% include paper-link-target.html %}>{{ pub.title }}</a>
               {% else %}
                 {{ pub.title }}
               {% endif %}
             </p>
             {% if pub.paperurl %}
               <div class="publication-links experience-entry__pub-links">
-                <a class="publication-link-btn" href="{{ pub.paperurl }}">Paper</a>
+                <a class="publication-link-btn" href="{% include paper-url.html url=pub.paperurl %}"{% include paper-link-target.html %}>Paper</a>
               </div>
             {% endif %}
           </div>
