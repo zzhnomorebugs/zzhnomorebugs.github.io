@@ -20,7 +20,7 @@ lang_switch_url: /zh/research/your-topic-slug/
 
 {% include toc %}
 
-> Delete this block after drafting. See `WRITING-GUIDE.md` for full conventions.
+> Delete this block after drafting. See `_WRITING-GUIDE.md` for full conventions.
 
 ## 技术路线图
 

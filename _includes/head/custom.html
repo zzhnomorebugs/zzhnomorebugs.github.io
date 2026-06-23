@@ -18,9 +18,13 @@
 <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
 <!-- Mermaid diagrams (research notes) -->
+{% if page.layout == 'research' or page.permalink == '/research/' or page.permalink == '/zh/research/' %}
+{% raw %}
 <script type="module">
   import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
   mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
 </script>
+{% endraw %}
+{% endif %}
 
 <!-- end custom head snippets -->

@@ -13,7 +13,7 @@
           {% if post.read_time and site.words_per_minute %}
             <p class="research-index-card__meta">
               <i class="fa fa-clock" aria-hidden="true"></i>
-              {% assign words = post.content | strip_html | number_of_words %}
+              {% assign words = post.excerpt | default: post.content | strip_html | number_of_words %}
               {% if words < 180 %}
                 {% if page.lang == "zh-CN" %}不到 1 分钟{% else %}less than 1 minute read{% endif %}
               {% elsif words < 360 %}
@@ -54,9 +54,9 @@
 {% else %}
   <p class="research-index-empty">
     {% if page.lang == "zh-CN" %}
-      暂无已发布的研究笔记。请复制 <code>_research/_template.md</code> 创建新文章，并参考 <code>_research/WRITING-GUIDE.md</code>。
+      暂无已发布的研究笔记。请复制 <code>_research/_template.md</code> 创建新文章，并参考 <code>_research/_WRITING-GUIDE.md</code>。
     {% else %}
-      No published research notes yet. Copy <code>_research/_template.md</code> to start a new note, and see <code>_research/WRITING-GUIDE.md</code> for guidelines.
+      No published research notes yet. Copy <code>_research/_template.md</code> to start a new note, and see <code>_research/_WRITING-GUIDE.md</code> for guidelines.
     {% endif %}
   </p>
 {% endif %}

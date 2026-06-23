@@ -68,9 +68,11 @@ excerpt: "Research Notes 框架写作指南与注意事项。"
 
 ### 3.1 必须：正文第一行插入 TOC
 
+{% raw %}
 ```liquid
 {% include toc %}
 ```
+{% endraw %}
 
 该 include 会在正文右侧生成 **On This Page**  sticky 目录。目录**仅抓取正文中的 `##` / `###` 标题**，因此：
 
@@ -228,7 +230,7 @@ lang_switch_url: /research/ocean-mask/
 
 - [ ] `published: true`
 - [ ] `order` 已按想要的顺序设置
-- [ ] 正文以 `{% include toc %}` 开头
+- [ ] 正文以 `{% raw %}{% include toc %}{% endraw %}` 开头
 - [ ] `tldr` 与 `excerpt` 已填且互不重复
 - [ ] 至少一张技术路线图
 - [ ] 公式在本地构建后显示正常
@@ -259,11 +261,11 @@ bundle exec jekyll serve
 
 ## Appendix：Liquid 与 Markdown 混用
 
-正文中可使用 Liquid（如 `{% include %}`），但注意：
+正文中可使用 Liquid include 等标签，但注意：
 
-- `{%` 与 `{{` 会被 Jekyll 解析
-- 展示 Liquid 示例时用 `{% raw %}...{% endraw %}`
-- 展示 Jekyll 变量示例时避免在草稿里写未定义的 `{{ site.xxx }}`，除非确实需要
+- Liquid 定界符（百分号花括号、双花括号）会在 Markdown 代码块之外被 Jekyll 提前解析
+- 展示 Liquid 示例时，用 raw 标签包裹整段示例
+- 展示 Jekyll 变量示例时，避免在草稿里写未定义的 site 变量，除非确实需要
 
 ---
 
