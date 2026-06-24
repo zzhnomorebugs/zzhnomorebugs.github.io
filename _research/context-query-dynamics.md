@@ -47,33 +47,31 @@ flowchart TB
   work2 --> out
 </div>
 
-**Stage 1 (backbone).** Given partial observations \\(u_{\\text{obs}} = M \\odot u_0\\) and a binary mask \\(M\\), split the observed support into a context mask \\(M_{\\text{ctx}}\\) (model input) and a query mask \\(M_{\\text{qry}}\\) (loss region). Train a diffusion denoiser \\(u_\\phi\\) to predict clean data from context only.
-
-**Stage 2a (Work I).** Sample \\(M_{\\text{ctx}}\\) with the same structural pattern as \\(p_{\\text{mask}}(M)\\) so that every observed dimension can be queried with positive probability. At inference, ensemble over context masks to bridge the train/test conditioning mismatch.
-
-**Stage 2b (Work II).** Pretrain a Bayesian Flow Network on \\(p(M)\\), then form \\(M_{\\text{ctx}} = M_1 \\odot M_2\\) from two i.i.d. mask draws. Intersection yields strict positivity for any spatial topology; observation-aligned guidance anchors generation to real occlusions.
+- **Stage 1 (backbone).** Given partial observations \\(u_{\\text{obs}} = M \\odot u_0\\) and a binary mask \\(M\\), split the observed support into a context mask \\(M_{\\text{ctx}}\\) (model input) and a query mask \\(M_{\\text{qry}}\\) (loss region). Train a diffusion denoiser \\(u_\\phi\\) to predict clean data from context only.
+- **Stage 2a (Work I).** Sample \\(M_{\\text{ctx}}\\) with the same structural pattern as \\(p_{\\text{mask}}(M)\\) so that every observed dimension can be queried with positive probability. At inference, ensemble over context masks to bridge the train/test conditioning mismatch.
+- **Stage 2b (Work II).** Pretrain a Bayesian Flow Network on \\(p(M)\\), then form \\(M_{\\text{ctx}} = M_1 \\odot M_2\\) from two i.i.d. mask draws. Intersection yields strict positivity for any spatial topology; observation-aligned guidance anchors generation to real occlusions.
 
 ## 1. Problem Setup
 
-Complete data \\(u_0 \\in \\mathbb{R}^d \\sim p_{\\text{data}}\\), binary observation mask \\(M \\in \\{0,1\\}^d \\sim p_{\\text{mask}}(M)\\) with \\(p_{\\text{mask}}(M \\mid u_0) = p_{\\text{mask}}(M)\\). Only partial observations
+Complete data \\(u_0 \\in \\mathbb{R}^d \\sim p_{\\text{data}}\\), binary observation mask \\(M \\in \\{0,1\\}^d \\sim p_{\\text{mask}}(M)\\) with \\(p_{\\text{mask}}(M \\mid u_0) = p_{\\text{mask}}(M)\\). We only observe
 
 $$
 u_{\text{obs}} = M \odot u_0
 $$
 
-are available — **no complete sample ever appears in training**. Goal: learn \\(p_\\phi(u_0 \\mid u_{\\text{obs}}, M)\\).
+with **no complete sample ever in training**. Goal: learn \\(p_\\phi(u_0 \\mid u_{\\text{obs}}, M)\\).
 
 ## 2. Unified Context-Query Backbone
 
 ### Hierarchical masking
 
-Treat \\(u_{\\text{obs}}\\) as "complete within its support", then split it into a context mask \\(M_{\\text{ctx}} \\subseteq M\\) (model input) and a query mask \\(M_{\\text{qry}} \\subseteq M\\) (loss region). With the noisy state
+Treat \\(u_{\\text{obs}}\\) as "complete within its support", then split it into a context mask \\(M_{\\text{ctx}} \\subseteq M\\) (model input) and a query mask \\(M_{\\text{qry}} \\subseteq M\\) (loss region). The noisy state is
 
 $$
 u_{\text{obs},t} = M \odot (\alpha_t u_{\text{obs}} + \sigma_t \epsilon),
 $$
 
-train \\(u_\\phi\\) to predict clean data from the context only:
+and we train \\(u_\\phi\\) to predict clean data from the context only:
 
 $$
 \mathcal{L}(t, u_{\text{obs}}, M_{\text{ctx}}, M_{\text{qry}}) = \big\| M_{\text{qry}} \odot \big( u_\phi(t,\, M_{\text{ctx}} \odot u_{\text{obs},t},\, M_{\text{ctx}}) - u_{\text{obs}} \big) \big\|^2
@@ -92,7 +90,7 @@ $$
 \end{cases}
 $$
 
-and if the union of possible \\(M_{\\text{qry}}\\) covers all dimensions,
+If the union of possible \\(M_{\\text{qry}}\\) covers all dimensions,
 
 $$
 u_\phi = \mathbb{E}[u_0 \mid M_{\text{ctx}} \odot u_{\text{obs},t}, M_{\text{ctx}}].
@@ -158,7 +156,7 @@ $$
 \mathbb{E}[u_0 \mid u_t] \approx \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(t,\, M_{\text{rnd}}^{(k)} \odot u_t,\, M_{\text{rnd}}^{(k)}\right), \qquad \mathbb{E}[u_0 \mid u_{\text{obs}}, M] \approx \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(\delta,\, M_{\text{ctx}}^{(k)} \odot u_{\text{obs},\delta},\, M_{\text{ctx}}^{(k)}\right)
 $$
 
-where \\(M_{\text{rnd}}^{(k)}\\) are random masks following the same marginal as \\(M_{\text{ctx}}\\) (not constrained to \\(\\subseteq M\\)), and \\(M_{\text{ctx}}^{(k)} \\subseteq M\\). Sampling follows a RePaint-style scheme: estimate noise from the model on unobserved entries, compute it directly from known clean values on observed entries, merge via
+where \\(M_{\text{rnd}}^{(k)}\\) are random masks following the same marginal as \\(M_{\text{ctx}}\\) (not constrained to \\(\\subseteq M\\)), and \\(M_{\text{ctx}}^{(k)} \\subseteq M\\). Sampling follows a RePaint-style scheme: estimate noise from the model on unobserved entries, compute it directly from known clean values on observed entries, then merge via
 
 $$
 \epsilon_{\text{full}} = M \odot \epsilon_{\text{obs}} + (1 - M) \odot \epsilon_{\text{unobs}},

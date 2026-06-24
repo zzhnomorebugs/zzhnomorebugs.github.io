@@ -86,6 +86,38 @@
     padding-top: 0;
   }
 
+  p, li {
+    line-height: 1.65;
+  }
+
+  mjx-container[jax="CHTML"]:not([display="true"]) {
+    display: inline;
+    margin: 0;
+    padding: 0 0.05em;
+    vertical-align: baseline;
+    line-height: normal;
+  }
+
+  mjx-container[jax="CHTML"][display="true"] {
+    display: block;
+    margin: 0.75em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  blockquote {
+    margin: 1em 0;
+    font-style: normal;
+    line-height: 1.6;
+  }
+
+  > ul:not(.toc__menu),
+  > ol:not(.toc__menu) {
+    li + li {
+      margin-top: 0.35em;
+    }
+  }
+
   @include breakpoint($large) {
     display: contents;
   }
@@ -144,6 +176,46 @@
     @include breakpoint($large) {
       grid-column: 1;
       min-width: 0;
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+  }
+
+  > h2:not(.sidebar__right) {
+    @include breakpoint($large) {
+      margin-top: 2.25em;
+      margin-bottom: 0.75em;
+
+      &:first-of-type {
+        margin-top: 0;
+      }
+    }
+  }
+
+  > h3:not(.sidebar__right) {
+    @include breakpoint($large) {
+      margin-top: 1.75em;
+      margin-bottom: 0.6em;
+    }
+  }
+
+  > h4:not(.sidebar__right) {
+    @include breakpoint($large) {
+      margin-top: 1.25em;
+      margin-bottom: 0.5em;
+    }
+  }
+
+  > blockquote:not(.sidebar__right) {
+    @include breakpoint($large) {
+      margin-bottom: 1em;
+    }
+  }
+
+  > ul:not(.sidebar__right),
+  > ol:not(.sidebar__right) {
+    @include breakpoint($large) {
+      margin-bottom: 1em;
     }
   }
 
