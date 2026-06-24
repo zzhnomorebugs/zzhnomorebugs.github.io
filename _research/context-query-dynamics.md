@@ -21,29 +21,29 @@ papers:
 
 <div class="mermaid">
 flowchart TB
-  subgraph backbone [Unified Backbone]
-    obs["Partial obs u_obs, mask M"]
-    split["Split M into M_ctx and M_qry"]
-    train["Train u_phi on context only; loss on M_qry"]
+  subgraph backbone ["Unified Backbone"]
+    obs["Partial obs and mask M"]
+    split["Split M into context and query"]
+    train["Train on context, loss on query"]
     obs --> split --> train
   end
 
-  subgraph work1 [Work I: Distribution-Preserving]
-    part1["Sample M_ctx with same structure as p_mask"]
-    ens["Ensemble over context masks at inference"]
+  subgraph work1 ["Work I: Distribution-Preserving"]
+    part1["Sample context mask from p_mask"]
+    ens["Ensemble context masks at inference"]
     part1 --> ens
   end
 
-  subgraph work2 [Work II: Generative-Prior]
-    bfn["Pretrain BFN on p(M)"]
-    inter["M_ctx = M1 * M2; intersection positivity"]
-    guide["Observation-aligned classifier guidance"]
+  subgraph work2 ["Work II: Generative-Prior"]
+    bfn["Pretrain BFN on mask prior"]
+    inter["Context = intersection of two masks"]
+    guide["Observation-aligned guidance"]
     bfn --> inter --> guide
   end
 
   train --> work1
   train --> work2
-  work1 --> out["Recover E[u0 | u_obs, M]"]
+  work1 --> out["Recover conditional expectation"]
   work2 --> out
 </div>
 

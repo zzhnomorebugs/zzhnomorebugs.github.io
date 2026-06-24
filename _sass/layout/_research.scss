@@ -4,8 +4,31 @@
   }
 }
 
+.research-layout {
+  @include breakpoint($large) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) $right-sidebar-width-narrow;
+    column-gap: 2rem;
+    align-items: start;
+  }
+
+  @include breakpoint($x-large) {
+    grid-template-columns: minmax(0, 1fr) $right-sidebar-width;
+    column-gap: 2.5rem;
+  }
+
+  > .research-header,
+  > .research-footer,
+  > .research-pagination {
+    @include breakpoint($large) {
+      grid-column: 1;
+      min-width: 0;
+    }
+  }
+}
+
 .research-header {
-  margin-bottom: 1.5em;
+  margin-bottom: 1em;
 
   .page__title {
     margin-bottom: 0.5em;
@@ -41,7 +64,7 @@
 }
 
 .research-tldr {
-  margin: 0 0 1em;
+  margin: 0;
   padding: 0.85em 1em;
   border-left: 3px solid var(--global-base-color);
   background: var(--global-border-color);
@@ -58,16 +81,13 @@
     scroll-margin-top: 6rem;
   }
 
-  @include breakpoint($large) {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) $right-sidebar-width-narrow;
-    column-gap: 2rem;
-    align-items: start;
+  > h2:first-of-type {
+    margin-top: 0;
+    padding-top: 0;
   }
 
-  @include breakpoint($x-large) {
-    grid-template-columns: minmax(0, 1fr) $right-sidebar-width;
-    column-gap: 2.5rem;
+  @include breakpoint($large) {
+    display: contents;
   }
 
   > .sidebar__right {
@@ -88,6 +108,7 @@
       max-height: calc(100vh - #{$masthead-height} - 1rem);
       overflow-y: auto;
       overflow-x: hidden;
+      align-self: start;
     }
 
     @include breakpoint($x-large) {
@@ -135,6 +156,8 @@
   }
 
   .mermaid {
+    margin: 1em 0;
+
     @include breakpoint($large) {
       max-width: 100%;
       overflow-x: auto;
