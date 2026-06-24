@@ -127,7 +127,7 @@
 
     @include breakpoint($large) {
       grid-column: 2;
-      grid-row: 1 / -1;
+      grid-row: 1 / span 999;
       position: sticky;
       top: $masthead-height;
       float: none;
