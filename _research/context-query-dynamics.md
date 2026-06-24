@@ -8,7 +8,7 @@ published: true
 read_time: true
 date: 2026-06-23
 tags: [diffusion, imputation, context-query, AI4Science]
-tldr: "We learn complete physical fields from partial observations that never include a fully observed sample. A unified context-query diffusion backbone trains a denoiser on a context subset and evaluates loss on a withheld query subset. Recovering the true distribution requires every unobserved-in-context dimension to receive queries with strictly positive probability. Two works answer this requirement differently: distribution-preserving heuristic partitioning with ensemble inference, and generative mask-prior partitioning via intersection with observation-aligned guidance."
+tldr: "We learn complete physical fields from partial observations that never include a fully observed sample. A unified context-query diffusion backbone trains a denoiser on a context subset and evaluates loss on a withheld query subset. Recovering the true distribution requires every unobserved-in-context dimension to receive queries with strictly positive probability. Two complementary works answer this requirement differently: distribution-preserving heuristic partitioning with ensemble inference when \\(p_{\\text{mask}}(M)\\) is known or analytic, and generative mask-prior partitioning via intersection with observation-aligned guidance when mask structure is complex or unknown."
 excerpt: "A unified context-query diffusion framework for learning complete dynamics from incomplete observations, with two complementary routes to guarantee strictly positive query probabilities."
 papers:
   - incomplet-data
@@ -61,7 +61,7 @@ $$
 u_{\text{obs}} = M \odot u_0
 $$
 
-are available — **no complete sample ever appears in training**. Goal: learn \\(p_\\theta(u_0 \\mid u_{\\text{obs}}, M)\\).
+are available — **no complete sample ever appears in training**. Goal: learn \\(p_\\phi(u_0 \\mid u_{\\text{obs}}, M)\\).
 
 ## 2. Unified Context-Query Backbone
 
@@ -131,7 +131,7 @@ Inference is a train/test mismatch: the model gives \\(\\mathbb{E}[u_0 \\mid M_{
 **Single-step sampling.** Apply minimal noise \\(u_\\delta = \\alpha_\\delta u_{\\text{obs}} + \\sigma_\\delta \\epsilon\\), \\(0 < \\delta \\ll 1\\) (so \\(M \\odot u_\\delta \\approx u_{\\text{obs}}\\)), then average \\(K\\) context masks:
 
 $$
-\hat u^* = \mathbb{E}[u_0 \mid u_{\text{obs}}, M] \approx \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(\delta,\, M_{\text{ctx}}^{(k)} \odot u_{\text{obs},\delta},\, M_{\text{ctx}}^{(k)}\right)
+\hat\mu_K = \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(\delta,\, M_{\text{ctx}}^{(k)} \odot u_{\text{obs},\delta},\, M_{\text{ctx}}^{(k)}\right) \approx \mathbb{E}[u_0 \mid u_{\text{obs}}, M]
 $$
 
 **Why it works.** With \\(u_\\phi(t, \\text{ctx}) = \\mathbb{E}[u_0 \\mid \\text{ctx}] + b(\\text{ctx}) + \\epsilon_{\\text{bias}}(\\text{ctx})\\) and \\(\\hat\\mu_K = \\frac{1}{K} \\sum_k u_\\phi(t, \\text{ctx}^{(k)})\\):
@@ -152,7 +152,13 @@ $$
 \hat u_\phi(t, u_t, u_{\text{obs}}, M) \approx \omega_t\, \mathbb{E}[u_0 \mid u_t] + (1 - \omega_t)\, \mathbb{E}[u_0 \mid u_{\text{obs}}, M]
 $$
 
-with \\(\\omega_t\\) monotonically increasing \\(0 \\to 1\\). Each term is a Monte-Carlo average over masks (random masks for the first, context masks \\(\\subseteq M\\) for the second). Sampling follows a RePaint-style scheme: estimate noise from the model on unobserved entries, compute it directly from known clean values on observed entries, merge via
+with \\(\\omega_t\\) monotonically increasing \\(0 \\to 1\\). The two conditional expectations are estimated with symmetric Monte-Carlo ensembles:
+
+$$
+\mathbb{E}[u_0 \mid u_t] \approx \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(t,\, M_{\text{rnd}}^{(k)} \odot u_t,\, M_{\text{rnd}}^{(k)}\right), \qquad \mathbb{E}[u_0 \mid u_{\text{obs}}, M] \approx \frac{1}{K} \sum_{k=1}^{K} u_\phi\!\left(\delta,\, M_{\text{ctx}}^{(k)} \odot u_{\text{obs},\delta},\, M_{\text{ctx}}^{(k)}\right)
+$$
+
+where \\(M_{\text{rnd}}^{(k)}\\) are random masks following the same marginal as \\(M_{\text{ctx}}\\) (not constrained to \\(\\subseteq M\\)), and \\(M_{\text{ctx}}^{(k)} \\subseteq M\\). Sampling follows a RePaint-style scheme: estimate noise from the model on unobserved entries, compute it directly from known clean values on observed entries, merge via
 
 $$
 \epsilon_{\text{full}} = M \odot \epsilon_{\text{obs}} + (1 - M) \odot \epsilon_{\text{unobs}},
@@ -207,8 +213,9 @@ decode \\(e_c = \\arg\\max \\frac{1}{K}(x_0 + 1)\\).
 
 Unconditional intersection can overlap the real \\(M\\) too little → context too sparse. Anchor the generation to the actual observations via classifier guidance:
 
-1. **Stochastic anchor:** \\(y_i = \\mathbf{1}[r_i < \\rho] \\cdot M_i\\), \\(r_i \\sim \\mathrm{Uniform}(0,1)\\) — randomly retaining a fraction \\(\\rho\\) of observed points injects diversity (full anchoring collapses to one deterministic mask).
-2. **Globally-normalized guidance loss:**
+**Stochastic anchor.** \\(y_i = \\mathbf{1}[r_i < \\rho] \\cdot M_i\\), \\(r_i \\sim \\mathrm{Uniform}(0,1)\\) — randomly retaining a fraction \\(\\rho\\) of observed points injects diversity (full anchoring collapses to one deterministic mask).
+
+**Globally-normalized guidance loss.**
 
 $$
 \mathcal{L}_{\text{guidance}}(x_t, y) = -\frac{1}{d} \sum_{i=1}^d \big[ y_i \log \hat e_i + (1 - y_i) \log(1 - \hat e_i) \big]
@@ -216,7 +223,7 @@ $$
 
 Global normalization stabilizes the gradient across very different sparsity levels.
 
-3. **Latent intervention:**
+**Latent intervention.**
 
 $$
 x_{t_{i+1}} \leftarrow x_{t_{i+1}}^{\text{base}} - w_g \nabla_{x_{t_i}} \mathcal{L}_{\text{guidance}}(x_{t_i}, y)
@@ -238,5 +245,7 @@ $$
 |:------|:-----------------------------|:----------|
 | Work I (distribution-preserving) | Sample \\(M_{\\text{ctx}}\\) with the same structure as \\(p_{\\text{mask}}\\); ensemble at inference | Pattern-specific heuristics; hard to cover complex spatial dependencies |
 | Work II (generative-prior) | Intersection of two i.i.d. masks from \\(p(M)\\); observation-aligned guidance | Requires learning and sampling \\(p(M)\\), but holds for any topology |
+
+The two routes are complementary, not competing. Work I is lightweight and needs no extra generative model when \\(p_{\\text{mask}}(M)\\) has a known or analytic structure, while Work II is the route when mask structure is complex or unknown, guaranteeing positivity by construction for any topology (whereas Work I relies on matched sampling).
 
 Positivity now holds by construction for every valid topology, so the model transfers reconstruction from synthetic training masks to the genuinely-missing regions at test time — **without ever seeing a complete field**.
