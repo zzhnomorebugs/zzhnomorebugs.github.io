@@ -1,6 +1,10 @@
 {% include base_path %}
 
-{% assign research_items = site.research | where_exp: "item", "item.published != false" | sort: "order" %}
+{% if page.lang == "zh-CN" %}
+  {% assign research_items = site.research | where: "lang", "zh-CN" | where_exp: "item", "item.published != false" | sort: "order" %}
+{% else %}
+  {% assign research_items = site.research | where_exp: "item", "item.published != false" | where_exp: "item", "item.lang != 'zh-CN'" | sort: "order" %}
+{% endif %}
 {% assign prev_item = nil %}
 {% assign next_item = nil %}
 {% assign found = false %}

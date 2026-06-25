@@ -67,16 +67,26 @@ layout: default
           {% if page.papers.size > 0 %}
             <div class="research-footer__papers">
               <h4>{% if page.lang == "zh-CN" %}相关论文{% else %}Related Papers{% endif %}</h4>
-              <ul>
+              <ul class="research-paper-list">
                 {% for slug in page.papers %}
                   {% assign pub = site.publications | where_exp: "p", "p.path contains slug" | first %}
                   {% if pub %}
-                    <li>
-                      {% if pub.paperurl %}
-                        <a href="{{ pub.paperurl }}"{% include paper-link-target.html %}>{{ pub.title }}</a>
-                      {% else %}
-                        <a href="{{ base_path }}{{ pub.url }}">{{ pub.title }}</a>
+                    <li class="research-paper-card">
+                      {% if pub.image %}
+                        <a href="{% if pub.paperurl %}{{ pub.paperurl }}{% else %}{{ base_path }}{{ pub.url }}{% endif %}" class="research-paper-card__thumb"{% include paper-link-target.html %}>
+                          <img src="{{ base_path }}/images/{{ pub.image }}" alt="">
+                        </a>
                       {% endif %}
+                      <div class="research-paper-card__body">
+                        {% if pub.paperurl %}
+                          <a class="research-paper-card__title" href="{{ pub.paperurl }}"{% include paper-link-target.html %}>{{ pub.title }}</a>
+                        {% else %}
+                          <a class="research-paper-card__title" href="{{ base_path }}{{ pub.url }}">{{ pub.title }}</a>
+                        {% endif %}
+                        {% if pub.venue %}
+                          <span class="research-paper-card__venue">{{ pub.venue }}</span>
+                        {% endif %}
+                      </div>
                     </li>
                   {% endif %}
                 {% endfor %}

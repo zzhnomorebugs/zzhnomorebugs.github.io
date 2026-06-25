@@ -1,6 +1,10 @@
 {% include base_path %}
 
-{% assign items = site.research | where_exp: "item", "item.published != false" | sort: "order" %}
+{% if page.lang == "zh-CN" %}
+  {% assign items = site.research | where: "lang", "zh-CN" | where_exp: "item", "item.published != false" | sort: "order" %}
+{% else %}
+  {% assign items = site.research | where_exp: "item", "item.published != false" | where_exp: "item", "item.lang != 'zh-CN'" | sort: "order" %}
+{% endif %}
 
 {% if items.size > 0 %}
   <div class="research-index">

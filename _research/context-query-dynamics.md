@@ -3,6 +3,7 @@ title: "Learning Complete Dynamics from Incomplete Observations: A Context-Query
 layout: research
 collection: research
 permalink: /research/context-query-dynamics/
+lang_switch_url: /zh/research/context-query-dynamics/
 order: 1
 published: true
 read_time: true
@@ -25,6 +26,14 @@ The key idea is to create supervision inside each partial observation. From the 
 
 This page summarizes two connected works around that idea. The first work asks how far we can go with a hand-designed partition that respects the observation pattern. The second work replaces the hand-designed rule with a learned generative prior over masks, so the same principle can handle complex spatial missingness.
 
+<nav class="research-jump-nav" aria-label="Section navigation">
+  <a href="#technical-roadmap">Roadmap</a>
+  <a href="#2-unified-context-query-backbone">Backbone</a>
+  <a href="#work-i">Work I</a>
+  <a href="#work-ii">Work II</a>
+  <a href="#5-summary">Summary</a>
+</nav>
+
 ## Technical Roadmap
 
 <div class="mermaid">
@@ -36,13 +45,13 @@ flowchart TB
     obs --> split --> train
   end
 
-  subgraph work1[Work I: Distribution-Preserving]
+  subgraph work1["Work I: Distribution-Preserving"]
     part1["Sample context mask from p_mask"]
     ens["Ensemble context masks at inference"]
     part1 --> ens
   end
 
-  subgraph work2[Work II: Generative-Prior]
+  subgraph work2["Work II: Generative-Prior"]
     bfn["Pretrain BFN on mask prior"]
     inter["Context = intersection of two masks"]
     guide["Observation-aligned guidance"]
@@ -57,9 +66,23 @@ flowchart TB
 
 The diagram separates the shared learning principle from the two ways of constructing masks. Both works use the same context-query denoising backbone; they differ mainly in how they choose the context/query split so that no recoverable dimension is left without training signal.
 
-- **Stage 1 (backbone).** Given partial observations \\(u_{\\text{obs}} = M \\odot u_0\\) and a binary mask \\(M\\), split the observed support into a context mask \\(M_{\\text{ctx}}\\) (model input) and a query mask \\(M_{\\text{qry}}\\) (loss region). Train a diffusion denoiser \\(u_\\phi\\) to predict clean data from context only.
-- **Stage 2a (Work I).** Sample \\(M_{\\text{ctx}}\\) with the same structural pattern as \\(p_{\\text{mask}}(M)\\) so that every observed dimension can be queried with positive probability. At inference, ensemble over context masks to bridge the train/test conditioning mismatch.
-- **Stage 2b (Work II).** Pretrain a Bayesian Flow Network on \\(p(M)\\), then form \\(M_{\\text{ctx}} = M_1 \\odot M_2\\) from two i.i.d. mask draws. Intersection yields strict positivity for any spatial topology; observation-aligned guidance anchors generation to real occlusions.
+<div class="research-pillars">
+<div class="research-pillar" markdown="1">
+<span class="research-pillar__label">Stage 1 · Backbone</span>
+
+Given partial observations \\(u_{\text{obs}} = M \odot u_0\\) and mask \\(M\\), split the observed support into context \\(M_{\text{ctx}}\\) (input) and query \\(M_{\text{qry}}\\) (loss). Train diffusion denoiser \\(u_\phi\\) on context only.
+</div>
+<div class="research-pillar" markdown="1">
+<span class="research-pillar__label">Stage 2a · Work I</span>
+
+Sample \\(M_{\text{ctx}}\\) with the same structural pattern as \\(p_{\text{mask}}(M)\\) so every observed dimension can be queried with positive probability. Ensemble context masks at inference.
+</div>
+<div class="research-pillar" markdown="1">
+<span class="research-pillar__label">Stage 2b · Work II</span>
+
+Pretrain BFN on \\(p(M)\\), form \\(M_{\text{ctx}} = M_1 \odot M_2\\) from two i.i.d. mask draws. Intersection yields strict positivity; observation-aligned guidance anchors generation.
+</div>
+</div>
 
 ## 1. Problem Setup
 
@@ -74,7 +97,9 @@ with **no complete sample ever in training**. Goal: learn \\(p_\\phi(u_0 \\mid u
 Intuitively, \\(M\\) tells us which coordinates are visible and \\(1-M\\) marks the region we ultimately want to reconstruct. The challenge is not only to fill a particular missing region, but to learn a conditional distribution over complete fields from a dataset where every example is censored in a different structured way.
 
 <figure class="research-figure">
-  <img src="/images/research/context-query-dynamics/mask-topologies.png" alt="Examples of structured incomplete observation masks from ocean and satellite data">
+  <a href="/images/research/context-query-dynamics/mask-topologies.png" class="image-popup">
+    <img src="/images/research/context-query-dynamics/mask-topologies.png" alt="Examples of structured incomplete observation masks from ocean and satellite data">
+  </a>
   <figcaption class="research-figure__caption">
     Figure 1. Real incomplete observations often have structured spatial topologies, from regional ocean coverage to satellite track patterns, rather than independent random missing pixels.
   </figcaption>
@@ -131,12 +156,16 @@ $$
 
 The two works below are two answers to "how do we guarantee this strict positivity?" — one heuristic, one generative.
 
-## 3. Work I — Distribution-Preserving Partitioning
+<div class="research-work-section" markdown="1">
+
+## 3. Work I — Distribution-Preserving Partitioning {#work-i}
 
 Work I is the practical route when the observation mask has a known structure, such as independent pixel dropout, regular sensor patterns, or block occlusions. Rather than learning a separate mask generator, we design the context mask to follow the same family of patterns as the original observation process.
 
 <figure class="research-figure">
-  <img src="/images/research/context-query-dynamics/context-query-selection.png" alt="Comparison between pixel-level and block-wise context-query partitioning strategies">
+  <a href="/images/research/context-query-dynamics/context-query-selection.png" class="image-popup">
+    <img src="/images/research/context-query-dynamics/context-query-selection.png" alt="Comparison between pixel-level and block-wise context-query partitioning strategies">
+  </a>
   <figcaption class="research-figure__caption">
     Figure 2. Context-query selection must respect the mask distribution: pixel-level splitting can leave zero-query regions, while block-wise splitting keeps query probabilities positive under block-structured observations.
   </figcaption>
@@ -199,13 +228,19 @@ $$
 and step the diffusion ODE — keeping observations consistent throughout.
 
 <figure class="research-figure">
-  <img src="/images/research/context-query-dynamics/block-reconstruction-comparison.png" alt="Navier-Stokes block reconstruction comparison between ground truth, our method, and MissDiff">
+  <a href="/images/research/context-query-dynamics/block-reconstruction-comparison.png" class="image-popup">
+    <img src="/images/research/context-query-dynamics/block-reconstruction-comparison.png" alt="Navier-Stokes block reconstruction comparison between ground truth, our method, and MissDiff">
+  </a>
   <figcaption class="research-figure__caption">
     Figure 3. Under block-structured missingness, distribution-aware context-query training better preserves the evolving physical field than a baseline that leaves block interiors under-supervised.
   </figcaption>
 </figure>
 
-## 4. Work II — Generative-Prior Partitioning
+</div>
+
+<div class="research-work-section" markdown="1">
+
+## 4. Work II — Generative-Prior Partitioning {#work-ii}
 
 Work II targets the harder case where mask geometry is too complex to specify by a few hand-written rules. Instead of manually deciding what a valid context split should look like, we first learn the distribution of observation masks and then sample partitions from that learned prior.
 
@@ -273,14 +308,20 @@ $$
 M_{\text{ctx}} = \hat M \odot M, \quad M_{\text{qry}} = M \odot (1 - M_{\text{ctx}}), \qquad \mathcal{L} = \mathbb{E}\big[\| M_{\text{qry}} \odot (u_\phi(M_{\text{ctx}} \odot u_{\text{obs}}, M_{\text{ctx}}) - u_{\text{obs}}) \|^2 \big]
 $$
 
+</div>
+
 ## 5. Summary
 
 Both works are built around the same message: incomplete observations are usable for learning complete dynamics if the self-supervised query mechanism covers every recoverable coordinate. The difference is whether that coverage is achieved by a rule we design or by a mask distribution we learn.
 
+<div class="research-comparison-table" markdown="1">
+
 | Route | How positivity is guaranteed | Trade-off |
 |:------|:-----------------------------|:----------|
-| Work I (distribution-preserving) | Sample \\(M_{\\text{ctx}}\\) with the same structure as \\(p_{\\text{mask}}\\); ensemble at inference | Pattern-specific heuristics; hard to cover complex spatial dependencies |
+| Work I (distribution-preserving) | Sample \\(M_{\text{ctx}}\\) with the same structure as \\(p_{\text{mask}}\\); ensemble at inference | Pattern-specific heuristics; hard to cover complex spatial dependencies |
 | Work II (generative-prior) | Intersection of two i.i.d. masks from \\(p(M)\\); observation-aligned guidance | Requires learning and sampling \\(p(M)\\), but holds for any topology |
+
+</div>
 
 The two routes are complementary, not competing. Work I is lightweight and needs no extra generative model when \\(p_{\\text{mask}}(M)\\) has a known or analytic structure, while Work II is the route when mask structure is complex or unknown, guaranteeing positivity by construction for any topology (whereas Work I relies on matched sampling).
 

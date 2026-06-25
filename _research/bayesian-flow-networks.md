@@ -3,6 +3,7 @@ title: "Bayesian Flow Networks as Shift-Invariant Continuous Diffusion"
 layout: research
 collection: research
 permalink: /research/bayesian-flow-networks/
+lang_switch_url: /zh/research/bayesian-flow-networks/
 order: 2
 published: true
 read_time: true
