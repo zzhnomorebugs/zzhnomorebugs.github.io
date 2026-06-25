@@ -35,6 +35,17 @@ layout: default
               <time datetime="{{ page.date | date_to_xmlschema }}">{{ page.date | date: "%Y-%m-%d" }}</time>
             </span>
           {% endif %}
+          {% if page.lang_switch_url %}
+            <nav class="research-lang-switch" aria-label="{% if page.lang == 'zh-CN' %}语言切换{% else %}Language{% endif %}">
+              {% if page.lang == "zh-CN" %}
+                <a href="{{ base_path }}{{ page.lang_switch_url }}" class="research-lang-switch__btn" hreflang="en" lang="en">English</a>
+                <span class="research-lang-switch__btn research-lang-switch__btn--active" aria-current="true" lang="zh-CN">中文</span>
+              {% else %}
+                <span class="research-lang-switch__btn research-lang-switch__btn--active" aria-current="true" lang="en">English</span>
+                <a href="{{ base_path }}{{ page.lang_switch_url }}" class="research-lang-switch__btn" hreflang="zh-CN" lang="zh-CN">中文</a>
+              {% endif %}
+            </nav>
+          {% endif %}
         </div>
 
         {% if page.tags.size > 0 %}

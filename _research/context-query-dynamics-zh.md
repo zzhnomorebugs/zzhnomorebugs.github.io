@@ -39,7 +39,7 @@ papers:
 
 <div class="mermaid">
 flowchart TB
-  subgraph backbone [统一骨干]
+  subgraph backbone["统一骨干"]
     obs["部分观测与掩码 M"]
     split["将 M 划分为 context 与 query"]
     train["在 context 上训练，在 query 上计算损失"]
@@ -47,13 +47,13 @@ flowchart TB
     split --> train
   end
 
-  subgraph work1 [工作 I · 分布保持]
+  subgraph work1["工作 I - 分布保持"]
     part1["从 p_mask 采样 context 掩码"]
     ens["推理时集成多个 context 掩码"]
     part1 --> ens
   end
 
-  subgraph work2 [工作 II · 生成式先验]
+  subgraph work2["工作 II - 生成式先验"]
     bfn["在掩码先验上预训练 BFN"]
     inter["Context 为两个掩码的交集"]
     guide["观测对齐引导"]
