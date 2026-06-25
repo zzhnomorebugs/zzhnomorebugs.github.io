@@ -131,4 +131,52 @@ $(document).ready(function(){
     });
   }
 
+  // Research page TOC scroll highlighting
+  if ($('.page--research .toc__menu').length > 0) {
+    var researchContent = $('.page--research .research-content');
+    var tocMenu = $('.page--research .toc__menu');
+    var tocLinks = tocMenu.find('a[href^="#"]');
+    var tocSections = researchContent.find('h2[id], h3[id], h4[id]');
+    var tocSidebar = $('.page--research .sidebar__right');
+    var tocOffset = 112;
+
+    function updateResearchToc() {
+      var scrollTop = $(window).scrollTop();
+      var current = '';
+
+      tocSections.each(function() {
+        var section = $(this);
+        if (scrollTop >= section.offset().top - tocOffset) {
+          current = section.attr('id');
+        }
+      });
+
+      tocLinks.removeClass('active');
+      tocMenu.find('li').removeClass('active');
+
+      if (current) {
+        var activeLink = tocLinks.filter('[href="#' + current + '"]');
+        activeLink.addClass('active');
+        activeLink.parent('li').addClass('active');
+
+        if (tocSidebar.length && activeLink.length) {
+          var linkTop = activeLink.offset().top;
+          var sidebarTop = tocSidebar.offset().top;
+          var sidebarBottom = sidebarTop + tocSidebar.outerHeight();
+          var sidebarScroll = tocSidebar.scrollTop();
+
+          if (linkTop < sidebarTop + 48) {
+            tocSidebar.scrollTop(sidebarScroll + linkTop - sidebarTop - 48);
+          } else if (linkTop > sidebarBottom - 48) {
+            tocSidebar.scrollTop(sidebarScroll + linkTop - sidebarBottom + 48);
+          }
+        }
+      }
+    }
+
+    $(window).on('scroll', updateResearchToc);
+    $(window).on('resize', updateResearchToc);
+    updateResearchToc();
+  }
+
 });
