@@ -231,24 +231,10 @@ This removes all heuristic design — but now requires sampling the complex disc
 
 ### Modeling p(M) with a BFN
 
-A Bayesian Flow Network handles discrete binary masks, recast into a continuous diffusion-style form so we can intervene by gradients in latent space:
+We need a model for a high-dimensional discrete mask prior \\(p(M)\\) that also supports latent gradient intervention during sampling. In this work, BFN provides exactly that bridge by lifting binary categories to continuous logits, training with discrete data matching, and sampling through a Tweedie-derived score under Gaussian forward dynamics.
 
-- **Scaled-logit target:** encode class \\(c\\) as \\(u_0 = Ke_c\\), since \\(\\mathrm{softmax}(Ke_c) \\to e_c\\) for large \\(K\\) — discrete generation becomes continuous regression.
-- **Forward process:** \\(x_t = \\alpha_t x_0 + \\sigma_t \\epsilon\\), \\(\\epsilon \\sim \\mathcal{N}(0, I)\\).
-- **Shift invariance:** the score inherits invariance to adding a constant across logits, enforced architecturally by feeding \\(\\mathrm{softmax}(x_t)\\) as input.
-- **Discrete data-matching objective:**
-
-$$
-\mathcal{L}_{\text{DM-discrete}} = \mathbb{E}_{t,c,\epsilon}\big[w(t)\, \|\hat e_\theta(t, \mathrm{softmax}(x_t)) - e_c\|^2\big]
-$$
-
-- **Sampling:** integrate the probability-flow ODE backward via Tweedie,
-
-$$
-\nabla_{x_t} \log p_t(x_t) = \frac{\alpha_t K \hat e_\theta(t, \mathrm{softmax}(x_t)) - x_t}{\sigma_t^2},
-$$
-
-decode \\(e_c = \\arg\\max \\frac{1}{K}(x_0 + 1)\\).
+Concretely, the implementation here uses the standard discrete BFN recipe (scaled-logit lift, \\(\mathcal{L}_{\text{DM}}\\), and probability-flow sampling with
+\\(\nabla_{x_t}\log p_t(x_t)\propto \alpha_t K \hat e_\theta - x_t\\)). A full mathematical treatment is moved to the dedicated note: [Bayesian Flow Networks as Shift-Invariant Continuous Diffusion](/research/bayesian-flow-networks/).
 
 ### Observation-aligned conditioning
 
