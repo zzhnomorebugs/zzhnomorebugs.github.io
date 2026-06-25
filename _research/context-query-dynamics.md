@@ -233,8 +233,13 @@ This removes all heuristic design — but now requires sampling the complex disc
 
 We need a model for a high-dimensional discrete mask prior \\(p(M)\\) that also supports latent gradient intervention during sampling. In this work, BFN provides exactly that bridge by lifting binary categories to continuous logits, training with discrete data matching, and sampling through a Tweedie-derived score under Gaussian forward dynamics.
 
-Concretely, the implementation here uses the standard discrete BFN recipe (scaled-logit lift, \\(\mathcal{L}_{\text{DM}}\\), and probability-flow sampling with
-\\(\nabla_{x_t}\log p_t(x_t)\propto \alpha_t K \hat e_\theta - x_t\\)). A full mathematical treatment is moved to the dedicated note: [Bayesian Flow Networks as Shift-Invariant Continuous Diffusion](/research/bayesian-flow-networks/).
+Concretely, the implementation here uses the standard discrete BFN recipe (scaled-logit lift, \\(\mathcal{L}_{\mathrm{DM}}\\), and probability-flow sampling):
+
+$$
+\nabla_{x_t}\log p_t(x_t)\propto \alpha_t K \hat{e}_{\theta} - x_t.
+$$
+
+A full mathematical treatment is moved to the dedicated note: [Bayesian Flow Networks as Shift-Invariant Continuous Diffusion](/research/bayesian-flow-networks/).
 
 ### Observation-aligned conditioning
 

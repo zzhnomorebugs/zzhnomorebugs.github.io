@@ -12,8 +12,7 @@ layout: default
   {% endunless %}
 {% endif %}
 
-{% assign show_sidebar = page.author_profile or layout.author_profile or page.sidebar %}
-<div id="main" role="main"{% unless show_sidebar %} class="main--no-sidebar"{% endunless %}>
+<div id="main" role="main"{% unless page.author_profile or layout.author_profile or page.sidebar %} class="main--no-sidebar"{% endunless %}>
   {% include sidebar.html %}
 
   <div class="archive">
