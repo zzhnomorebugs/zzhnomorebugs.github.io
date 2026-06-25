@@ -26,11 +26,11 @@ papers:
 
 <div class="mermaid">
 flowchart LR
-  classLabel["离散类别 $$c$$"] --> lift["提升: $$x_0 = K e_c$$"]
-  lift --> forward["前向: $$x_t = \alpha_t x_0 + \sigma_t \epsilon$$"]
-  forward --> predictor["预测器: $$\hat{e}_\theta(t, \mathrm{softmax}(x_t))$$"]
+  classLabel["离散类别 c"] --> lift["提升 x0 = K ec"]
+  lift --> forward["前向高斯腐蚀"]
+  forward --> predictor["预测类别概率"]
   predictor --> tweedie["经 Tweedie 得 score"]
-  tweedie --> reverse["反向 ODE/SDE"]
+  tweedie --> reverse["反向 ODE 或 SDE"]
   reverse --> decode["解码为类别样本"]
 </div>
 

@@ -25,11 +25,11 @@ This note is intentionally scoped to the discrete scaled-logit formulation. It d
 
 <div class="mermaid">
 flowchart LR
-  classLabel["Discrete class $$c$$"] --> lift["Lift: $$x_0 = K e_c$$"]
-  lift --> forward["Forward: $$x_t = \alpha_t x_0 + \sigma_t \epsilon$$"]
-  forward --> predictor["Predictor: $$\hat{e}_\theta(t, \mathrm{softmax}(x_t))$$"]
+  classLabel["Discrete class c"] --> lift["Lift x0 = K ec"]
+  lift --> forward["Forward Gaussian corruption"]
+  forward --> predictor["Predict class probabilities"]
   predictor --> tweedie["Score via Tweedie"]
-  tweedie --> reverse["Reverse ODE/SDE"]
+  tweedie --> reverse["Reverse ODE or SDE"]
   reverse --> decode["Decode to categorical sample"]
 </div>
 

@@ -39,30 +39,34 @@ papers:
 
 <div class="mermaid">
 flowchart TB
-  subgraph backbone[统一骨干]
+  subgraph backbone [统一骨干]
     obs["部分观测与掩码 M"]
     split["将 M 划分为 context 与 query"]
     train["在 context 上训练，在 query 上计算损失"]
-    obs --> split --> train
+    obs --> split
+    split --> train
   end
 
-  subgraph work1["工作 I：分布保持"]
+  subgraph work1 [工作 I · 分布保持]
     part1["从 p_mask 采样 context 掩码"]
     ens["推理时集成多个 context 掩码"]
     part1 --> ens
   end
 
-  subgraph work2["工作 II：生成式先验"]
+  subgraph work2 [工作 II · 生成式先验]
     bfn["在掩码先验上预训练 BFN"]
-    inter["Context = 两个掩码的交集"]
+    inter["Context 为两个掩码的交集"]
     guide["观测对齐引导"]
-    bfn --> inter --> guide
+    bfn --> inter
+    inter --> guide
   end
 
-  train --> work1
-  train --> work2
-  work1 --> out["恢复条件期望"]
-  work2 --> out
+  out["恢复条件期望"]
+
+  train --> part1
+  train --> bfn
+  ens --> out
+  guide --> out
 </div>
 
 上图将共享学习原理与两种掩码构造方式分开。两项工作使用相同的 context-query 去噪骨干，主要区别在于如何选择 context/query 划分，使没有可恢复维度被遗漏在训练信号之外。
