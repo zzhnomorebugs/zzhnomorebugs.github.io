@@ -98,6 +98,15 @@ excerpt: "Research Notes 框架写作指南与注意事项。"
 
 「技术路线图」一节建议放**一张 pipeline 图** + 2–3 句说明各阶段输入输出关系；后文按阶段或按模块展开，保持图文呼应。
 
+### 3.3 人称与语气
+
+研究笔记正文（含 `tldr`、`excerpt`、图注）统一使用**第三人称**或被动语态，避免作者视角的第一人称：
+
+- 英文：不用 `I frame`、`we design`、`our method` 等；改为 `the problem is framed as`、`the context mask is designed`、`the proposed method`
+- 中文：不用「我将…」「我们仅观测」「由我们设计」等；改为「该问题可建模为」「训练阶段仅可获得」「由显式设计的规则」
+
+`papers` 关联的论文摘要（`_publications/`）仍可用论文惯用的 `We propose` 体例，与本笔记文风区分。
+
 ---
 
 ## 4. 数学公式（MathJax）

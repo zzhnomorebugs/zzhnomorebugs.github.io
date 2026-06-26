@@ -10,7 +10,7 @@ published: true
 read_time: true
 date: 2026-06-23
 tags: [diffusion, imputation, context-query, AI4Science]
-tldr: "核心问题是：训练数据只有部分观测时，能否学到完整的物理动力学。我将问题建模为 context-query 学习：模型以一部分观测子集作为 context 输入，在另一被遮蔽的子集 query 上接受监督。这能把不完整数据转化为自监督，但前提是每个未出现在 context 中的维度都以严格正概率被 query。下面两篇工作提供了互补的保障方式：掩码模式已知时用轻量的分布保持划分，掩码结构复杂或未知时用生成式掩码先验划分。"
+tldr: "核心问题是：训练数据只有部分观测时，能否学到完整的物理动力学。该问题可建模为 context-query 学习：模型以一部分观测子集作为 context 输入，在另一被遮蔽的子集 query 上接受监督。这能把不完整数据转化为自监督，但前提是每个未出现在 context 中的维度都以严格正概率被 query。下面两篇工作提供了互补的保障方式：掩码模式已知时用轻量的分布保持划分，掩码结构复杂或未知时用生成式掩码先验划分。"
 excerpt: "面向从不完整观测中学习完整动力学的 context-query 扩散框架，以及两条互补路径，使自监督覆盖每一个可恢复维度。"
 papers:
   - incomplet-data
@@ -37,28 +37,35 @@ papers:
 
 ## 技术路线图
 
-<div class="mermaid">
+<pre class="mermaid">
 flowchart TB
-  obs["部分观测与掩码 M"]
-  split["将 M 划分为 context 与 query"]
-  train["在 context 上训练并在 query 上计算损失"]
-  part1["工作 I 分布保持划分"]
-  ens["推理时集成多个 context 掩码"]
-  bfn["工作 II 预训练掩码先验 BFN"]
-  inter["由掩码交集得到 context"]
-  guide["观测对齐引导"]
-  out["恢复条件期望"]
+  subgraph backbone["统一骨干"]
+    obs["部分观测与掩码 M"]
+    split["将 M 划分为 context 与 query"]
+    train["在 context 上训练并在 query 上计算损失"]
+    obs --> split
+    split --> train
+  end
 
-  obs --> split
-  split --> train
-  train --> part1
-  part1 --> ens
-  train --> bfn
-  bfn --> inter
-  inter --> guide
-  ens --> out
-  guide --> out
-</div>
+  subgraph work1["工作 I - 分布保持划分"]
+    part1["按 p_mask 结构采样 context 掩码"]
+    ens["推理时集成多个 context 掩码"]
+    part1 --> ens
+  end
+
+  subgraph work2["工作 II - 生成式先验划分"]
+    bfn["在掩码先验上预训练 BFN"]
+    inter["两次独立掩码的交集作为 context"]
+    guide["观测对齐引导"]
+    bfn --> inter
+    inter --> guide
+  end
+
+  train --> work1
+  train --> work2
+  work1 --> output["恢复条件期望"]
+  work2 --> output
+</pre>
 
 上图将共享学习原理与两种掩码构造方式分开。两项工作使用相同的 context-query 去噪骨干，主要区别在于如何选择 context/query 划分，使没有可恢复维度被遗漏在训练信号之外。
 
@@ -82,7 +89,7 @@ flowchart TB
 
 ## 1. 问题设定
 
-完整数据 \\(u_0 \\in \\mathbb{R}^d \\sim p_{\\text{data}}\\)，二值观测掩码 \\(M \\in \\{0,1\\}^d \\sim p_{\\text{mask}}(M)\\)，且 \\(p_{\\text{mask}}(M \\mid u_0) = p_{\\text{mask}}(M)\\)。我们仅观测
+完整数据 \\(u_0 \\in \\mathbb{R}^d \\sim p_{\\text{data}}\\)，二值观测掩码 \\(M \\in \\{0,1\\}^d \\sim p_{\\text{mask}}(M)\\)，且 \\(p_{\\text{mask}}(M \\mid u_0) = p_{\\text{mask}}(M)\\)。训练阶段仅可获得
 
 $$
 u_{\text{obs}} = M \odot u_0
@@ -183,7 +190,7 @@ $$
 
 训练时去噪器只看到 context 子集；推理时则有完整观测支撑 \\(M\\)。集成让模型回答多个略有不同的 context 问题并平均答案，在不改变已训练骨干的前提下利用额外观测。
 
-推理存在训练/测试不匹配：模型给出 \\(\\mathbb{E}[u_0 \\mid M_{\\text{ctx}} \\odot u_{\\text{obs},t}, M_{\\text{ctx}}]\\)，而我们想要 \\(\\mathbb{E}[u_0 \\mid u_{\\text{obs},t}, M]\\)。通过对 context 掩码集成来桥接。
+推理存在训练/测试不匹配：模型给出 \\(\\mathbb{E}[u_0 \\mid M_{\\text{ctx}} \\odot u_{\\text{obs},t}, M_{\\text{ctx}}]\\)，而推理目标是 \\(\\mathbb{E}[u_0 \\mid u_{\\text{obs},t}, M]\\)。通过对 context 掩码集成来桥接。
 
 **单步采样。** 施加极小噪声 \\(u_\\delta = \\alpha_\\delta u_{\\text{obs}} + \\sigma_\\delta \\epsilon\\)，\\(0 < \\delta \\ll 1\\)（使 \\(M \\odot u_\\delta \\approx u_{\\text{obs}}\\)），再对 \\(K\\) 个 context 掩码取平均：
 
@@ -262,7 +269,7 @@ $$
 
 ### 用 BFN 建模 p(M)
 
-我们需要对高维离散掩码先验 \\(p(M)\\) 的模型，且采样时支持潜空间梯度干预。本工作中 BFN 通过将二值类别提升到连续 logits、用离散数据匹配训练、并在高斯前向动力学下经 Tweedie 导出 score 采样，恰好提供该桥梁。
+需要一种对高维离散掩码先验 \\(p(M)\\) 的模型，且采样时支持潜空间梯度干预。工作 II 中，BFN 通过将二值类别提升到连续 logits、用离散数据匹配训练、并在高斯前向动力学下经 Tweedie 导出 score 采样，恰好提供该桥梁。
 
 具体实现采用标准离散 BFN 配方（scaled-logit 提升、\\(\mathcal{L}_{\mathrm{DM}}\\) 与概率流采样）：
 
@@ -308,7 +315,7 @@ $$
 
 ## 5. 总结
 
-两项工作围绕同一信息：若自监督 query 机制覆盖每个可恢复坐标，不完整观测可用于学习完整动力学。差别在于覆盖由我们设计的规则实现，还是由学习的掩码分布实现。
+两项工作围绕同一信息：若自监督 query 机制覆盖每个可恢复坐标，不完整观测可用于学习完整动力学。差别在于覆盖由显式设计的规则实现，还是由学习的掩码分布实现。
 
 <div class="research-comparison-table" markdown="1">
 

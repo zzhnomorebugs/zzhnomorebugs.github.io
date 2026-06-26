@@ -23,7 +23,7 @@ For the discrete branch of Bayesian Flow Networks, generation can be written as 
 
 This note is intentionally scoped to the discrete scaled-logit formulation. It does not attempt to re-derive the full sender-receiver Bayesian message-passing view used in the original BFN presentation.
 
-<div class="mermaid">
+<pre class="mermaid">
 flowchart LR
   classLabel["Discrete class c"] --> lift["Lift x0 = K ec"]
   lift --> forward["Forward Gaussian corruption"]
@@ -31,7 +31,7 @@ flowchart LR
   predictor --> tweedie["Score via Tweedie"]
   tweedie --> reverse["Reverse ODE or SDE"]
   reverse --> decode["Decode to categorical sample"]
-</div>
+</pre>
 
 ## 1. Diffusion on parameter space
 
@@ -77,7 +77,7 @@ $$
 \nabla_{x_t}\log p_t(x_t) = \frac{\alpha_t \,\mathbb{E}[x_0 \mid x_t]-x_t}{\sigma_t^2}.
 $$
 
-Using \\(\\mathbb{E}[x_0 \mid x_t] \approx K\,\hat{e}_\theta(t,\mathrm{softmax}(x_t))\\), we obtain
+Substituting \\(\\mathbb{E}[x_0 \mid x_t] \approx K\,\hat{e}_\theta(t,\mathrm{softmax}(x_t))\\) yields
 
 $$
 \nabla_{x_t}\log p_t(x_t)=\frac{\alpha_t K\,\hat{e}_\theta(t,\mathrm{softmax}(x_t))-x_t}{\sigma_t^2}.

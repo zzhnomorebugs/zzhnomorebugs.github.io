@@ -24,7 +24,7 @@ papers:
 
 本笔记有意限定于离散 scaled-logit 表述，不试图重推原始 BFN 论文中完整的发送方–接收方贝叶斯消息传递视角。
 
-<div class="mermaid">
+<pre class="mermaid">
 flowchart LR
   classLabel["离散类别 c"] --> lift["提升 x0 = K ec"]
   lift --> forward["前向高斯腐蚀"]
@@ -32,7 +32,7 @@ flowchart LR
   predictor --> tweedie["经 Tweedie 得 score"]
   tweedie --> reverse["反向 ODE 或 SDE"]
   reverse --> decode["解码为类别样本"]
-</div>
+</pre>
 
 ## 1. 参数空间上的扩散
 
