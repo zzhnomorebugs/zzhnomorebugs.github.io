@@ -1,5 +1,5 @@
 ---
-title: "从不完整观测中学习完整动力学：Context-Query 框架"
+title: "扩散模型中的 Context-Query 动力学：从掩码性质到生成式构造"
 layout: research
 collection: research
 permalink: /zh/research/context-query-dynamics/
@@ -10,8 +10,8 @@ published: true
 read_time: true
 date: 2026-06-23
 tags: [diffusion, imputation, context-query, AI4Science]
-tldr: "核心问题是：训练数据只有部分观测时，能否学到完整的物理动力学。该问题可建模为 context-query 学习：模型以一部分观测子集作为 context 输入，在另一被遮蔽的子集 query 上接受监督。这能把不完整数据转化为自监督，但前提是每个未出现在 context 中的维度都以严格正概率被 query。下面两篇工作提供了互补的保障方式：掩码模式已知时用轻量的分布保持划分，掩码结构复杂或未知时用生成式掩码先验划分。"
-excerpt: "面向从不完整观测中学习完整动力学的 context-query 扩散框架，以及两条互补路径，使自监督覆盖每一个可恢复维度。"
+tldr: "核心问题是：context-query 掩码需要满足什么性质，扩散模型才能从不完整观测中学习。第一项工作刻画了这一要求：每个可恢复维度都必须以严格正概率进入 query 集，否则去噪器在该维度不可识别；同时给出已知掩码族下的第一种构造，即分布保持划分与集成推理。第二项工作进一步回答如何生成这样的掩码：当掩码拓扑复杂或未知时，可学习生成式掩码先验，并按构造采样满足性质的 context-query 划分。"
+excerpt: "围绕 context-query 扩散的一条研究叙事：先刻画有效掩码划分应满足的性质，再用学习到的掩码先验为复杂缺失模式生成有效划分。"
 papers:
   - incomplet-data
   - ocean-imputation-mask
@@ -21,17 +21,23 @@ papers:
 
 ## 概述
 
+### 核心问题
+
+Context-query 掩码需要满足什么性质，扩散模型才能从不完整观测中学习？
+
 许多科学数据集并非随机缺失若干条目，而是通过传感器、卫星、探针或仿真，只揭示底层场的结构化子区域。困难在于，标准监督模型需要「不完整输入—完整目标」配对，而在此设定下训练阶段从未出现完整目标。
 
-关键思路是在每条部分观测内部构造监督：从已观测区域中，将一部分隐藏为 **query** 目标，另一部分作为 **context** 输入。若划分规则设计得当，模型会反复学习如何用已观测片段预测被遮蔽片段，这种局部自监督可迁移到测试时真正未观测的区域。
+Context-query 思路在每条部分观测内部构造监督：从已观测区域中，将一部分隐藏为 **query** 目标，另一部分作为 **context** 输入。这能把不完整数据转化为自监督，但前提是划分具有正确的统计性质：每个不在 context 中、但由观测过程可恢复的维度，都必须以严格正概率出现在 query 中。
 
-本页总结围绕该思路的两项关联工作。第一项探讨在观测掩码具有已知结构时，手工设计的划分能走多远。第二项用可学习的掩码生成先验替代手工规则，使同一原理能处理复杂的空间缺失模式。
+因此，这条研究线并不是一组掩码划分算法的列表，而是从 “性质要求” 到 “构造机制” 的递进：先说明什么样的 context-query split 是有效的，再说明如何在更复杂的观测拓扑下自动生成这样的 split。
+
+本页的两项工作构成同一条主线。第一项工作回答：有效的 context-query 掩码必须满足什么性质，并在掩码族已知时给出第一种构造。第二项工作回答：当掩码拓扑复杂或未知时，如何从学习到的掩码先验中生成满足这些性质的划分。
 
 <nav class="research-jump-nav" aria-label="章节导航">
   <a href="#技术路线图">路线图</a>
-  <a href="#2-统一的-context-query-骨干">骨干</a>
-  <a href="#work-i">工作 I</a>
-  <a href="#work-ii">工作 II</a>
+  <a href="#2-context-query-骨干与掩码性质">性质要求</a>
+  <a href="#first-construction">第一种构造</a>
+  <a href="#general-construction">一般构造</a>
   <a href="#5-总结">总结</a>
 </nav>
 
@@ -39,7 +45,7 @@ papers:
 
 <pre class="mermaid">
 flowchart TB
-  subgraph backbone["统一骨干"]
+  subgraph backbone["Context-Query 骨干"]
     obs["部分观测与掩码 M"]
     split["将 M 划分为 context 与 query"]
     train["在 context 上训练并在 query 上计算损失"]
@@ -47,13 +53,19 @@ flowchart TB
     split --> train
   end
 
-  subgraph work1["工作 I - 分布保持划分"]
-    part1["按 p_mask 结构采样 context 掩码"]
-    ens["推理时集成多个 context 掩码"]
+  subgraph req["掩码性质要求"]
+    pos["严格 query 正性"]
+    ident["可识别的去噪目标"]
+    pos --> ident
+  end
+
+  subgraph first["第一种构造"]
+    part1["分布保持划分"]
+    ens["集成推理"]
     part1 --> ens
   end
 
-  subgraph work2["工作 II - 生成式先验划分"]
+  subgraph general["一般构造"]
     bfn["在掩码先验上预训练 BFN"]
     inter["两次独立掩码的交集作为 context"]
     guide["观测对齐引导"]
@@ -61,29 +73,30 @@ flowchart TB
     inter --> guide
   end
 
-  train --> work1
-  train --> work2
-  work1 --> output["恢复条件期望"]
-  work2 --> output
+  train --> req
+  req --> first
+  req --> general
+  first --> output["有效的 context-query 监督"]
+  general --> output
 </pre>
 
-上图将共享学习原理与两种掩码构造方式分开。两项工作使用相同的 context-query 去噪骨干，主要区别在于如何选择 context/query 划分，使没有可恢复维度被遗漏在训练信号之外。
+上图将学习骨干、掩码性质要求与两种构造方式分开。分布保持划分是掩码族已知时的第一种构造；生成式掩码先验划分则是面向复杂或未知拓扑的一般构造。
 
 <div class="research-pillars">
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">阶段 1 · 骨干</span>
+<span class="research-pillar__label">性质要求 · Query 正性</span>
 
-给定部分观测 \\(u_{\text{obs}} = M \odot u_0\\) 与掩码 \\(M\\)，将观测支撑划分为 context \\(M_{\text{ctx}}\\)（输入）与 query \\(M_{\text{qry}}\\)（损失）。仅依据 context 训练扩散去噪器 \\(u_\phi\\)。
+给定部分观测 \\(u_{\text{obs}} = M \odot u_0\\)，有效划分必须让每个可恢复的非 context 维度以正概率出现在 \\(M_{\text{qry}}\\) 中，否则该处去噪目标不可识别。
 </div>
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">阶段 2a · 工作 I</span>
+<span class="research-pillar__label">第一种构造 · 已知掩码族</span>
 
-以与 \\(p_{\text{mask}}(M)\\) 相同结构采样 \\(M_{\text{ctx}}\\)，使每个已观测维度都能以正概率被 query。推理时集成多个 context 掩码。
+以与 \\(p_{\text{mask}}(M)\\) 相同的结构模式采样 \\(M_{\text{ctx}}\\)。当观测模式已知时，这种分布保持划分能给出轻量的有效 split。
 </div>
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">阶段 2b · 工作 II</span>
+<span class="research-pillar__label">一般构造 · 学习掩码先验</span>
 
-在 \\(p(M)\\) 上预训练 BFN，令 \\(M_{\text{ctx}} = M_1 \odot M_2\\)（两次独立掩码）。交集保证严格正性；观测对齐引导锚定生成。
+学习 \\(p(M)\\)，令 \\(M_{\text{ctx}} = M_1 \odot M_2\\)（两次独立掩码），并将样本引导到当前观测附近。有效划分由模型生成，而不是手工设计。
 </div>
 </div>
 
@@ -108,7 +121,7 @@ $$
   </figcaption>
 </figure>
 
-## 2. 统一的 Context-Query 骨干
+## 2. Context-Query 骨干与掩码性质
 
 骨干将每条部分观测视为一个小型自监督任务。模型不直接重建从未观测的条目，而是先重建「已观测但被故意从输入中隐藏」的条目。这样既提供有效训练目标，又使测试时任务与插补对齐。
 
@@ -157,13 +170,15 @@ $$
 P((M_{\text{qry}})_i = 1 \mid M_{\text{ctx}}) > 0 \quad \forall\, i:\ (M_{\text{ctx}})_i = 0, \qquad P((M_{\text{qry}})_i = 1 \mid M_{\text{ctx}}) \approx P((M_{\text{qry}})_j = 1 \mid M_{\text{ctx}})
 $$
 
-下面两项工作是对「如何保证严格正性？」的两种回答——一种启发式，一种生成式。
+这就是组织后续两种构造的性质要求：若掩码族已知，可直接设计分布保持划分；若掩码拓扑复杂或未知，则需要从学习到的掩码先验中生成有效划分。
 
 <div class="research-work-section" markdown="1">
 
-## 3. 工作 I — 分布保持划分 {#work-i}
+## 3. 第一种构造 - 分布保持划分 {#first-construction}
 
-工作 I 适用于观测掩码具有已知结构的实用路线，如独立像素 dropout、规则传感器模式或块状遮挡。无需学习单独的掩码生成器，而是将 context 掩码设计为遵循与原始观测过程相同的模式族。
+第一种构造适用于观测掩码具有已知结构的情形，如独立像素 dropout、规则传感器模式或块状遮挡。此时目标不是再学习一个掩码生成器，而是构造一个 context 掩码，使其分布保持原始观测过程的结构族。
+
+这项工作的作用有两层：一是刻画有效 context-query 掩码必须满足的性质；二是在掩码族已知时，说明这些性质可以通过轻量的手工划分实现。
 
 <figure class="research-figure">
   <a href="/images/research/context-query-dynamics/context-query-selection.png" class="image-popup">
@@ -186,7 +201,7 @@ $$
 
 > Context 过少 → 信息缺口大、方差高、收敛慢；过多 → \\(p_i\\) 极小、更新稀少。中等比例最优。
 
-### 集成推理
+### 用多个有效 context 推理
 
 训练时去噪器只看到 context 子集；推理时则有完整观测支撑 \\(M\\)。集成让模型回答多个略有不同的 context 问题并平均答案，在不改变已训练骨干的前提下利用额外观测。
 
@@ -243,13 +258,15 @@ $$
 
 <div class="research-work-section" markdown="1">
 
-## 4. 工作 II — 生成式先验划分 {#work-ii}
+## 4. 一般构造 - 生成式掩码先验划分 {#general-construction}
 
-工作 II 针对掩码几何过于复杂、难以用少量手写规则指定的更难情形。不手工决定合法 context 划分的外观，而是先学习观测掩码分布，再从该先验采样划分。
+一般构造面向更难的情形：掩码几何过于复杂，难以用少量手写规则指定。上一节得到的性质要求并没有改变：每个可恢复坐标仍需保持 query 正性。改变的是构造 split 的方式。
 
-### 动机
+不再手工决定合法 context 划分的外观，而是先学习观测掩码分布，再从该先验中采样满足性质的划分。
 
-分布保持规则须针对每种观测模式手工设计（像素 dropout、块遮挡等），引入模式相关超参，且难以在复杂真实空间依赖下普遍保证正性。目标：对任意空间拓扑均有效的单一机制。
+### 从性质要求到掩码采样器
+
+分布保持规则须针对每种观测模式手工设计（像素 dropout、块遮挡等），引入模式相关超参，且难以在复杂真实空间依赖下普遍保证正性。目标是构造一种对任意空间拓扑均有效的机制：学习掩码分布，采样候选 context 结构，并按构造保持同一个正性要求。
 
 ### 交集免费获得正性
 
@@ -269,7 +286,7 @@ $$
 
 ### 用 BFN 建模 p(M)
 
-需要一种对高维离散掩码先验 \\(p(M)\\) 的模型，且采样时支持潜空间梯度干预。工作 II 中，BFN 通过将二值类别提升到连续 logits、用离散数据匹配训练、并在高斯前向动力学下经 Tweedie 导出 score 采样，恰好提供该桥梁。
+需要一种对高维离散掩码先验 \\(p(M)\\) 的模型，且采样时支持潜空间梯度干预。BFN 通过将二值类别提升到连续 logits、用离散数据匹配训练、并在高斯前向动力学下经 Tweedie 导出 score 采样，恰好提供该桥梁。
 
 具体实现采用标准离散 BFN 配方（scaled-logit 提升、\\(\mathcal{L}_{\mathrm{DM}}\\) 与概率流采样）：
 
@@ -315,17 +332,18 @@ $$
 
 ## 5. 总结
 
-两项工作围绕同一信息：若自监督 query 机制覆盖每个可恢复坐标，不完整观测可用于学习完整动力学。差别在于覆盖由显式设计的规则实现，还是由学习的掩码分布实现。
+两项工作围绕同一信息：不完整观测能用于学习完整动力学，但前提是 context-query split 满足正确的掩码性质。第一项工作识别这一性质，并在已知观测模式下给出第一种构造。第二项工作把同一个性质转化为生成式构造问题，使复杂或未知掩码拓扑下也能得到有效 split。
 
 <div class="research-comparison-table" markdown="1">
 
-| 路线 | 正性保障方式 | 权衡 |
-|:-----|:-------------|:-----|
-| 工作 I（分布保持） | 以与 \\(p_{\text{mask}}\\) 相同结构采样 \\(M_{\text{ctx}}\\)；推理时集成 | 模式相关启发式；难覆盖复杂空间依赖 |
-| 工作 II（生成式先验） | 从 \\(p(M)\\) 两次独立掩码的交集；观测对齐引导 | 需学习并采样 \\(p(M)\\)，但对任意拓扑成立 |
+| 角色 | 回答的问题 | 机制 |
+|:-----|:---------|:-----|
+| 掩码性质要求 | 什么样的 context-query split 是有效的？ | 严格 query 正性与可识别去噪目标 |
+| 第一种构造 | 掩码族已知时，如何构造有效 split？ | 分布保持划分与集成推理 |
+| 一般构造 | 拓扑复杂或未知时，如何生成有效 split？ | 生成式掩码先验、交集划分与观测对齐引导 |
 
 </div>
 
-两条路线互补而非竞争。工作 I 轻量，在 \\(p_{\\text{mask}}(M)\\) 结构已知或可解析时无需额外生成模型；工作 II 适用于掩码结构复杂或未知的情形，按构造对任意拓扑保证正性（工作 I 则依赖匹配采样）。
+两种构造互补而非竞争。分布保持划分轻量，在 \\(p_{\\text{mask}}(M)\\) 结构已知或可解析时无需额外生成模型；生成式掩码先验划分则适用于掩码结构复杂或未知的情形，按构造对任意拓扑保证正性。
 
-正性现按构造对每种合法拓扑成立，模型将重建从合成训练掩码迁移到测试时真正缺失的区域——**全程从未见过完整场**。
+更广义地看，这条研究线可以概括为：先刻画有效 context-query 掩码必须保证什么，再构造能在越来越真实的观测过程中生成这类掩码的机制。

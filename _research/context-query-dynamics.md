@@ -1,5 +1,5 @@
 ---
-title: "Learning Complete Dynamics from Incomplete Observations: A Context-Query Framework"
+title: "Context-Query Dynamics in Diffusion Models: From Mask Requirements to Generative Construction"
 layout: research
 collection: research
 permalink: /research/context-query-dynamics/
@@ -9,8 +9,8 @@ published: true
 read_time: true
 date: 2026-06-23
 tags: [diffusion, imputation, context-query, AI4Science]
-tldr: "The central question is whether complete physical dynamics can be learned when training data only contains partial observations. The problem is framed as context-query learning: the model receives one observed subset as context and is supervised on another withheld subset as query. This turns incomplete data into self-supervision, but it only works when every missing-from-context dimension is queried with strictly positive probability. The two works below provide complementary ways to guarantee that condition: a lightweight distribution-preserving partition when the mask pattern is known, and a generative mask-prior partition when the mask structure is complex or unknown."
-excerpt: "A context-query diffusion framework for learning complete dynamics from incomplete observations, with two complementary routes to make self-supervision cover every recoverable dimension."
+tldr: "The central question is what properties context-query masks must satisfy for diffusion models to learn from incomplete observations. The first work characterizes the requirement: every recoverable dimension must enter the query set with strictly positive probability, otherwise the denoiser is not identifiable there. It then gives a first construction for known mask families through distribution-preserving partitioning and ensemble inference. The second work generalizes the construction problem: when mask topology is complex or unknown, a generative mask prior can sample valid context-query partitions by construction."
+excerpt: "A context-query diffusion framework organized around mask requirements: first characterize when a split is valid, then generate valid masks from a learned prior for complex missingness."
 papers:
   - incomplet-data
   - ocean-imputation-mask
@@ -20,17 +20,21 @@ papers:
 
 ## Overview
 
+### Core Question
+
+What properties must context-query masks satisfy for diffusion models to learn from incomplete observations?
+
 Many scientific datasets are not missing a few random entries; they are collected through sensors, satellites, probes, or simulations that only reveal structured parts of the underlying field. The difficulty is that a standard supervised model would like pairs of incomplete input and complete target, but in this setting a complete target never appears during training.
 
-The key idea is to create supervision inside each partial observation. From the observed region, one subset is hidden as the **query** target and another is provided as **context** input. If this splitting rule is designed correctly, the model repeatedly learns how observed pieces predict withheld pieces, and this local self-supervision can be transferred to genuinely unobserved regions at test time.
+The context-query idea creates supervision inside each partial observation. From the observed region, one subset is hidden as the **query** target and another is provided as **context** input. This turns incomplete data into self-supervision, but only if the split has the right statistical property: every dimension that is absent from context but recoverable from the observation process must appear in query with strictly positive probability.
 
-This page summarizes two connected works around that idea. The first work asks how far a hand-designed partition that respects the observation pattern can go. The second work replaces the hand-designed rule with a learned generative prior over masks, so the same principle can handle complex spatial missingness.
+The two works on this page form a single requirement-to-construction story. The first work asks what makes a context-query split valid and gives a first construction when the mask family is known. The second work asks how to generate such valid splits automatically when the mask topology is complex or unknown.
 
 <nav class="research-jump-nav" aria-label="Section navigation">
   <a href="#technical-roadmap">Roadmap</a>
-  <a href="#2-unified-context-query-backbone">Backbone</a>
-  <a href="#work-i">Work I</a>
-  <a href="#work-ii">Work II</a>
+  <a href="#2-context-query-backbone-and-mask-requirements">Requirements</a>
+  <a href="#first-construction">First Construction</a>
+  <a href="#general-construction">General Construction</a>
   <a href="#5-summary">Summary</a>
 </nav>
 
@@ -38,7 +42,7 @@ This page summarizes two connected works around that idea. The first work asks h
 
 <pre class="mermaid">
 flowchart TB
-  subgraph backbone["Unified Backbone"]
+  subgraph backbone["Context-Query Backbone"]
     obs["Partial obs and mask M"]
     split["Split M into context and query"]
     train["Train on context, loss on query"]
@@ -46,13 +50,19 @@ flowchart TB
     split --> train
   end
 
-  subgraph work1["Work I - Distribution Preserving"]
-    part1["Sample context mask from p_mask"]
-    ens["Ensemble context masks at inference"]
+  subgraph req["Mask Requirement"]
+    pos["Strict query positivity"]
+    ident["Identifiable denoising targets"]
+    pos --> ident
+  end
+
+  subgraph first["First Construction"]
+    part1["Distribution-preserving partition"]
+    ens["Ensemble inference"]
     part1 --> ens
   end
 
-  subgraph work2["Work II - Generative Prior"]
+  subgraph general["General Construction"]
     bfn["Pretrain BFN on mask prior"]
     inter["Context as intersection of two masks"]
     guide["Observation-aligned guidance"]
@@ -60,29 +70,30 @@ flowchart TB
     inter --> guide
   end
 
-  train --> work1
-  train --> work2
-  work1 --> output["Recover conditional expectation"]
-  work2 --> output
+  train --> req
+  req --> first
+  req --> general
+  first --> output["Valid context-query supervision"]
+  general --> output
 </pre>
 
-The diagram separates the shared learning principle from the two ways of constructing masks. Both works use the same context-query denoising backbone; they differ mainly in how they choose the context/query split so that no recoverable dimension is left without training signal.
+The diagram separates the learning backbone, the mask property it requires, and two ways to realize that property. Distribution-preserving partitioning is the first construction for known mask families; generative mask-prior partitioning is the general construction for complex or unknown topologies.
 
 <div class="research-pillars">
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">Stage 1 · Backbone</span>
+<span class="research-pillar__label">Requirement · Query Positivity</span>
 
-Given partial observations \\(u_{\text{obs}} = M \odot u_0\\) and mask \\(M\\), split the observed support into context \\(M_{\text{ctx}}\\) (input) and query \\(M_{\text{qry}}\\) (loss). Train diffusion denoiser \\(u_\phi\\) on context only.
+Given partial observations \\(u_{\text{obs}} = M \odot u_0\\), a valid split must make every recoverable non-context dimension appear in \\(M_{\text{qry}}\\) with positive probability. Otherwise the denoising target is arbitrary there.
 </div>
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">Stage 2a · Work I</span>
+<span class="research-pillar__label">First Construction · Known Mask Family</span>
 
-Sample \\(M_{\text{ctx}}\\) with the same structural pattern as \\(p_{\text{mask}}(M)\\) so every observed dimension can be queried with positive probability. Ensemble context masks at inference.
+Sample \\(M_{\text{ctx}}\\) with the same structural pattern as \\(p_{\text{mask}}(M)\\). This preserves compatibility with multiple full masks and gives a lightweight valid split when the observation pattern is known.
 </div>
 <div class="research-pillar" markdown="1">
-<span class="research-pillar__label">Stage 2b · Work II</span>
+<span class="research-pillar__label">General Construction · Learned Mask Prior</span>
 
-Pretrain BFN on \\(p(M)\\), form \\(M_{\text{ctx}} = M_1 \odot M_2\\) from two i.i.d. mask draws. Intersection yields strict positivity; observation-aligned guidance anchors generation.
+Learn \\(p(M)\\), form \\(M_{\text{ctx}} = M_1 \odot M_2\\) from two i.i.d. mask draws, and guide samples toward the current observation. Valid partitions are generated rather than hand-designed.
 </div>
 </div>
 
@@ -107,7 +118,7 @@ Intuitively, \\(M\\) indicates which coordinates are visible and \\(1-M\\) marks
   </figcaption>
 </figure>
 
-## 2. Unified Context-Query Backbone
+## 2. Context-Query Backbone and Mask Requirements
 
 The backbone treats each partial observation as a small self-supervised task. Instead of asking the model to reconstruct entries that were never observed, the training objective first targets entries that are observed but deliberately hidden from the input. This gives a valid training target while keeping the test-time task aligned with imputation.
 
@@ -156,13 +167,15 @@ $$
 P((M_{\text{qry}})_i = 1 \mid M_{\text{ctx}}) > 0 \quad \forall\, i:\ (M_{\text{ctx}})_i = 0, \qquad P((M_{\text{qry}})_i = 1 \mid M_{\text{ctx}}) \approx P((M_{\text{qry}})_j = 1 \mid M_{\text{ctx}})
 $$
 
-The two works below are two answers to how strict positivity can be guaranteed — one heuristic, one generative.
+This is the requirement that organizes the two constructions below. First, if the mask family is known, a distribution-preserving split can satisfy it directly. Second, if the mask topology is complex or unknown, valid splits must be generated from a learned mask prior.
 
 <div class="research-work-section" markdown="1">
 
-## 3. Work I — Distribution-Preserving Partitioning {#work-i}
+## 3. A First Construction - Distribution-Preserving Partitioning {#first-construction}
 
-Work I is the practical route when the observation mask has a known structure, such as independent pixel dropout, regular sensor patterns, or block occlusions. Rather than learning a separate mask generator, the context mask is designed to follow the same family of patterns as the original observation process.
+The first construction applies when the observation mask has a known structure, such as independent pixel dropout, regular sensor patterns, or block occlusions. In this setting, the goal is not to invent a new mask generator, but to construct a context mask whose distribution preserves the structural family of the original observation process.
+
+This work therefore has two roles: it characterizes the required mask property, and it shows that the property can be realized with a lightweight hand-designed split when the mask family is known.
 
 <figure class="research-figure">
   <a href="/images/research/context-query-dynamics/context-query-selection.png" class="image-popup">
@@ -185,7 +198,7 @@ Since \\(M_{\\text{ctx}} \\subseteq M\\), sampling \\(M_{\\text{ctx}}\\) with th
 
 > Too few context points → large information gap, high variance, slow convergence; too many → \\(p_i\\) tiny, infrequent updates. A moderate ratio is optimal.
 
-### Ensemble inference
+### Inference with many valid contexts
 
 During training, the denoiser sees only a context subset. During inference, however, the full observed support \\(M\\) is available. Ensembling asks the model many slightly different context questions and averages the answers, using the extra observations without changing the trained backbone.
 
@@ -242,13 +255,15 @@ and step the diffusion ODE — keeping observations consistent throughout.
 
 <div class="research-work-section" markdown="1">
 
-## 4. Work II — Generative-Prior Partitioning {#work-ii}
+## 4. A General Construction - Generative Mask-Prior Partitioning {#general-construction}
 
-Work II targets the harder case where mask geometry is too complex to specify by a few hand-written rules. Instead of manually deciding what a valid context split should look like, the observation-mask distribution is learned first and partitions are sampled from that learned prior.
+The general construction targets the harder case where mask geometry is too complex to specify by a few hand-written rules. The requirement from the previous section remains unchanged: query positivity must hold for every recoverable coordinate. What changes is how the split is constructed.
 
-### Motivation
+Instead of manually deciding what a valid context split should look like, the observation-mask distribution is learned first and valid partitions are sampled from that learned prior.
 
-The distribution-preserving rule must be hand-crafted per observation pattern (pixel dropout, block occlusion, …), introduces pattern-specific hyperparameters, and is mathematically hard to universally guarantee positivity over complex real spatial dependencies. Goal: a single mechanism valid for any spatial topology.
+### From validity requirement to mask sampler
+
+The distribution-preserving rule must be hand-crafted per observation pattern (pixel dropout, block occlusion, …), introduces pattern-specific hyperparameters, and is mathematically hard to universally guarantee positivity over complex real spatial dependencies. The goal is a single mechanism valid for any spatial topology: learn the mask distribution, sample candidate context structures, and preserve the same positivity property by construction.
 
 ### Intersection gives positivity for free
 
@@ -314,17 +329,18 @@ $$
 
 ## 5. Summary
 
-Both works are built around the same message: incomplete observations are usable for learning complete dynamics if the self-supervised query mechanism covers every recoverable coordinate. The difference is whether that coverage is achieved by a designed rule or by a learned mask distribution.
+Both works are built around the same message: incomplete observations are usable for learning complete dynamics only when the context-query split satisfies the right mask property. The first work identifies that property and gives a first construction for known observation patterns. The second work turns the same property into a generative construction problem, enabling valid splits for complex or unknown mask topologies.
 
 <div class="research-comparison-table" markdown="1">
 
-| Route | How positivity is guaranteed | Trade-off |
-|:------|:-----------------------------|:----------|
-| Work I (distribution-preserving) | Sample \\(M_{\text{ctx}}\\) with the same structure as \\(p_{\text{mask}}\\); ensemble at inference | Pattern-specific heuristics; hard to cover complex spatial dependencies |
-| Work II (generative-prior) | Intersection of two i.i.d. masks from \\(p(M)\\); observation-aligned guidance | Requires learning and sampling \\(p(M)\\), but holds for any topology |
+| Role | What it answers | Mechanism |
+|:-----|:----------------|:----------|
+| Mask requirement | What properties must a context-query split satisfy? | Strict query positivity and identifiable denoising targets |
+| First construction | How can valid masks be built when the mask family is known? | Distribution-preserving partitioning and ensemble inference |
+| General construction | How can valid masks be generated when topology is complex or unknown? | Generative mask priors, intersection partitions, and observation-aligned guidance |
 
 </div>
 
-The two routes are complementary, not competing. Work I is lightweight and needs no extra generative model when \\(p_{\\text{mask}}(M)\\) has a known or analytic structure, while Work II is the route when mask structure is complex or unknown, guaranteeing positivity by construction for any topology (whereas Work I relies on matched sampling).
+The two constructions are complementary, not competing. Distribution-preserving partitioning is lightweight and needs no extra generative model when \\(p_{\\text{mask}}(M)\\) has a known or analytic structure. Generative mask-prior partitioning is the scalable route when mask structure is complex or unknown, guaranteeing positivity by construction for any topology.
 
-Positivity now holds by construction for every valid topology, so the model transfers reconstruction from synthetic training masks to the genuinely-missing regions at test time — **without ever seeing a complete field**.
+The broader research thread is therefore: first characterize what a valid context-query mask must guarantee, then build mechanisms that generate such masks under increasingly realistic observation processes.
