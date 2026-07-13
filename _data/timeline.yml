@@ -4,26 +4,26 @@ range:
 
 columns:
   - label: "逆合成结构生成"
-    label_en: "Retrosynthesis structure generation"
+    label_en: "Retrosynthesis Structure Generation"
     color: "#7E6148"
     palette:
       - "#7E6148"
 
   - label: "不完整数据下的动力学建模"
-    label_en: "Dynamics under incomplete observations"
+    label_en: "Dynamics Under Incomplete Observations"
     color: "#E64B35"
     palette:
       - "#E64B35"
 
   - label: "dynamics预测"
-    label_en: "Dynamics prediction"
+    label_en: "Dynamics Prediction"
     color: "#00A087"
     palette:
       - "#91D1C2"
       - "#00A087"
 
   - label: "分子/蛋白质生成/预测"
-    label_en: "Molecular / protein generation && prediction"
+    label_en: "Molecular / Protein Generation && Prediction"
     color: "#3C5488"
     palette:
       - "#8491B4"

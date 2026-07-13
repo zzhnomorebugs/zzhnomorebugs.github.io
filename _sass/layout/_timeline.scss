@@ -10,7 +10,7 @@
 
 .timeline__axis {
   position: relative;
-  flex: 0 0 3.25rem;
+  flex: 0 0 3.75rem;
 }
 
 .timeline__tick {
@@ -31,7 +31,7 @@
 
 .timeline__tick-label {
   flex: 1;
-  font-size: $type-size-7;
+  font-size: $type-size-6;
   color: var(--global-text-color-light);
   white-space: nowrap;
   padding-left: 0.45rem;
@@ -207,11 +207,11 @@
 
 @include breakpoint($small) {
   .timeline__axis {
-    flex: 0 0 2.75rem;
+    flex: 0 0 3.5rem;
   }
 
   .timeline__tick-label {
-    font-size: 0.65rem;
+    font-size: 0.85rem;
   }
 
   .timeline__columns,

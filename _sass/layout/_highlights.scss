@@ -9,7 +9,7 @@
   display: grid;
   grid-template-columns: minmax(110px, 38%) 1fr;
   gap: 1rem;
-  align-items: start;
+  align-items: center;
   padding: 1rem;
   border: 1px solid var(--global-border-color);
   border-radius: $border-radius;
