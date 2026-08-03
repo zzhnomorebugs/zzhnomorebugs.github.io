@@ -17,7 +17,7 @@ entries:
         - "**Research Codebase Maintenance:** Maintained and extended the core implementation throughout the project, enabling rapid iteration on new ablations, debugging training and evaluation workflows, and keeping the codebase adaptable for follow-up experiments."
       zh:
         - "**单步逆合成生成（Single-Step Retrosynthesis Generation）：** 从零搭建用于产物到反应物生成的项目代码库，作为训练、评测与实验基础设施的主要开发者和维护者。"
-        - "**可配置实验框架：** 设计基于 Hydra 的实验框架，支持反应中心引导排序、原子排序策略、模型规模变体、采样步数扫描等多类逆合成对比实验的可复现运行。"
+        - "**可配置实验框架：** 设计基于 Hydra 的实验框架，支持反应中心引导排序、原子排序策略、模型规模变体、采样步数扫描等多类逆合成对比实验的可复现运行。调通原子排序后看到小模型追平大模型的那一刻，被吓到眩晕瘫坐——就像看到原子弹爆炸。"
         - "**研究代码库维护：** 在项目周期内持续维护并扩展核心实现，支持新消融实验的快速迭代，调试训练与评测流程，并保持代码库对后续实验的可扩展性。"
 
   - company:
