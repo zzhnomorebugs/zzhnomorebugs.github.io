@@ -1,38 +1,44 @@
 {% include base_path %}
 
 {% if page.permalink == "/publications/" or page.permalink == "/zh/publications/" %}
-<nav class="publications-nav" id="publications-nav">
-  <div class="publications-nav__header">
-    <h3>{% if page.lang == "zh-CN" %}论文发表{% else %}Publications{% endif %}</h3>
-  </div>
-  <ul class="publications-nav__list">
-    {% if site.publication_category %}
-      {% for category in site.publication_category %}
-        {% assign category_posts = site.publications | where: "category", category[0] | reverse %}
-        {% if category_posts.size > 0 %}
-          <li class="publications-nav__category">
-            <span class="publications-nav__category-title">{% if page.lang == "zh-CN" %}{{ category[1].title_zh | default: category[1].title }}{% else %}{{ category[1].title }}{% endif %}</span>
-            <ul class="publications-nav__items">
-              {% for post in category_posts %}
-                <li class="publications-nav__item">
-                  <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
-                    {{ post.title | truncate: 60 }}
-                  </a>
-                </li>
-              {% endfor %}
-            </ul>
+<nav class="publications-nav-wrap" aria-label="{% if page.lang == 'zh-CN' %}论文目录{% else %}Publications outline{% endif %}">
+  <button type="button" class="publications-nav-toggle" id="publications-nav-toggle" aria-expanded="false" aria-controls="publications-nav">
+    <span>{% if page.lang == "zh-CN" %}论文目录{% else %}Jump to paper{% endif %}</span>
+    <span aria-hidden="true">▾</span>
+  </button>
+  <div class="publications-nav is-collapsed" id="publications-nav">
+    <div class="publications-nav__header">
+      <h3>{% if page.lang == "zh-CN" %}论文发表{% else %}Publications{% endif %}</h3>
+    </div>
+    <ul class="publications-nav__list">
+      {% if site.publication_category %}
+        {% for category in site.publication_category %}
+          {% assign category_posts = site.publications | where: "category", category[0] | reverse %}
+          {% if category_posts.size > 0 %}
+            <li class="publications-nav__category">
+              <span class="publications-nav__category-title">{% if page.lang == "zh-CN" %}{{ category[1].title_zh | default: category[1].title }}{% else %}{{ category[1].title }}{% endif %}</span>
+              <ul class="publications-nav__items">
+                {% for post in category_posts %}
+                  <li class="publications-nav__item">
+                    <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
+                      {{ post.title | truncate: 60 }}
+                    </a>
+                  </li>
+                {% endfor %}
+              </ul>
+            </li>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        {% for post in site.publications reversed %}
+          <li class="publications-nav__item">
+            <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
+              {{ post.title | truncate: 60 }}
+            </a>
           </li>
-        {% endif %}
-      {% endfor %}
-    {% else %}
-      {% for post in site.publications reversed %}
-        <li class="publications-nav__item">
-          <a href="#publication-{{ post.title | slugify }}" class="publications-nav__link" data-title="{{ post.title | slugify }}">
-            {{ post.title | truncate: 60 }}
-          </a>
-        </li>
-      {% endfor %}
-    {% endif %}
-  </ul>
+        {% endfor %}
+      {% endif %}
+    </ul>
+  </div>
 </nav>
 {% endif %}

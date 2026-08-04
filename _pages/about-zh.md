@@ -1,27 +1,44 @@
 ---
 permalink: /zh/
-title: "周子涵"
+title: "主页"
+hide_title: true
+description: "香港中文大学（深圳）数据科学博士生。研究方向为 AI for Science、物理先验生成建模与面向科学计算的扩散模型。"
 author_profile: true
 lang: zh-CN
 lang_switch_url: /
 ---
 
-我是[香港中文大学（深圳）](https://www.cuhk.edu.cn/)数据科学专业的博士研究生，导师为[于天舒教授](https://mypage.cuhk.edu.cn/academics/yutianshu/)。我的研究方向是 **AI for Science**，重点研究面向物理动力学求解与物理可行结构生成的机器学习方法。
+{% include base_path %}
+
+<div class="home-hero">
+  <p class="home-hero__lead">
+    我是
+    <a href="https://www.cuhk.edu.cn/">香港中文大学（深圳）</a>
+    数据科学专业的博士研究生，导师为
+    <a href="https://mypage.cuhk.edu.cn/academics/yutianshu/">于天舒教授</a>。
+    研究方向是 <strong>AI for Science</strong>：面向物理动力学求解与物理可行结构生成的机器学习方法。
+  </p>
+
+  <ul class="home-hero__metrics">
+    <li><strong>ICLR / ICML</strong> 论文</li>
+    <li><strong>AI for Science</strong></li>
+    <li><strong>扩散与流匹配</strong></li>
+  </ul>
+
+  <div class="home-hero__actions">
+    <a class="home-action-btn" href="mailto:zihanzhou1@link.cuhk.edu.cn">邮箱</a>
+    <a class="home-action-btn" href="https://scholar.google.com.hk/citations?user=NxB0_NkAAAAJ&amp;hl=zh-CN"{% include paper-link-target.html %}>Google Scholar</a>
+    <a class="home-action-btn" href="https://github.com/zzhnomorebugs"{% include paper-link-target.html %}>GitHub</a>
+    <a class="home-action-btn home-action-btn--primary" href="{{ base_path }}/zh/cv/">简历</a>
+  </div>
+</div>
 
 ## 研究兴趣
 
-我的工作处于机器学习与科学计算的交叉领域，主要涵盖以下几个相互关联的方向：
-
-- **物理先验生成建模：** 设计融合物理先验（偏微分方程、守恒律）与几何不变性（SE(3) 等变性）的扩散模型、流匹配模型与神经微分方程，用于物理动力学的前向模拟与逆问题推断。
-
-- **不完整观测下的科学学习：** 构建具有理论收敛保障的原则性生成框架，从稀疏、结构化或真实遮挡的科学观测中填补时空场并反演物理参数。
-
-- **结构感知的分子与蛋白质建模：** 构建几何与序列生成模型，覆盖分子构象、逆合成、多尺度蛋白质构象系综以及蛋白–语言基础模型。
-
-**应用领域：** 分子设计与构象生成、蛋白质动力学模拟与序列设计、气候与海洋学数据重建、PDE 参数反演以及不规则时间序列建模。
+{% include research-interest-cards.html %}
 
 ## 近期亮点
 
 {% include recent-highlights.html %}
 
-完整的论文列表请见 [论文发表](/zh/publications/) 页面。
+完整的论文列表请见 [论文发表]({{ base_path }}/zh/publications/) 页面。

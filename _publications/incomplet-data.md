@@ -18,7 +18,12 @@ venue: 'ICLR2026'
 paperurl: 'https://arxiv.org/pdf/2509.20098'
 posterurl: 'https://iclr.cc/media/PosterPDFs/ICLR%202026/10009854.png'
 poster_image: publications/posters/incomplete_data_poster.png
+poster_thumb: publications/posters/incomplete_data_poster_thumb.webp
 githuburl: 'https://github.com/LOGO-CUHKSZ/incomplete-data-complete-dynamics'
-
 image: publications/incomplete_data.png
+highlight: true
+highlight_tags:
+  - Incomplete Observations
+  - Physical Dynamics
+highlight_metric: "Convergence guarantees · strong gains under 1–20% coverage"
 ---

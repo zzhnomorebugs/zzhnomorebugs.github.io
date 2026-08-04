@@ -1,0 +1,15 @@
+{% if page.lang == "zh-CN" %}
+  {% assign interests = site.data.research_interests.zh %}
+{% else %}
+  {% assign interests = site.data.research_interests.en %}
+{% endif %}
+
+<div class="research-interest-grid">
+  {% for item in interests %}
+    <article class="research-interest-card">
+      <div class="research-interest-card__icon" aria-hidden="true">{{ item.icon }}</div>
+      <h3 class="research-interest-card__title">{{ item.title }}</h3>
+      <p class="research-interest-card__text">{{ item.text }}</p>
+    </article>
+  {% endfor %}
+</div>

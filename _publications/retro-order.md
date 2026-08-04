@@ -18,5 +18,11 @@ venue: 'ICML2026'
 paperurl: 'https://arxiv.org/pdf/2602.13136v1'
 posterurl: 'https://icml.cc/media/PosterPDFs/ICML%202026/60684.png'
 poster_image: publications/posters/retro_order_poster.png
+poster_thumb: publications/posters/retro_order_poster_thumb.webp
 image: publications/retro_order.png
+highlight: true
+highlight_tags:
+  - Retrosynthesis
+  - Discrete Flow Matching
+highlight_metric: "USPTO-50k Top-1 61.2% · USPTO-Full 51.3% · 6× faster training"
 ---

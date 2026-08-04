@@ -4,14 +4,14 @@ title             : "Zihan Zhou"
 title_separator   : "-"
 name              : "Zihan Zhou"
 description       : "Ph.D. student in Data Science at CUHK-Shenzhen, working on AI4Science, physics-informed machine learning, and diffusion models for scientific computing."
-url               : https://zzhnomorebugs.github.io/
+url               : https://zzhnomorebugs.github.io
 baseurl           : "" # the subpath of your site, e.g. "/blog"
 repository        : "https://github.com/zzhnomorebugs/zzhnomorebugs.github.io"
 
 
 author:
   # Biographic information
-  avatar           : "Zhou_Zihan_20260306.jpg"
+  avatar           : "Zhou_Zihan_20260306_thumb.webp"
   name             : "Zihan Zhou"
   pronouns         : "he/him"  
   bio              : "Ph.D. student in Data Science at CUHK-Shenzhen. Research focuses on AI4Science, particularly physics-informed machine learning and diffusion models for solving physical dynamics."
@@ -34,7 +34,7 @@ author:
   # bitbucket        : # Username - Update with your username on the site
   # codepen          : # Username
   # dribbble         : # Username
-  # github           : "academicpages"
+  github           : "zzhnomorebugs"
   # kaggle           : # Username  
   # stackoverflow    : # User number or user number and name (i.e., use "1" or "1/jeff-atwood")    
 
@@ -128,13 +128,15 @@ facebook:
   username               :
   app_id                 :
   publisher              :
-og_image                 :  # Open Graph/Twitter default site image
+og_image                 : "Zhou_Zihan_20260306_og.jpg"
 # For specifying social profiles
 # - https://developers.google.com/structured-data/customize/social-profiles
 social:
-  type                   : # Person or Organization (defaults to Person)
-  name                   : # If the user or organization name differs from the site's name
-  links: # An array of links to social media profiles
+  type                   : Person
+  name                   : "Zihan Zhou"
+  links:
+    - "https://scholar.google.com.hk/citations?user=NxB0_NkAAAAJ&hl=zh-CN"
+    - "https://github.com/zzhnomorebugs"
 
 
 # Analytics

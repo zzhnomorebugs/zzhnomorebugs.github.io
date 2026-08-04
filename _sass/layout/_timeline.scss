@@ -233,6 +233,22 @@
   }
 }
 
+@include breakpoint(max-width $medium) {
+  .timeline__chart {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .timeline__grid,
+  .timeline__columns {
+    min-width: 36rem;
+  }
+
+  .timeline__bar-label {
+    -webkit-line-clamp: 2;
+  }
+}
+
 @media print {
   .timeline__bar {
     box-shadow: none;

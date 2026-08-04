@@ -22,6 +22,11 @@
 {% endif %}
 
 <div class="page__footer-copyright">
-  &copy; {{ site.time | date: '%Y' }} {{ site.name | default: site.title }}, {{ site.data.ui-text[current_locale].powered_by | default: "Powered by" }} <a href="http://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://github.com/academicpages/academicpages.github.io">AcademicPages</a>, a fork of <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.<br />
-  {% if page.lang == "zh-CN" %}本站最近更新于{% else %}Site last updated{% endif %} {{ "now" | date: '%Y-%m-%d' %}}
+  &copy; {{ site.time | date: '%Y' }} {{ site.name | default: site.title }}.
+  {% if page.lang == "zh-CN" %}基于{% else %}Built with{% endif %}
+  <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a>
+  &amp;
+  <a href="https://github.com/academicpages/academicpages.github.io">AcademicPages</a>.
+  {% if page.lang == "zh-CN" %}最近更新{% else %}Updated{% endif %}
+  {{ "now" | date: '%Y-%m-%d' }}.
 </div>

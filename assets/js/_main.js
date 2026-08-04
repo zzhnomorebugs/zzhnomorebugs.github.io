@@ -29,8 +29,12 @@ $(document).ready(function(){
 
   // Follow menu drop down
   $(".author__urls-wrapper button").on("click", function() {
-    $(".author__urls").fadeToggle("fast", function() {});
-    $(".author__urls-wrapper button").toggleClass("open");
+    var $button = $(this);
+    $(".author__urls").fadeToggle("fast", function() {
+      var isVisible = $(this).is(":visible");
+      $button.attr("aria-expanded", isVisible ? "true" : "false");
+    });
+    $button.toggleClass("open");
   });
 
   // Restore the follow menu if toggled on a window resize
@@ -47,7 +51,7 @@ $(document).ready(function(){
 
   // add lightbox class to image links (supports query strings in URL)
   $('a[href]').filter(function() {
-    return /\.(jpe?g|png|gif)(\?|#|$)/i.test(this.getAttribute('href'));
+    return /\.(jpe?g|png|gif|webp)(\?|#|$)/i.test(this.getAttribute('href'));
   }).addClass('image-popup');
 
   var imagePopupOptions = {
@@ -86,6 +90,13 @@ $(document).ready(function(){
     var publicationsNav = $('#publications-nav');
     var navLinks = publicationsNav.find('.publications-nav__link');
     var publications = $('.archive__item[id^="publication-"]');
+    var publicationsToggle = $('#publications-nav-toggle');
+
+    publicationsToggle.on('click', function() {
+      var expanded = publicationsNav.hasClass('is-collapsed');
+      publicationsNav.toggleClass('is-collapsed');
+      $(this).attr('aria-expanded', expanded ? 'true' : 'false');
+    });
     
     function updateActiveNav() {
       var scrollTop = $(window).scrollTop();
@@ -126,6 +137,10 @@ $(document).ready(function(){
           $('html, body').animate({
             scrollTop: targetElement.offset().top - 64
           }, 500);
+          if ($(window).width() < 925) {
+            publicationsNav.addClass('is-collapsed');
+            publicationsToggle.attr('aria-expanded', 'false');
+          }
         }
       }
     });

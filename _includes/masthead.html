@@ -8,21 +8,37 @@
   {% assign home_url = "/" %}
 {% endif %}
 
+{% assign current_path = page.url | replace: "index.html", "" %}
+
 <div class="masthead">
   <div class="masthead__inner-wrap">
     <div class="masthead__menu">
-      <nav id="site-nav" class="greedy-nav">
-        <button><div class="navicon"></div></button>
-        <ul class="visible-links">
-          <li class="masthead__menu-item masthead__menu-item--lg"><a href="{{ base_path }}{{ home_url }}">{{ site.title }}</a></li>
+      <nav id="site-nav" class="greedy-nav" aria-label="{% if page.lang == 'zh-CN' %}主导航{% else %}Primary{% endif %}">
+        <button type="button" class="greedy-nav__toggle" aria-label="{% if page.lang == 'zh-CN' %}打开菜单{% else %}Open menu{% endif %}" aria-expanded="false" aria-controls="site-nav-menu">
+          <div class="navicon" aria-hidden="true"></div>
+        </button>
+        <ul id="site-nav-menu" class="visible-links">
+          <li class="masthead__menu-item masthead__menu-item--lg{% if current_path == home_url or current_path == '/' and home_url == '/' %} is-active{% endif %}">
+            <a href="{{ base_path }}{{ home_url }}">{{ site.title }}</a>
+          </li>
           {% for link in nav_links %}
             {% if link.url contains 'http' %}
               {% assign domain = '' %}
-              {% else %}
+            {% else %}
               {% assign domain = base_path %}
             {% endif %}
-            <li class="masthead__menu-item"><a href="{{ domain }}{{ link.url }}">{{ link.title }}</a></li>
+            {% assign link_path = link.url %}
+            <li class="masthead__menu-item{% if current_path == link_path %} is-active{% endif %}">
+              <a href="{{ domain }}{{ link.url }}"{% if current_path == link_path %} aria-current="page"{% endif %}>{{ link.title }}</a>
+            </li>
           {% endfor %}
+          <li class="masthead__menu-item masthead__menu-item--lang">
+            {% if page.lang == "zh-CN" %}
+              <a href="{{ base_path }}{{ page.lang_switch_url | default: '/' }}" hreflang="en">English</a>
+            {% else %}
+              <a href="{{ base_path }}{{ page.lang_switch_url | default: '/zh/' }}" hreflang="zh-CN">中文</a>
+            {% endif %}
+          </li>
         </ul>
         <ul class="hidden-links hidden"></ul>
       </nav>

@@ -1,26 +1,51 @@
 {% include base_path %}
 
-{% assign items = site.publications | where_exp: "p", "p.poster_image" | sort: "date" | reverse %}
+{% assign items = site.publications | where_exp: "p", "p.highlight == true" | sort: "date" | reverse %}
+{% if items.size == 0 %}
+  {% assign items = site.publications | where_exp: "p", "p.poster_image" | sort: "date" | reverse %}
+{% endif %}
 
 <div class="recent-highlights">
-  {% for post in items %}
-    {% assign venue_label = post.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " %}
-    {% assign img_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
+  {% for post in items limit: 3 %}
+    {% assign venue_raw = post.venue | default: "" %}
+    {% assign venue_label = venue_raw | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | strip %}
+    {% if post.poster_thumb %}
+      {% assign thumb_src = post.poster_thumb | prepend: "/images/" | prepend: base_path %}
+    {% elsif post.poster_image %}
+      {% assign thumb_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
+    {% else %}
+      {% assign thumb_src = post.image | prepend: "/images/" | prepend: base_path %}
+    {% endif %}
+    {% if post.poster_image %}
+      {% assign full_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
+    {% else %}
+      {% assign full_src = thumb_src %}
+    {% endif %}
     <article class="recent-highlight-card">
       <div class="recent-highlight-card__poster">
-        <a href="{{ img_src }}" class="image-popup">
-          <img src="{{ img_src }}" alt="{{ post.title | escape }}" loading="lazy">
+        <a href="{{ full_src }}" class="image-popup">
+          <img src="{{ thumb_src }}" alt="Poster for {{ post.title | escape }}" loading="lazy" width="640" height="480">
         </a>
       </div>
       <div class="recent-highlight-card__body">
-        <p class="recent-highlight-card__meta">
-          <strong>{{ venue_label }}:</strong>
-          {% if post.paperurl %}
-            <a href="{{ post.paperurl }}"><em>{{ post.title }}</em></a>
-          {% else %}
-            <em>{{ post.title }}</em>
+        <div class="recent-highlight-card__badges">
+          <span class="highlight-badge">{{ venue_label }}</span>
+          {% if post.highlight_tags %}
+            {% for tag in post.highlight_tags %}
+              <span class="highlight-badge highlight-badge--muted">{{ tag }}</span>
+            {% endfor %}
           {% endif %}
-        </p>
+        </div>
+        <h3 class="recent-highlight-card__title">
+          {% if post.paperurl %}
+            <a href="{{ post.paperurl }}"{% include paper-link-target.html %}>{{ post.title }}</a>
+          {% else %}
+            {{ post.title }}
+          {% endif %}
+        </h3>
+        {% if post.highlight_metric %}
+          <p class="recent-highlight-card__metric">{{ post.highlight_metric }}</p>
+        {% endif %}
         {% if page.lang == "zh-CN" %}
           {% assign display_tldr = post.tldr_zh | default: post.excerpt_zh %}
           {% assign tldr_label = "太长不看" %}
@@ -33,10 +58,11 @@
             <strong>{{ tldr_label }}:</strong> {{ display_tldr | markdownify | remove: '<p>' | remove: '</p>' }}
           </p>
         {% endif %}
-        {% if post.paperurl or post.posterurl %}
+        {% if post.paperurl or post.posterurl or post.githuburl %}
           <div class="publication-links recent-highlight-card__links">
-            {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}">Paper</a>{% endif %}
-            {% if post.posterurl %}<a class="publication-link-btn" href="{{ post.posterurl }}">Poster</a>{% endif %}
+            {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
+            {% if post.posterurl %}<a class="publication-link-btn" href="{{ post.posterurl }}"{% include paper-link-target.html %}>Poster</a>{% endif %}
+            {% if post.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ post.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
           </div>
         {% endif %}
       </div>

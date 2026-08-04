@@ -285,12 +285,20 @@
   }
 
   &__nav {
-    display: none;
+    display: block;
+    margin: 0 0 1.25rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--global-border-color);
+    border-radius: 10px;
+    background: #fafafa;
 
     @include breakpoint($large) {
-      display: block;
       width: 220px;
       flex-shrink: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
       position: sticky;
       top: calc(#{$masthead-height} + 1em);
       max-height: calc(100vh - #{$masthead-height} - 2em);
@@ -300,19 +308,49 @@
   }
 }
 
-/* ==========================================================================
-   PUBLICATIONS NAVIGATION
-   ========================================================================== */
+.publications-nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--global-text-color);
+  font-size: $type-size-6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+
+  @include breakpoint($large) {
+    display: none;
+  }
+}
 
 .publications-nav {
   margin: 0;
   padding: 0;
   border-top: none;
 
+  &.is-collapsed {
+    display: none;
+
+    @include breakpoint($large) {
+      display: block;
+    }
+  }
+
   &__header {
+    display: none;
     margin-bottom: 1em;
     padding-bottom: 0.75em;
     border-bottom: 1px solid var(--global-border-color);
+
+    @include breakpoint($large) {
+      display: block;
+    }
 
     h3 {
       margin: 0;

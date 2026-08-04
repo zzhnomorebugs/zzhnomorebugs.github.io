@@ -10,7 +10,7 @@ lang_switch_url: /cv/
 
 # 周子涵
 
-电子邮件：zihanzhou1@link.cuhk.edu.cn ｜ 电话：(+86) 13098696800
+电子邮件：zihanzhou1@link.cuhk.edu.cn
 
 ## 教育背景
 
@@ -26,11 +26,21 @@ lang_switch_url: /cv/
 - 物理先验融合与不变/等变生成模型设计
 - 分子构象、逆合成与蛋白质动力学/基础模型的结构感知生成
 
-## 研究项目
+## 代表性论文
+- **ICML 2026：** Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching
+- **ICLR 2026：** Incomplete Data, Complete Dynamics: A Diffusion Approach
+- **ICLR 2025：** Generating Physical Dynamics under Priors
+- **ICML 2023：** Learning to Decouple: Learning Biologically Relevant Temporal Representations from Longitudinal Data
 
-### 基于色谱过程的参数估计 ｜ 2024.06 -- 至今
-利用深度学习方法模拟由偏微分方程描述的色谱过程，并从湿实验观测结果中反演出可能的 PDE 参数：
-- 进行中
+完整列表见 [论文发表](/zh/publications/)。
+
+## 研究经历
+
+**上海人工智能实验室** ｜ 研究实习生，AI4Science ｜ 2025.06 -- 2026.05  
+逆合成生成与 MSA 条件蛋白质序列建模（含 650M 规模训练与采样研究）。
+
+**香港中文大学（深圳）** ｜ 博士研究 ｜ 2023.09 -- 至今  
+物理先验生成建模、不完整观测下的动力学学习，以及结构感知的科学生成。
 
 ## 学术服务
 

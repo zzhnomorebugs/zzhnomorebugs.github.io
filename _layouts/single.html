@@ -24,7 +24,7 @@ layout: default
     {% if page.modified %}<meta itemprop="dateModified" content="{{ page.modified | date: "%B %d, %Y" }}">{% endif %}
 
     <div class="page__inner-wrap">
-      {% unless page.header.overlay_color or page.header.overlay_image %}
+      {% unless page.header.overlay_color or page.header.overlay_image or page.hide_title %}
         <header>
           {% if page.title %}<h1 class="page__title" itemprop="headline">{{ page.title | markdownify | remove: "<p>" | remove: "</p>" }}</h1>{% endif %}
           {% if page.read_time %}
@@ -49,10 +49,10 @@ layout: default
 
         {% if page.paperurl or page.slidesurl or page.posterurl or page.githuburl %}
           <div class="publication-links">
-            {% if page.paperurl %}<a class="publication-link-btn" href="{{ page.paperurl }}">Paper</a>{% endif %}
-            {% if page.slidesurl %}<a class="publication-link-btn" href="{{ page.slidesurl }}">Slides</a>{% endif %}
-            {% if page.posterurl %}<a class="publication-link-btn" href="{{ page.posterurl }}">Poster</a>{% endif %}
-            {% if page.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ page.githuburl }}">Code</a>{% endif %}
+            {% if page.paperurl %}<a class="publication-link-btn" href="{{ page.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
+            {% if page.slidesurl %}<a class="publication-link-btn" href="{{ page.slidesurl }}"{% include paper-link-target.html %}>Slides</a>{% endif %}
+            {% if page.posterurl %}<a class="publication-link-btn" href="{{ page.posterurl }}"{% include paper-link-target.html %}>Poster</a>{% endif %}
+            {% if page.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ page.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
           </div>
         {% endif %}
 

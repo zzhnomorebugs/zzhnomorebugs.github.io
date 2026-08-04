@@ -1,0 +1,21 @@
+en:
+  - icon: "Φ"
+    title: "Physics-Informed Generative Modeling"
+    text: "Diffusion, flow matching, and neural differential equation models that integrate physical priors and geometric invariances for forward simulation and inverse inference."
+  - icon: "∅"
+    title: "Learning from Incomplete Observations"
+    text: "Principled generative frameworks for imputing spatiotemporal fields and recovering physical parameters from sparse or occluded scientific data."
+  - icon: "⬡"
+    title: "Structure-Aware Molecular & Protein Modeling"
+    text: "Geometric and sequence generative models for molecular conformations, retrosynthesis, protein ensembles, and protein–language foundation models."
+
+zh:
+  - icon: "Φ"
+    title: "物理先验生成建模"
+    text: "融合物理先验与几何不变性的扩散、流匹配与神经微分方程，用于物理动力学的前向模拟与逆问题推断。"
+  - icon: "∅"
+    title: "不完整观测下的科学学习"
+    text: "从稀疏或遮挡的科学观测中填补时空场、反演物理参数，并提供具有理论保障的生成框架。"
+  - icon: "⬡"
+    title: "结构感知的分子与蛋白质建模"
+    text: "面向分子构象、逆合成、蛋白质构象系综以及蛋白–语言基础模型的几何与序列生成方法。"

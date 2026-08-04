@@ -11,7 +11,7 @@ redirect_from:
 
 # Zihan Zhou
 
-Email: zihanzhou1@link.cuhk.edu.cn | Tel: (+86) 13098696800
+Email: zihanzhou1@link.cuhk.edu.cn
 
 ## Education Background
 
@@ -27,14 +27,23 @@ B.S. in Mathematics and Applied Mathematics | Cum GPA: 3.513/4.0 | Honors, First
 - Integration of physical priors and design of invariant/equivariant generative models
 - Structure-aware generation for molecular conformations, retrosynthesis, and protein dynamics/foundation models
 
-## Research Projects
+## Selected Publications
+- **ICML 2026:** Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching
+- **ICLR 2026:** Incomplete Data, Complete Dynamics: A Diffusion Approach
+- **ICLR 2025:** Generating Physical Dynamics under Priors
+- **ICML 2023:** Learning to Decouple: Learning Biologically Relevant Temporal Representations from Longitudinal Data
 
-### Chromatography for Parameter Estimation | 06/2024 -- Present
-Apply deep learning methods to simulate the chromatography process, which is governed by PDEs and infer possible PDE parameters from observed wet lab results:
-- In process
+For the full list, see [Publications](/publications/).
+
+## Research Experience
+
+**Shanghai AI Lab** | Research Intern, AI4Science | 06/2025 -- 05/2026  
+Retrosynthesis generation and MSA-conditioned protein sequence modeling (650M-scale training and sampling studies).
+
+**CUHK-Shenzhen** | Ph.D. Research | 09/2023 -- Present  
+Physics-informed generative modeling, incomplete-observation dynamics learning, and structure-aware scientific generation.
 
 ## Academic Service
 
 **Conference Reviewer:** ICML, NeurIPS, ICLR  
 **Journal Reviewer:** TMLR
-

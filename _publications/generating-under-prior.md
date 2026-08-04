@@ -19,7 +19,12 @@ paperurl: 'https://arxiv.org/pdf/2409.00730v3'
 slidesurl: 'https://iclr.cc/media/iclr-2025/Slides/28929.pdf'
 posterurl: 'https://iclr.cc/media/PosterPDFs/ICLR%202025/28929.png?t=1743674153.1185303'
 poster_image: publications/posters/generating_under_prior_poster.png
+poster_thumb: publications/posters/generating_under_prior_poster_thumb.webp
 githuburl: 'https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors'
-
 image: publications/generating_under_prior.png
+highlight: true
+highlight_tags:
+  - Physical Priors
+  - Diffusion Models
+highlight_metric: "Distributional + PDE feasibility priors for realistic dynamics"
 ---

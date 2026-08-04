@@ -10,7 +10,7 @@
     {% if author.avatar contains "://" %}
     	<img src="{{ author.avatar }}" alt="{{ author.name }}">
     {% else %}
-    	<img src="{{ author.avatar | prepend: "/images/" | prepend: base_path }}" class="author__avatar" alt="{{ author.name }}">
+    	<img src="{{ author.avatar | prepend: "/images/" | prepend: base_path }}" class="author__avatar" alt="Portrait of {{ author.name }}" width="175" height="219" loading="eager">
     {% endif %}
   </div>
 
@@ -21,8 +21,8 @@
   </div>
 
   <div class="author__urls-wrapper">
-    <button class="btn btn--inverse">{% if page.lang == "zh-CN" %}关注{% else %}Follow{% endif %}</button>
-    <ul class="author__urls social-icons">
+    <button class="btn btn--inverse" type="button" aria-expanded="false" aria-controls="author-urls">{% if page.lang == "zh-CN" %}联系方式{% else %}Contact{% endif %}</button>
+    <ul id="author-urls" class="author__urls social-icons">
       <!-- Font Awesome icons / Biographic information  -->
       {% if author.location %}
         <li class="author__desktop"><i class="fa-solid fa-location-dot icon-pad-right" aria-hidden="true"></i>{{ author.location }}</li>
@@ -158,14 +158,6 @@
       <li><a href="https://www.zhihu.com/people/{{ author.zhihu }}"><i class="fab fa-fw fa-zhihu icon-pad-right" aria-hidden="true"></i>Zhihu</a></li>
       {% endif %}
 
-      <li class="author__language-toggle">
-        <i class="fa-solid fa-language icon-pad-right" aria-hidden="true"></i>
-        {% if page.lang == "zh-CN" %}
-          <a href="{{ base_path }}{{ page.lang_switch_url | default: '/' }}">English</a> · <strong>中文</strong>
-        {% else %}
-          <strong>English</strong> · <a href="{{ base_path }}{{ page.lang_switch_url | default: '/zh/' }}">中文</a>
-        {% endif %}
-      </li>
-    </ul>
+      </ul>
   </div>
 </div>

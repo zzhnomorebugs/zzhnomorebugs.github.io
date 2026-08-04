@@ -1,7 +1,7 @@
 ---
 date: 2026-05-29
 title: "AMix-2: Establishing Protein as a Native Modality in Large Language Models"
-authors: "Keyue Qiu*, Yixin Wu*, <strong>Zihan Zhou</strong>, Changze Lv, Lihao Wang, et al., Hao Zhou<sup>#</sup> <em> (listed: Model core, co-first, and corresponding authors</em>"
+authors: "Keyue Qiu*, Yixin Wu*, <strong>Zihan Zhou</strong>, Changze Lv, Lihao Wang, et al., Hao Zhou<sup>#</sup> <em>(listed: model core, co-first, and corresponding authors)</em>"
 collection: publications
 category: preprint
 permalink: /publication/amix-2
