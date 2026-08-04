@@ -20,6 +20,7 @@
 
       laneProjects.forEach(function (p, i) {
         p.color = palette[Math.min(i, palette.length - 1)];
+        p.topic = col.label;
       });
     });
   }
@@ -54,24 +55,11 @@
   }
 
   function buildActiveMonths(projects, t0, t1) {
-    var active = {};
-
-    projects.forEach(function (p) {
-      var start = Math.max(p.startIdx, t0);
-      var end = Math.min(p.endIdx, t1);
-
-      for (var month = start; month <= end; month++) {
-        active[month] = true;
-      }
-    });
-
-    return Object.keys(active)
-      .map(function (month) {
-        return Number(month);
-      })
-      .sort(function (a, b) {
-        return a - b;
-      });
+    var months = [];
+    for (var month = t0; month <= t1; month++) {
+      months.push(month);
+    }
+    return months;
   }
 
   function activeMonthRanks(activeMonths) {
@@ -130,10 +118,17 @@
     var offset = 0;
 
     for (var i = 0; i < gaps.length; i++) {
+      var gapSize = gaps[i].end - gaps[i].start;
+      var keptSize = gaps[i].keep || 0;
+      var removedSize = gapSize - keptSize;
       if (y >= gaps[i].end) {
-        offset += gaps[i].end - gaps[i].start;
+        offset += removedSize;
       } else if (y > gaps[i].start) {
-        return gaps[i].start - offset;
+        return (
+          gaps[i].start -
+          offset +
+          ((y - gaps[i].start) / gapSize) * keptSize
+        );
       } else {
         break;
       }
@@ -169,13 +164,30 @@
     });
 
     var gaps = [];
-    for (var i = 1; i < merged.length; i++) {
-      if (merged[i].start > merged[i - 1].end) {
+    var keptGap = 30;
+
+    function addGap(start, end) {
+      if (end - start > keptGap) {
         gaps.push({
-          start: merged[i - 1].end,
-          end: merged[i].start
+          start: start,
+          end: end,
+          keep: keptGap
         });
       }
+    }
+
+    if (merged.length) {
+      addGap(CHART_PADDING, merged[0].start);
+    }
+
+    for (var i = 1; i < merged.length; i++) {
+      if (merged[i].start > merged[i - 1].end) {
+        addGap(merged[i - 1].end, merged[i].start);
+      }
+    }
+
+    if (merged.length) {
+      addGap(merged[merged.length - 1].end, gridHeight - CHART_PADDING);
     }
 
     return {
@@ -301,6 +313,24 @@
     return scale;
   }
 
+  function renderNowLine(grid, ranks, activeCount, scale, gaps) {
+    var now = currentMonth();
+    if (!Object.prototype.hasOwnProperty.call(ranks, now)) return;
+
+    var line = document.createElement("div");
+    line.className = "timeline__now";
+    var rawTop =
+      CHART_PADDING + (activeCount - 1 - ranks[now]) * scale + scale / 2;
+    line.style.top = compressedPosition(rawTop, gaps) + "px";
+
+    var label = document.createElement("span");
+    label.className = "timeline__now-label";
+    label.textContent =
+      document.documentElement.lang === "zh" ? "现在" : "Now";
+    line.appendChild(label);
+    grid.appendChild(line);
+  }
+
   function layoutTimeline(axisEl, chartEl, activeMonths, ranks) {
     var grid = chartEl.querySelector(".timeline__grid");
     if (!grid) return;
@@ -317,6 +347,7 @@
     var scale = requiredScale(cards, ranks);
     var gridHeight = CHART_PADDING * 2 + activeCount * scale;
     grid.style.height = gridHeight + "px";
+    grid.style.setProperty("--timeline-month-height", scale + "px");
 
     cards.forEach(function (card) {
       var startIdx = Number(card.getAttribute("data-start-idx"));
@@ -340,13 +371,40 @@
       card.style.top = compressedPosition(top, compression.gaps) + "px";
     });
 
-    renderAxis(axisEl, activeMonths, ranks, scale, grid.offsetTop, compression.gaps);
+    var oldNow = grid.querySelector(".timeline__now");
+    if (oldNow) oldNow.remove();
+    renderNowLine(grid, ranks, activeCount, scale, compression.gaps);
+    renderAxis(
+      axisEl,
+      activeMonths,
+      ranks,
+      scale,
+      grid.offsetTop,
+      compression.gaps
+    );
   }
 
   function appendBarContent(el, p) {
     var text = document.createElement("span");
     text.className = "timeline__bar-label";
     text.textContent = p.name;
+
+    var meta = document.createElement("span");
+    meta.className = "timeline__bar-meta";
+
+    if (p.venue && !(p.venue === "arXiv" && p.status === "preprint")) {
+      var venue = document.createElement("span");
+      venue.className = "timeline__badge timeline__badge--venue";
+      venue.textContent = p.venue;
+      meta.appendChild(venue);
+    }
+
+    if (p.statusLabel) {
+      var status = document.createElement("span");
+      status.className = "timeline__badge timeline__badge--" + p.status;
+      status.textContent = p.statusLabel;
+      meta.appendChild(status);
+    }
 
     var period = document.createElement("span");
     period.className = "timeline__bar-period";
@@ -363,12 +421,15 @@
       img.className = "timeline__bar-image";
       img.src = p.image;
       img.alt = "";
-      img.loading = "lazy";
+      img.loading = "eager";
+      img.width = 640;
+      img.height = 400;
 
       var content = document.createElement("span");
       content.className = "timeline__bar-content";
 
       media.appendChild(img);
+      content.appendChild(meta);
       content.appendChild(text);
       content.appendChild(period);
       el.appendChild(media);
@@ -380,6 +441,7 @@
 
     var fallbackContent = document.createElement("span");
     fallbackContent.className = "timeline__bar-content";
+    fallbackContent.appendChild(meta);
     fallbackContent.appendChild(text);
     fallbackContent.appendChild(period);
     el.appendChild(fallbackContent);
@@ -460,6 +522,77 @@
     chartEl.appendChild(grid);
   }
 
+  function renderMobileTimeline(container, projects) {
+    if (!container) return;
+    container.innerHTML = "";
+
+    var grouped = {};
+    projects.forEach(function (p) {
+      var year = Math.floor(p.endIdx / 12);
+      if (!grouped[year]) grouped[year] = [];
+      grouped[year].push(p);
+    });
+
+    Object.keys(grouped)
+      .sort(function (a, b) {
+        return Number(b) - Number(a);
+      })
+      .forEach(function (year) {
+        var section = document.createElement("section");
+        section.className = "timeline-mobile__year";
+
+        var heading = document.createElement("h2");
+        heading.className = "timeline-mobile__year-title";
+        heading.textContent = year;
+        section.appendChild(heading);
+
+        var list = document.createElement("div");
+        list.className = "timeline-mobile__list";
+
+        grouped[year]
+          .sort(function (a, b) {
+            return b.endIdx - a.endIdx;
+          })
+          .forEach(function (p) {
+            var card = p.url
+              ? document.createElement("a")
+              : document.createElement("article");
+            card.className = "timeline-mobile__card";
+            if (p.url) card.href = p.url;
+            card.style.setProperty("--timeline-col-color", p.color);
+
+            var topic = document.createElement("span");
+            topic.className = "timeline-mobile__topic";
+            topic.textContent = p.topic || "";
+
+            var name = document.createElement("strong");
+            name.className = "timeline-mobile__name";
+            name.textContent = p.name;
+
+            var details = document.createElement("span");
+            details.className = "timeline-mobile__details";
+            var venueText =
+              p.venue && !(p.venue === "arXiv" && p.status === "preprint")
+                ? " · " + p.venue
+                : "";
+            details.textContent =
+              formatMonth(p.startIdx) +
+              " – " +
+              formatMonth(p.endIdx) +
+              venueText +
+              (p.statusLabel ? " · " + p.statusLabel : "");
+
+            card.appendChild(topic);
+            card.appendChild(name);
+            card.appendChild(details);
+            list.appendChild(card);
+          });
+
+        section.appendChild(list);
+        container.appendChild(section);
+      });
+  }
+
   function init() {
     var projects = parseJsonEl("timeline-data");
     var range = parseJsonEl("timeline-range");
@@ -468,6 +601,7 @@
 
     var chartEl = document.getElementById("timeline-chart");
     var axisEl = document.getElementById("timeline-axis");
+    var mobileEl = document.getElementById("timeline-mobile");
     if (!chartEl || !axisEl) return;
 
     var now = currentMonth();
@@ -510,6 +644,7 @@
     chartEl.style.setProperty("--timeline-lanes", laneCount);
 
     renderBars(chartEl, projects, laneCount, columns);
+    renderMobileTimeline(mobileEl, projects);
     layoutTimeline(axisEl, chartEl, activeMonths, ranks);
 
     Array.prototype.slice.call(chartEl.querySelectorAll("img")).forEach(function (img) {

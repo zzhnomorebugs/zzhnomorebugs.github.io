@@ -7,12 +7,26 @@
   {% assign publications_base = "/publications/" %}
 {% endif %}
 
+<div class="timeline-legend" aria-label="{% if page.lang == 'zh-CN' %}研究主题图例{% else %}Research topic legend{% endif %}">
+  {% for col in timeline.columns %}
+    <span class="timeline-legend__item" style="--timeline-col-color: {{ col.color }}">
+      <span class="timeline-legend__dot" aria-hidden="true"></span>
+      {% if page.lang == "zh-CN" %}{{ col.label }}{% else %}{{ col.label_en | default: col.label }}{% endif %}
+    </span>
+  {% endfor %}
+</div>
+
+<p class="timeline-mobile-hint">
+  {% if page.lang == "zh-CN" %}手机端按年份展示，桌面端显示完整主题时间轴。{% else %}Projects are grouped by year on mobile and shown as a full topic timeline on desktop.{% endif %}
+</p>
+
 <div class="timeline" id="timeline">
   <div class="timeline__inner">
     <div class="timeline__axis" id="timeline-axis" aria-hidden="true"></div>
-    <div class="timeline__chart" id="timeline-chart" role="img" aria-label="Research project timeline"></div>
+    <div class="timeline__chart" id="timeline-chart" role="group" aria-label="{% if page.lang == 'zh-CN' %}研究项目时间线{% else %}Research project timeline{% endif %}"></div>
   </div>
 </div>
+<div class="timeline-mobile" id="timeline-mobile" aria-label="{% if page.lang == 'zh-CN' %}按年份分组的研究项目{% else %}Research projects grouped by year{% endif %}"></div>
 
 <script type="application/json" id="timeline-data">
 [
@@ -38,7 +52,8 @@
     {% if pub.image contains "://" %}
       {% assign img_url = pub.image %}
     {% else %}
-      {% assign img_url = pub.image | prepend: '/images/' | relative_url %}
+      {% assign timeline_image = pub.image | replace: '.png', '_timeline.webp' | replace: '.jpg', '_timeline.webp' | replace: '.jpeg', '_timeline.webp' %}
+      {% assign img_url = timeline_image | prepend: '/images/' | relative_url %}
     {% endif %}
   {% endif %}
   {
@@ -47,6 +62,9 @@
     "end": {% if project.end %}{{ project.end | jsonify }}{% else %}null{% endif %},
     "url": {% if pub_url %}{{ pub_url | jsonify }}{% else %}null{% endif %},
     "image": {% if img_url %}{{ img_url | jsonify }}{% else %}null{% endif %},
+    "venue": {% if pub and pub.venue %}{{ pub.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "NeurIPS", "NeurIPS " | replace: "arxiv", "arXiv" | strip | jsonify }}{% else %}null{% endif %},
+    "status": {% if project.end == nil %}"ongoing"{% elsif pub and pub.category == "conferences" %}"published"{% elsif pub and pub.category == "preprint" %}"preprint"{% else %}"project"{% endif %},
+    "statusLabel": {% if project.end == nil %}{% if page.lang == "zh-CN" %}"进行中"{% else %}"Ongoing"{% endif %}{% elsif pub and pub.category == "conferences" %}{% if page.lang == "zh-CN" %}"已发表"{% else %}"Published"{% endif %}{% elsif pub and pub.category == "preprint" %}{% if page.lang == "zh-CN" %}"预印本"{% else %}"Preprint"{% endif %}{% else %}{% if page.lang == "zh-CN" %}"研究项目"{% else %}"Project"{% endif %}{% endif %},
     "lane": {{ project.lane }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}

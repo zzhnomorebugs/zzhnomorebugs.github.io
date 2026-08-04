@@ -15,15 +15,15 @@ columns:
     palette:
       - "#E64B35"
 
-  - label: "dynamics预测"
+  - label: "动力学预测"
     label_en: "Dynamics Prediction"
     color: "#00A087"
     palette:
       - "#91D1C2"
       - "#00A087"
 
-  - label: "分子/蛋白质生成/预测"
-    label_en: "Molecular / Protein Generation && Prediction"
+  - label: "分子与蛋白质生成预测"
+    label_en: "Molecular & Protein Generation"
     color: "#3C5488"
     palette:
       - "#8491B4"

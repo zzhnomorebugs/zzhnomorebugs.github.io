@@ -9,11 +9,6 @@
   padding-left: 1.5em;
   padding-right: 1.5em;
 
-  @media (prefers-reduced-motion: no-preference) {
-    animation: intro 0.3s both;
-    animation-delay: 0.15s;
-  }
-
   @include breakpoint($x-large) {
     max-width: $x-large;
     padding-left: 2em;
