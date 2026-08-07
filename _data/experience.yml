@@ -8,7 +8,7 @@ entries:
     role:
       en: "Research Intern, AI4Science"
       zh: "研究实习生，AI4Science 方向"
-    logo: "experience/logos/tencent.png"
+    logo: "experience/logos/tencent-mark.png"
     highlights:
       en:
         - "**Controllable Protein Sequence Generation:** Developed a condition-guided protein sequence generation pipeline that combines a frozen unconditional sequence prior with a lightweight guidance module, enabling property-directed editing from wild-type starting points while preserving sequence plausibility."
