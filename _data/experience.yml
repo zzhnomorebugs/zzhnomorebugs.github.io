@@ -1,5 +1,25 @@
 entries:
   - company:
+      en: "Tencent"
+      zh: "腾讯"
+    period:
+      en: "06/2026 -- Present"
+      zh: "2026.06 -- 至今"
+    role:
+      en: "Research Intern, AI4Science"
+      zh: "研究实习生，AI4Science 方向"
+    logo: "experience/logos/tencent.png"
+    highlights:
+      en:
+        - "**Controllable Protein Sequence Generation:** Developed a condition-guided protein sequence generation pipeline that combines a frozen unconditional sequence prior with a lightweight guidance module, enabling property-directed editing from wild-type starting points while preserving sequence plausibility."
+        - "**Discrete Generative Framework Study:** Compared Bayesian Flow Network and Discrete Flow Matching backbones (DiT, ESM-initialized) for controllable editing, and systematically evaluated guidance parameterizations (end-to-end conditioning vs. residual correction on a frozen prior) under a shared training and sampling setup."
+        - "**Multi-Task Conditioning Benchmarks:** Built reproducible evaluation across public assays spanning fitness control, thermostability editing, and antibody affinity conditioning, focusing on condition adherence, edit behavior, and structural quality proxies rather than task-specific oracle engineering."
+      zh:
+        - "**蛋白质序列可控生成：** 构建条件引导的蛋白质序列生成流程，将冻结的无条件序列先验与轻量引导模块组合，在野生型起点上实现面向目标性质的定向编辑，并尽量保持序列合理性与可折叠性。"
+        - "**离散生成框架对比：** 在共享训练与采样设定下，对比 Bayesian Flow Network 与 Discrete Flow Matching（DiT、ESM 初始化）用于可控编辑的表现，并系统评估端到端条件化与冻结先验上的残差修正等引导参数化方式。"
+        - "**多任务条件评测：** 在公开基准上覆盖适应度控制、热稳定性编辑与抗体亲和力条件化等任务，建立可复现评测流程，重点关注条件遵循、编辑行为与结构质量代理指标。"
+
+  - company:
       en: "Shanghai Artificial Intelligence Laboratory (Shanghai AI Lab)"
       zh: "上海人工智能实验室（Shanghai AI Lab）"
     period:
