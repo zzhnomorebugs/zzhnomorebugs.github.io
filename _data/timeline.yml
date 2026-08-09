@@ -59,6 +59,7 @@ projects:
     start: "2022-10"
     end: "2023-04"
     publication: learning-to-decouple
+    image: publications/posters/learning_to_decouple_poster_thumb.webp
     lane: 2
 
   - name: "Generating Physical Dynamics under Priors"

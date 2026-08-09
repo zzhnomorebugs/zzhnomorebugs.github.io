@@ -1,16 +1,16 @@
 .recent-highlights {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1rem;
   margin: 0 0 1.5em;
 }
 
 .recent-highlight-card {
   display: grid;
-  grid-template-columns: minmax(110px, 34%) 1fr;
-  gap: 1.1rem;
-  align-items: start;
-  padding: 1rem;
+  grid-template-columns: minmax(160px, 38%) minmax(0, 1fr);
+  gap: 1rem 1.15rem;
+  align-items: stretch;
+  padding: 0.85rem;
   border: 1px solid var(--global-border-color);
   border-radius: 12px;
   background: #fff;
@@ -18,42 +18,53 @@
 
 .recent-highlight-card__poster {
   margin: 0;
+  align-self: stretch;
+  min-height: 11.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f3f4f6;
 
   a {
     display: block;
+    height: 100%;
     line-height: 0;
   }
 
   img {
     width: 100%;
-    height: auto;
-    object-fit: contain;
-    max-height: 220px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: box-shadow 0.2s ease-in-out;
+    height: 100%;
+    max-height: none;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: 0;
+    box-shadow: none;
+    transition: transform 0.25s ease, filter 0.25s ease;
   }
 
   a:hover img {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+    transform: scale(1.02);
+    filter: brightness(0.97);
   }
 }
 
 .recent-highlight-card__body {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0.15rem 0.2rem 0.1rem 0;
 }
 
 .recent-highlight-card__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0 0 0.65rem;
+  gap: 0.35rem;
+  margin: 0 0 0.5rem;
 }
 
 .highlight-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.55rem;
+  padding: 0.18rem 0.5rem;
   border-radius: 999px;
   background: rgba(37, 99, 235, 0.1);
   color: var(--global-link-color);
@@ -69,9 +80,9 @@
 }
 
 .recent-highlight-card__title {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.4rem;
   font-size: 1.02rem;
-  line-height: 1.4;
+  line-height: 1.35;
   border-bottom: none;
   padding-bottom: 0;
 
@@ -93,30 +104,43 @@
 }
 
 .recent-highlight-card__metric {
-  margin: 0 0 0.55rem;
+  margin: 0 0 0.4rem;
   color: var(--global-text-color);
-  font-size: 0.9em;
+  font-size: 0.88em;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .recent-highlight-card__tldr {
-  margin: 0 0 0.75em;
+  margin: 0;
   text-indent: 0;
-  line-height: 1.55;
-  font-size: 0.93em;
+  line-height: 1.5;
+  font-size: 0.9em;
   color: var(--global-text-color-light, #666);
 }
 
 .recent-highlight-card__links {
-  margin: 0;
+  margin-top: auto;
+  padding-top: 0.7rem;
 }
 
 @include breakpoint(max-width $medium) {
   .recent-highlight-card {
     grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .recent-highlight-card__poster {
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+
+  .recent-highlight-card__body {
+    padding: 0;
   }
 
   .recent-highlight-card__poster img {
-    max-height: 280px;
+    object-fit: contain;
+    background: #f8fafc;
   }
 }
