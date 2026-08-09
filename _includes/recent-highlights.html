@@ -6,7 +6,7 @@
 {% endif %}
 
 <div class="recent-highlights">
-  {% for post in items limit: 3 %}
+  {% for post in items limit: 4 %}
     {% assign venue_raw = post.venue | default: "" %}
     {% assign venue_label = venue_raw | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | strip %}
     {% if post.poster_thumb %}
