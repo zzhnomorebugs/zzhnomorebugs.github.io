@@ -9,7 +9,7 @@
   display: grid;
   grid-template-columns: minmax(160px, 38%) minmax(0, 1fr);
   gap: 1rem 1.15rem;
-  align-items: stretch;
+  align-items: center;
   padding: 0.85rem;
   border: 1px solid var(--global-border-color);
   border-radius: 12px;
@@ -18,32 +18,24 @@
 
 .recent-highlight-card__poster {
   margin: 0;
-  align-self: stretch;
-  min-height: 11.5rem;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f3f4f6;
 
   a {
     display: block;
-    height: 100%;
     line-height: 0;
   }
 
   img {
     width: 100%;
-    height: 100%;
+    height: auto;
     max-height: none;
-    object-fit: cover;
-    object-position: top center;
-    border-radius: 0;
-    box-shadow: none;
-    transition: transform 0.25s ease, filter 0.25s ease;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: box-shadow 0.2s ease-in-out;
   }
 
   a:hover img {
-    transform: scale(1.02);
-    filter: brightness(0.97);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
   }
 }
 
@@ -112,6 +104,7 @@
 }
 
 .recent-highlight-card__tldr {
+  grid-column: 1 / -1;
   margin: 0;
   text-indent: 0;
   line-height: 1.5;
@@ -130,17 +123,7 @@
     gap: 0.75rem;
   }
 
-  .recent-highlight-card__poster {
-    min-height: 0;
-    aspect-ratio: 4 / 3;
-  }
-
   .recent-highlight-card__body {
     padding: 0;
-  }
-
-  .recent-highlight-card__poster img {
-    object-fit: contain;
-    background: #f8fafc;
   }
 }
