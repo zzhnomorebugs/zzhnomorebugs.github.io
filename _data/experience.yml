@@ -1,5 +1,21 @@
 entries:
   - company:
+      en: "ByteDance Seed"
+      zh: "字节跳动 Seed（ByteDance Seed）"
+    period:
+      en: "08/2026 -- Present"
+      zh: "2026.08 -- 至今"
+    role:
+      en: "Research Intern, AI4Science"
+      zh: "研究实习生，AI4Science 方向"
+    logo: "experience/logos/bytedance-seed.png"
+    highlights:
+      en:
+        - "Research Intern at ByteDance Seed, working on AI4Science."
+      zh:
+        - "在字节跳动 Seed 从事 AI4Science 方向研究实习。"
+
+  - company:
       en: "Tencent Life Sciences Lab"
       zh: "腾讯生命科学实验室（Tencent Life Sciences Lab）"
     period:
