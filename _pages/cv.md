@@ -37,6 +37,12 @@ For the full list, see [Publications](/publications/).
 
 ## Research Experience
 
+**ByteDance Seed** | Research Intern, AI4Science | 08/2026 -- Present  
+AI4Science research internship.
+
+**Tencent Life Sciences Lab** | Research Intern, AI4Science | 06/2026 -- 08/2026  
+Condition-guided protein sequence generation, discrete generative framework comparison, and multi-task conditioning benchmarks.
+
 **Shanghai AI Lab** | Research Intern, AI4Science | 06/2025 -- 05/2026  
 Retrosynthesis generation and MSA-conditioned protein sequence modeling (650M-scale training and sampling studies).
 
