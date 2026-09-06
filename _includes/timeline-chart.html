@@ -1,91 +1,96 @@
 {% include base_path %}
-
 {% assign timeline = site.data.timeline %}
-{% if page.lang == "zh-CN" %}
-  {% assign publications_base = "/zh/publications/" %}
-{% else %}
-  {% assign publications_base = "/publications/" %}
+{% assign is_zh = false %}
+{% assign publications_base = '/publications/' %}
+{% if page.lang == 'zh-CN' %}
+  {% assign is_zh = true %}
+  {% assign publications_base = '/zh/publications/' %}
 {% endif %}
 
-<div class="timeline-legend" aria-label="{% if page.lang == 'zh-CN' %}研究主题图例{% else %}Research topic legend{% endif %}">
-  {% for col in timeline.columns %}
-    <span class="timeline-legend__item" style="--timeline-col-color: {{ col.color }}">
-      <span class="timeline-legend__dot" aria-hidden="true"></span>
-      {% if page.lang == "zh-CN" %}{{ col.label }}{% else %}{{ col.label_en | default: col.label }}{% endif %}
-    </span>
-  {% endfor %}
-</div>
-
-<p class="timeline-mobile-hint">
-  {% if page.lang == "zh-CN" %}手机端按年份展示，桌面端显示完整主题时间轴。{% else %}Projects are grouped by year on mobile and shown as a full topic timeline on desktop.{% endif %}
-</p>
-
-<div class="timeline" id="timeline">
-  <div class="timeline__inner">
-    <div class="timeline__axis" id="timeline-axis" aria-hidden="true"></div>
-    <div class="timeline__chart" id="timeline-chart" role="group" aria-label="{% if page.lang == 'zh-CN' %}研究项目时间线{% else %}Research project timeline{% endif %}"></div>
+<div class="research-timeline" id="research-timeline">
+  <div class="timeline-toolbar" hidden>
+    <div class="timeline-switch" role="group" aria-label="{% if is_zh %}时间线视图{% else %}Timeline view{% endif %}">
+      <button type="button" data-view="journey" aria-pressed="true" aria-controls="timeline-journey">{% if is_zh %}研究脉络{% else %}Research journey{% endif %}</button>
+      <button type="button" data-view="gantt" aria-pressed="false" aria-controls="timeline-gantt">{% if is_zh %}项目周期{% else %}Project durations{% endif %}</button>
+    </div>
+    <p class="timeline-count" id="timeline-count" role="status" aria-live="polite"></p>
   </div>
+  <div class="timeline-filters" role="group" aria-label="{% if is_zh %}筛选研究方向{% else %}Filter research topics{% endif %}" hidden>
+    <button type="button" data-topic="all" aria-pressed="true">{% if is_zh %}全部方向{% else %}All topics{% endif %}</button>
+    {% for col in timeline.columns %}
+      <button type="button" data-topic="{{ forloop.index0 }}" aria-pressed="false" style="--topic-color: {{ col.color }}"><span class="timeline-dot" aria-hidden="true"></span>{% if is_zh %}{{ col.short_label | default: col.label }}{% else %}{{ col.short_label_en | default: col.label_en }}{% endif %}</button>
+    {% endfor %}
+  </div>
+
+  <section id="timeline-journey" aria-label="{% if is_zh %}研究脉络{% else %}Research journey{% endif %}" hidden>
+    <p class="timeline-note">{% if is_zh %}按研究结束年份倒序排列，进行中的项目归入当前年份。卡片间距不代表时长；点击项目查看详情。{% else %}Grouped by research end year, newest first; ongoing projects appear in the current year. Spacing does not represent duration. Select a project for details.{% endif %}</p>
+    <div id="timeline-journey-content"></div>
+  </section>
+  <section id="timeline-gantt" aria-label="{% if is_zh %}项目周期{% else %}Project durations{% endif %}" hidden>
+    <p class="timeline-note" id="timeline-gantt-note">{% if is_zh %}每个月等宽，时间条包含起止月份。研究周期与论文发表年份分别标注。窄屏可左右滑动，或聚焦图表后使用方向键。{% else %}Every month has equal width; bars include both start and end months. Research periods and publication years are shown separately. Scroll horizontally on small screens, or focus the chart and use arrow keys.{% endif %}</p>
+    <div class="timeline-gantt-scroll" id="timeline-gantt-scroll" tabindex="0" role="region" aria-label="{% if is_zh %}可横向滚动的项目周期图{% else %}Horizontally scrollable project duration chart{% endif %}" aria-describedby="timeline-gantt-note"></div>
+  </section>
+
+  <div id="timeline-fallback">
+    <p class="timeline-note">{% if is_zh %}研究项目与论文链接{% else %}Research projects and publications{% endif %}</p>
+    <ul>
+      {% for project in timeline.projects %}
+        {% assign pub = site.publications | where: 'slug', project.publication | first %}
+        <li>{% if pub %}<a href="{{ pub.url | relative_url }}">{{ project.name }}</a>{% else %}{{ project.name }}{% endif %} · {{ project.start }} – {{ project.end | default: 'Present' }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <dialog class="timeline-details" id="timeline-details" aria-labelledby="timeline-detail-title">
+    <div class="timeline-details__top"><span>{% if is_zh %}项目详情{% else %}Project details{% endif %}</span><button type="button" class="timeline-details__close" aria-label="{% if is_zh %}关闭项目详情{% else %}Close project details{% endif %}" autofocus>×</button></div>
+    <div id="timeline-detail-content"></div>
+  </dialog>
 </div>
-<div class="timeline-mobile" id="timeline-mobile" aria-label="{% if page.lang == 'zh-CN' %}按年份分组的研究项目{% else %}Research projects grouped by year{% endif %}"></div>
 
 <script type="application/json" id="timeline-data">
 [
 {% for project in timeline.projects %}
-  {% assign pub = nil %}
+  {% assign pub = site.publications | where: 'slug', project.publication | first %}
   {% assign pub_url = project.link %}
+  {% if pub and pub_url == nil %}
+    {% capture pub_anchor %}#publication-{{ pub.title | slugify }}{% endcapture %}
+    {% assign pub_url = publications_base | append: pub_anchor | relative_url %}
+  {% endif %}
   {% assign img_url = nil %}
-  {% if project.publication %}
-    {% assign pub_slug = project.publication %}
-    {% assign pub = site.publications | where_exp: "p", "p.path contains pub_slug" | first %}
-    {% if pub and pub_url == nil %}
-      {% capture pub_anchor %}#publication-{{ pub.title | slugify }}{% endcapture %}
-      {% assign pub_url = publications_base | append: pub_anchor %}
+  {% assign image_path = pub.image | default: project.image %}
+  {% if image_path %}
+    {% if image_path contains '://' %}
+      {% assign img_url = image_path %}
+    {% else %}
+      {% assign img_url = image_path | prepend: '/images/' | relative_url %}
     {% endif %}
   {% endif %}
-  {% if project.image %}
-    {% if project.image contains "://" %}
-      {% assign img_url = project.image %}
-    {% else %}
-      {% assign img_url = project.image | prepend: '/images/' | relative_url %}
-    {% endif %}
-  {% elsif pub and pub.image %}
-    {% if pub.image contains "://" %}
-      {% assign img_url = pub.image %}
-    {% else %}
-      {% assign timeline_image = pub.image | replace: '.png', '_timeline.webp' | replace: '.jpg', '_timeline.webp' | replace: '.jpeg', '_timeline.webp' %}
-      {% assign img_url = timeline_image | prepend: '/images/' | relative_url %}
-    {% endif %}
-  {% endif %}
+  {% assign summary = pub.tldr | default: pub.excerpt %}
+  {% if is_zh %}{% assign summary = pub.tldr_zh | default: pub.excerpt_zh | default: summary %}{% endif %}
   {
-    "name": {{ project.name | jsonify }},
+    "id": {{ project.publication | default: forloop.index0 | jsonify }},
+    "name": {{ project.name | jsonify | replace: '<', '\u003c' }},
+    "title": {{ pub.title | default: project.name | jsonify | replace: '<', '\u003c' }},
     "start": {{ project.start | jsonify }},
-    "end": {% if project.end %}{{ project.end | jsonify }}{% else %}null{% endif %},
-    "url": {% if pub_url %}{{ pub_url | jsonify }}{% else %}null{% endif %},
-    "image": {% if img_url %}{{ img_url | jsonify }}{% else %}null{% endif %},
-    "venue": {% if pub and pub.venue %}{{ pub.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "NeurIPS", "NeurIPS " | replace: "arxiv", "arXiv" | strip | jsonify }}{% else %}null{% endif %},
-    "status": {% if project.end == nil %}"ongoing"{% elsif pub and pub.category == "conferences" %}"published"{% elsif pub and pub.category == "preprint" %}"preprint"{% else %}"project"{% endif %},
-    "statusLabel": {% if project.end == nil %}{% if page.lang == "zh-CN" %}"进行中"{% else %}"Ongoing"{% endif %}{% elsif pub and pub.category == "conferences" %}{% if page.lang == "zh-CN" %}"已发表"{% else %}"Published"{% endif %}{% elsif pub and pub.category == "preprint" %}{% if page.lang == "zh-CN" %}"预印本"{% else %}"Preprint"{% endif %}{% else %}{% if page.lang == "zh-CN" %}"研究项目"{% else %}"Project"{% endif %}{% endif %},
+    "end": {{ project.end | jsonify }},
+    "url": {{ pub_url | jsonify }},
+    "image": {{ img_url | jsonify }},
+    "summary": {{ summary | markdownify | strip_html | strip | jsonify | replace: '<', '\u003c' }},
+    "paper": {{ pub.paperurl | jsonify }},
+    "code": {{ pub.githuburl | jsonify }},
+    "poster": {{ pub.posterurl | jsonify }},
+    "venue": {{ pub.venue | replace: 'ICML', 'ICML ' | replace: 'ICLR', 'ICLR ' | replace: 'NeurIPS', 'NeurIPS ' | replace: 'arxiv', 'arXiv' | strip | jsonify }},
+    "publicationYear": {% if pub.date %}{{ pub.date | date: '%Y' | jsonify }}{% else %}null{% endif %},
     "lane": {{ project.lane }}
   }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]
 </script>
-
-<script type="application/json" id="timeline-range">
-{
-  "start": {% if timeline.range.start %}{{ timeline.range.start | jsonify }}{% else %}null{% endif %},
-  "end": {% if timeline.range.end %}{{ timeline.range.end | jsonify }}{% else %}null{% endif %}
-}
-</script>
-
+<script type="application/json" id="timeline-range">{{ timeline.range | jsonify }}</script>
 <script type="application/json" id="timeline-columns">
 [
 {% for col in timeline.columns %}
-  {
-    "label": {% if page.lang == "zh-CN" %}{{ col.label | jsonify }}{% else %}{{ col.label_en | default: col.label | jsonify }}{% endif %},
-    "color": {{ col.color | jsonify }},
-    "palette": {{ col.palette | jsonify }}
-  }{% unless forloop.last %},{% endunless %}
+  {"label": {% if is_zh %}{{ col.short_label | default: col.label | jsonify }}{% else %}{{ col.short_label_en | default: col.label_en | jsonify }}{% endif %}, "color": {{ col.color | jsonify }}}{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]
 </script>
