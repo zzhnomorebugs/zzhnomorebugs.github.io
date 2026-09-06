@@ -21,6 +21,9 @@ poster_image: publications/posters/retro_order_poster.png
 poster_thumb: publications/posters/retro_order_poster_thumb.webp
 image: publications/retro_order.png
 highlight: true
+highlight_image: publications/retro_order_timeline.webp
+highlight_summary: "Reaction-center-guided atom ordering makes discrete flow matching more effective for retrosynthesis."
+highlight_summary_zh: "以反应中心引导原子排序，提升离散流匹配在逆合成任务中的生成效果。"
 highlight_tags:
   - Retrosynthesis
   - Discrete Flow Matching

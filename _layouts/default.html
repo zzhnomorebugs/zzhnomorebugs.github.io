@@ -11,7 +11,7 @@ layout: compress
     {% include head/custom.html %}
   </head>
 
-  <body>
+  <body{% if page.layout == 'home' %} class="layout-home"{% endif %}>
     <a class="skip-link" href="#main">Skip to main content</a>
 
     {% include browser-upgrade.html %}

@@ -23,6 +23,9 @@ poster_thumb: publications/posters/generating_under_prior_poster_thumb.webp
 githuburl: 'https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors'
 image: publications/generating_under_prior.png
 highlight: true
+highlight_image: publications/generating_under_prior_timeline.webp
+highlight_summary: "Bringing physical laws and geometric invariances into diffusion models for realistic dynamics."
+highlight_summary_zh: "将物理规律与几何不变性融入扩散模型，生成符合物理约束的动力学。"
 highlight_tags:
   - Physical Priors
   - Diffusion Models

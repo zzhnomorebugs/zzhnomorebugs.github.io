@@ -4,10 +4,10 @@
 
 /* Color codes used for the theme - Minimal academic style */
 $gray                       : #4b5563;
-$dark-gray                  : #1f2937;
+$dark-gray                  : #20242b;
 $darker-gray                : #111827;
-$light-gray                 : #6b7280;
-$lighter-gray               : #e5e7eb;
+$light-gray                 : #606975;
+$lighter-gray               : #e2e4e3;
 
 /* Color codes used for the site */
 $danger-color               : #ee5f5b;
@@ -29,14 +29,14 @@ $sidebar-screen-min-width   : 1024px;
 /* Default light theme for the site - Clean academic aesthetic */
 :root {
     --global-base-color                 : #{$gray};
-    --global-bg-color                   : #ffffff;
+    --global-bg-color                   : #fafaf8;
     --global-border-color               : #{$lighter-gray};
     --global-code-background-color      : #f9fafb;
     --global-code-text-color            : #{$darker-gray};
     --global-fig-caption-color          : #{$light-gray};
-    --global-link-color                 : #2563eb;
-    --global-link-color-hover           : #1d4ed8;
-    --global-link-color-visited         : #7c3aed;  
+    --global-link-color                 : #315c9b;
+    --global-link-color-hover           : #234675;
+    --global-link-color-visited         : #315c9b;
     --global-masthead-link-color        : #{$dark-gray};
     --global-masthead-link-color-hover  : #{$darker-gray};    
     --global-text-color                 : #{$dark-gray};

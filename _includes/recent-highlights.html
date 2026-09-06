@@ -6,35 +6,34 @@
 {% endif %}
 
 <div class="recent-highlights">
-  {% for post in items limit: 4 %}
+  {% for post in items limit: 3 %}
     {% assign venue_raw = post.venue | default: "" %}
     {% assign venue_label = venue_raw | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | strip %}
-    {% if post.poster_thumb %}
+    {% if post.highlight_image %}
+      {% assign thumb_src = post.highlight_image | prepend: "/images/" | prepend: base_path %}
+    {% elsif post.image %}
+      {% assign thumb_src = post.image | prepend: "/images/" | prepend: base_path %}
+    {% elsif post.poster_thumb %}
       {% assign thumb_src = post.poster_thumb | prepend: "/images/" | prepend: base_path %}
     {% elsif post.poster_image %}
       {% assign thumb_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
     {% else %}
       {% assign thumb_src = post.image | prepend: "/images/" | prepend: base_path %}
     {% endif %}
-    {% if post.poster_image %}
-      {% assign full_src = post.poster_image | prepend: "/images/" | prepend: base_path %}
+    {% if post.image %}
+      {% assign full_src = post.image | prepend: "/images/" | prepend: base_path %}
     {% else %}
       {% assign full_src = thumb_src %}
     {% endif %}
     <article class="recent-highlight-card">
       <div class="recent-highlight-card__poster">
         <a href="{{ full_src }}" class="image-popup">
-          <img src="{{ thumb_src }}" alt="Poster for {{ post.title | escape }}" loading="lazy" width="640" height="480">
+          <img src="{{ thumb_src }}" alt="{% if page.lang == 'zh-CN' %}论文示意图：{% else %}Research figure: {% endif %}{{ post.title | escape }}" loading="lazy" decoding="async" width="480" height="360">
         </a>
       </div>
       <div class="recent-highlight-card__body">
         <div class="recent-highlight-card__badges">
           <span class="highlight-badge">{{ venue_label }}</span>
-          {% if post.highlight_tags %}
-            {% for tag in post.highlight_tags %}
-              <span class="highlight-badge highlight-badge--muted">{{ tag }}</span>
-            {% endfor %}
-          {% endif %}
         </div>
         <h3 class="recent-highlight-card__title">
           {% if post.paperurl %}
@@ -43,8 +42,14 @@
             {{ post.title }}
           {% endif %}
         </h3>
-        {% if post.highlight_metric %}
-          <p class="recent-highlight-card__metric">{{ post.highlight_metric }}</p>
+        {% if post.authors %}<p class="recent-highlight-card__authors">{{ post.authors }}</p>{% endif %}
+        {% if page.lang == "zh-CN" %}
+          {% assign display_summary = post.highlight_summary_zh | default: post.highlight_summary %}
+        {% else %}
+          {% assign display_summary = post.highlight_summary %}
+        {% endif %}
+        {% if display_summary %}
+          <p class="recent-highlight-card__summary">{{ display_summary }}</p>
         {% endif %}
         {% if post.paperurl or post.posterurl or post.githuburl %}
           <div class="publication-links recent-highlight-card__links">
@@ -53,19 +58,20 @@
             {% if post.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ post.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
           </div>
         {% endif %}
-      </div>
       {% if page.lang == "zh-CN" %}
-        {% assign display_tldr = post.tldr_zh | default: post.excerpt_zh %}
-        {% assign tldr_label = "太长不看" %}
+        {% assign display_abstract = post.excerpt_zh | default: post.tldr_zh %}
+        {% assign abstract_label = "阅读摘要" %}
       {% else %}
-        {% assign display_tldr = post.tldr | default: post.excerpt %}
-        {% assign tldr_label = "TL;DR" %}
+        {% assign display_abstract = post.excerpt | default: post.tldr %}
+        {% assign abstract_label = "Read abstract" %}
       {% endif %}
-      {% if display_tldr %}
-        <p class="recent-highlight-card__tldr">
-          <strong>{{ tldr_label }}:</strong> {{ display_tldr | markdownify | remove: '<p>' | remove: '</p>' }}
-        </p>
+      {% if display_abstract %}
+        <details class="recent-highlight-card__abstract">
+          <summary>{{ abstract_label }}</summary>
+          <div>{{ display_abstract | markdownify }}</div>
+        </details>
       {% endif %}
+      </div>
     </article>
   {% endfor %}
 </div>

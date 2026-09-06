@@ -22,6 +22,9 @@ poster_thumb: publications/posters/incomplete_data_poster_thumb.webp
 githuburl: 'https://github.com/LOGO-CUHKSZ/incomplete-data-complete-dynamics'
 image: publications/incomplete_data.png
 highlight: true
+highlight_image: publications/incomplete_data_timeline.webp
+highlight_summary: "Learning complete physical dynamics from partial observations, with theoretical convergence guarantees."
+highlight_summary_zh: "从不完整观测中学习完整的物理动力学，并提供理论收敛保障。"
 highlight_tags:
   - Incomplete Observations
   - Physical Dynamics
