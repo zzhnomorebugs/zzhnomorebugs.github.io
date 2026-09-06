@@ -76,6 +76,18 @@
     el.addEventListener('click', () => showDetails(p, el));
     return el;
   }
+  function projectImage(p, className) {
+    const url = safeUrl(p.image);
+    if (!url) return null;
+    const img = node('img', className);
+    img.src = url;
+    img.alt = words.image + ': ' + p.name;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    img.width = 320;
+    img.height = 180;
+    return img;
+  }
   function renderJourney(list) {
     journeyContent.replaceChildren();
     const lanes = columns.map((_, i) => i).filter(i => topic === 'all' || String(i) === topic);
@@ -101,6 +113,8 @@
         }
         matches.forEach(p => {
           const card = projectButton(p, 'journey-card');
+          const preview = projectImage(p, 'journey-card__image');
+          if (preview) card.append(preview);
           card.append(node('span', 'journey-card__topic', columns[i].label));
           card.append(node('strong', 'journey-card__name', p.name));
           card.append(node('span', 'journey-card__period', period(p)));
@@ -145,6 +159,8 @@
       lane.forEach(p => {
         const row = node('div', 'gantt-row');
         const label = projectButton(p, 'gantt-label gantt-project');
+        const preview = projectImage(p, 'gantt-project__image');
+        if (preview) label.append(preview);
         label.append(node('strong', '', p.name), node('span', '', period(p)));
         const track = node('div', 'gantt-track');
         const bar = projectButton(p, 'gantt-bar');
