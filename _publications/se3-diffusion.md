@@ -13,4 +13,7 @@ excerpt_zh: '本文借助微分几何工具分析 SE(3) 不变空间中的扩散
 venue: 'IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI)'
 paperurl: 'https://arxiv.org/pdf/2403.01430'
 image: publications/se3_diffusion.png
+highlight: true
+highlight_summary: 'Projection-free diffusion SDEs and ODEs for generating structures in SE(3)-invariant space.'
+highlight_summary_zh: '提出用于 SE(3) 不变空间结构生成的无投影扩散 SDE 与 ODE。'
 ---

@@ -12,7 +12,4 @@ excerpt_zh: '本文提出用于液相色谱的可微物理框架，将色谱柱�
 venue: 'ChemRxiv'
 paperurl: 'https://doi.org/10.26434/chemrxiv.15009352/v1'
 image: publications/lc_mapping.png
-highlight: true
-highlight_summary: 'Differentiable chromatography modeling and observability-guided inverse analysis, validated with wet-lab measurements.'
-highlight_summary_zh: '结合可微色谱建模与可观测性引导的参数反演，并通过湿实验测量验证。'
 ---
