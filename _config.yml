@@ -69,6 +69,9 @@ publication_category:
   books:
     title: 'Books'
     title_zh: '书籍'
+  journals:
+    title: 'Journal Papers'
+    title_zh: '期刊论文'
   conferences:
     title: 'Conference Papers'
     title_zh: '会议论文'
