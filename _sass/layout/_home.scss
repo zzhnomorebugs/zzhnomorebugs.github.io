@@ -172,6 +172,7 @@
       display: grid;
       grid-template-columns: 190px minmax(0, 1fr);
       gap: 28px;
+      align-items: center;
       margin: 0;
       padding: 20px 0;
       border-bottom: 1px solid var(--global-border-color);
@@ -191,6 +192,26 @@
     }
 
     .home-experience__period { font-variant-numeric: tabular-nums; }
+
+    .home-experience__body {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .home-experience__logo-wrap {
+      flex: 0 0 auto;
+      width: 120px;
+    }
+
+    .home-experience__logo {
+      display: block;
+      width: 100%;
+      height: 36px;
+      object-fit: contain;
+      object-position: left center;
+    }
   }
 
   .home-contact {
@@ -273,6 +294,8 @@
     .home-section { margin-top: 38px; }
     .home-section__heading h2 { font-size: 23px; }
     .home-experience li { grid-template-columns: 155px minmax(0, 1fr); gap: 18px; }
+    .home-experience .home-experience__logo-wrap { width: 96px; }
+    .home-experience .home-experience__logo { height: 32px; }
   }
 
   .research-interest-grid { grid-template-columns: 1fr; gap: 24px; }
@@ -289,7 +312,10 @@
     h1 span { font-size: 18px; }
     .home-hero__actions { gap: 8px; }
     a.home-action-btn { padding: 8px 12px; }
-    .home-experience li { grid-template-columns: 1fr; gap: 4px; }
+    .home-experience li { grid-template-columns: 1fr; gap: 10px; align-items: start; }
+    .home-experience .home-experience__body { align-items: flex-start; }
+    .home-experience .home-experience__logo-wrap { width: 88px; }
+    .home-experience .home-experience__logo { height: 28px; }
     .home-contact { padding: 22px; }
   }
 }

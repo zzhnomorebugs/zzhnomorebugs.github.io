@@ -54,7 +54,21 @@ layout: default
         {% for entry in site.data.experience.entries limit: 3 %}
           <li>
             <span class="home-experience__period">{{ entry.period[home_lang] | replace: " -- ", " – " }}</span>
-            <div><h3>{{ entry.company[home_lang] }}</h3><p>{{ entry.role[home_lang] }}</p></div>
+            <div class="home-experience__body">
+              {% if entry.logo %}
+                <div class="home-experience__logo-wrap">
+                  <img
+                    src="{{ entry.logo | prepend: '/images/' | prepend: base_path }}"
+                    alt="{{ entry.company.en }} logo"
+                    class="home-experience__logo"
+                    loading="lazy">
+                </div>
+              {% endif %}
+              <div>
+                <h3>{{ entry.company[home_lang] }}</h3>
+                <p>{{ entry.role[home_lang] }}</p>
+              </div>
+            </div>
           </li>
         {% endfor %}
       </ul>
