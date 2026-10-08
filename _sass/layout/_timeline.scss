@@ -30,7 +30,7 @@
 .journey-year__count { display: block; margin-top: 3px; font-size: 12px; color: var(--global-text-color-light); }
 .journey-projects { min-width: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .journey-card {
-  display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 16px; width: 100%; min-width: 0; min-height: 128px; text-align: left; padding: 14px 16px;
+  display: grid; grid-template-columns: 180px minmax(0, 1fr); align-items: center; gap: 12px 16px; width: 100%; min-width: 0; text-align: left; padding: 14px 16px;
   color: var(--global-text-color); background: #fff; border: 1px solid var(--global-border-color); border-left: 3px solid var(--topic-color); border-radius: 6px;
   transition: border-color .15s, background-color .15s;
   &:hover { border-color: var(--topic-color); background: #fcfcfb; }
@@ -39,13 +39,14 @@
 .journey-card__body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .journey-card__topic { display: flex; align-items: center; gap: 6px; color: var(--topic-color); font-size: 12px; line-height: 1.4; font-weight: 500; }
 .journey-card__name { font-size: 15px; line-height: 1.5; font-weight: 600; overflow-wrap: anywhere; }
-.journey-card__period { color: var(--global-text-color-light); font-size: 12px; font-variant-numeric: tabular-nums; }
-.journey-card__footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; }
+.journey-card__period { color: var(--global-text-color-light); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.journey-card__footer { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-width: 0; }
 .journey-card__meta { display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; }
 .timeline-venue, .timeline-ongoing { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 3px; background: #f1f3f5; color: #56606b; font-weight: 500; }
 .timeline-ongoing { color: #24796b; background: #edf6f2; }
-.journey-card__more { font-size: 12px; color: var(--global-link-color); white-space: nowrap; }
-.journey-card__image { display: block; width: 112px; height: 76px; object-fit: contain; background: #fff; border: 1px solid #edf0f2; border-radius: 4px; margin: 0; }
+.journey-card__more { margin-left: auto; font-size: 12px; color: var(--global-link-color); white-space: nowrap; }
+.journey-card__image { display: block; width: 180px; height: 110px; object-fit: contain; background: #fff; border: 1px solid #edf0f2; border-radius: 4px; margin: 0; }
+.journey-card__footer .timeline-venue { white-space: nowrap; }
 
 /* A horizontally scrollable plot with a fixed month scale in both languages. */
 .timeline-gantt-scroll { overflow-x: auto; border: 1px solid var(--global-border-color); border-radius: 8px; background: #fff; padding-bottom: 12px; }
@@ -102,9 +103,9 @@
 .archive a.timeline-detail-link { display: inline-flex; padding: 8px 12px; border: 1px solid var(--global-border-color); border-radius: 5px; font-size: 13px; color: var(--global-link-color); text-decoration: none; background: #fff; }
 
 @media (max-width: 1100px) {
-  .journey-card { grid-template-columns: 88px minmax(0, 1fr); gap: 12px; padding: 12px; }
+  .journey-card { grid-template-columns: 144px minmax(0, 1fr); gap: 12px; padding: 12px; }
   .journey-card--no-image { grid-template-columns: minmax(0, 1fr); }
-  .journey-card__image { width: 88px; height: 64px; }
+  .journey-card__image { width: 144px; height: 96px; }
 }
 @media (max-width: 800px) {
   .journey-year { grid-template-columns: 58px minmax(0, 1fr); gap: 14px; }
@@ -122,9 +123,12 @@
   .journey-year { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px 0; }
   .journey-year__label { display: flex; align-items: baseline; gap: 10px; padding: 0; }
   .journey-year__count { margin: 0; }
-  .journey-card { grid-template-columns: 72px minmax(0, 1fr); gap: 10px; }
+  .journey-card { grid-template-columns: 112px minmax(0, 1fr); gap: 10px; }
   .journey-card--no-image { grid-template-columns: minmax(0, 1fr); }
-  .journey-card__image { width: 72px; height: 58px; }
+  .journey-card__image { width: 112px; height: 84px; }
+  .journey-card__footer { gap: 8px; }
+  .journey-card__period, .journey-card__more { font-size: 11px; }
+  .journey-card__footer .timeline-venue { padding: 2px 4px; }
   .journey-card__name { font-size: 14px; }
   .journey-card__topic { font-size: 11px; }
   .gantt-chart { --label-width: 160px; }

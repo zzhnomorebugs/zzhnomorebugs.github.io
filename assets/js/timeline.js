@@ -112,14 +112,13 @@
         const dot = node('span', 'timeline-dot');
         dot.setAttribute('aria-hidden', 'true');
         topicLabel.append(dot, node('span', '', columns[p.lane].label));
-        body.append(topicLabel, node('strong', 'journey-card__name', p.name), node('span', 'journey-card__period', period(p)));
+        body.append(topicLabel, node('strong', 'journey-card__name', p.name));
         const meta = node('span', 'journey-card__meta');
         meta.append(node('span', 'timeline-venue', publication(p, true)));
         if (!p.end) meta.append(node('span', 'timeline-ongoing', words.ongoing));
         const footer = node('span', 'journey-card__footer');
-        footer.append(meta, node('span', 'journey-card__more', words.details + ' ↗'));
-        body.append(footer);
-        card.append(body);
+        footer.append(node('span', 'journey-card__period', period(p)), meta, node('span', 'journey-card__more', words.details + ' ↗'));
+        card.append(body, footer);
         cards.append(card);
       });
       section.append(label, cards);
