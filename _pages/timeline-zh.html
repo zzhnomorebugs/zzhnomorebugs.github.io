@@ -9,4 +9,4 @@ lang_switch_url: /timeline/
 <p class="timeline-intro">按年份与方向回顾研究，比较项目周期与并行关系。</p>
 
 {% include timeline-chart.html %}
-<script src="{{ '/assets/js/timeline.js' | relative_url }}" defer></script>
+<script src="{{ '/assets/js/timeline.js' | relative_url }}?v={{ site.time | date: '%s' }}" defer></script>
