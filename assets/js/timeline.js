@@ -6,12 +6,12 @@
   const words = zh ? {
     present: '至今', period: '研究周期', publication: '论文 / 发表年份', ongoing: '进行中',
     details: '查看详情', paper: '论文', code: '代码', poster: '海报', record: '论文条目',
-    now: '现在', months: '个月', empty: '该年份无此方向项目', count: '个项目',
+    now: '现在', months: '个月', count: '个项目',
     project: '项目', image: '论文示意图', openImage: '查看原图', missing: '更多信息请查看论文。'
   } : {
     present: 'Present', period: 'Research period', publication: 'Publication / year', ongoing: 'Ongoing',
     details: 'View details', paper: 'Paper', code: 'Code', poster: 'Poster', record: 'Publication entry',
-    now: 'Now', months: 'mo', empty: 'No projects in this topic', count: 'projects',
+    now: 'Now', months: 'mo', count: 'projects',
     project: 'Project', image: 'Research figure', openImage: 'Open full figure', missing: 'See the paper for more information.'
   };
   function read(id) { return JSON.parse(document.getElementById(id).textContent); }
@@ -61,9 +61,10 @@
   let opener = null;
 
   function period(p) { return dateLabel(p.startIndex) + ' – ' + (p.end ? dateLabel(p.endIndex) : words.present); }
-  function publication(p) {
+  function publication(p, compact) {
     if (!p.venue) return p.publicationYear || words.project;
-    return p.publicationYear && !p.venue.includes(p.publicationYear) ? p.venue + ' · ' + p.publicationYear : p.venue;
+    const venue = compact && p.venue.includes('(TPAMI)') ? 'TPAMI' : p.venue;
+    return p.publicationYear && !venue.includes(p.publicationYear) ? venue + ' · ' + p.publicationYear : venue;
   }
   function color(el, lane) { el.style.setProperty('--topic-color', columns[lane].color); return el; }
   function projectButton(p, className) {
@@ -90,44 +91,38 @@
   }
   function renderJourney(list) {
     journeyContent.replaceChildren();
-    const lanes = columns.map((_, i) => i).filter(i => topic === 'all' || String(i) === topic);
-    journeyContent.style.setProperty('--topic-count', lanes.length);
-    const headings = node('div', 'journey-headings');
-    headings.append(node('span', 'journey-year-label', zh ? '年份' : 'Year'));
-    lanes.forEach(i => headings.append(color(node('span', 'journey-topic-heading', columns[i].label), i)));
-    journeyContent.append(headings);
     const years = [...new Set(list.map(p => Math.floor(p.endIndex / 12)))];
     years.forEach(year => {
+      const matches = list.filter(p => Math.floor(p.endIndex / 12) === year);
       const section = node('section', 'journey-year');
       section.setAttribute('aria-labelledby', 'journey-year-' + year);
+      const label = node('div', 'journey-year__label');
       const heading = node('h2', 'journey-year__heading', year);
       heading.id = 'journey-year-' + year;
-      section.append(heading);
-      lanes.forEach(i => {
-        const lane = node('div', 'journey-lane');
-        const matches = list.filter(p => Math.floor(p.endIndex / 12) === year && p.lane === i);
-        if (!matches.length) {
-          const empty = node('span', 'journey-empty', '—');
-          empty.setAttribute('aria-label', words.empty);
-          lane.append(empty);
-        }
-        matches.forEach(p => {
-          const card = projectButton(p, 'journey-card');
-          const preview = projectImage(p, 'journey-card__image');
-          if (preview) card.append(preview);
-          card.append(node('span', 'journey-card__topic', columns[i].label));
-          card.append(node('strong', 'journey-card__name', p.name));
-          card.append(node('span', 'journey-card__period', period(p)));
-          const meta = node('span', 'journey-card__meta');
-          meta.append(node('span', 'timeline-venue', publication(p)));
-          if (!p.end) meta.append(node('span', 'timeline-ongoing', words.ongoing));
-          card.append(meta);
-          card.append(node('span', 'journey-card__more', words.details + ' ↗'));
-          lane.append(card);
-        });
-        if (!matches.length) lane.classList.add('journey-lane--empty');
-        section.append(lane);
+      const countLabel = zh ? words.count : (matches.length === 1 ? 'project' : words.count);
+      label.append(heading, node('span', 'journey-year__count', matches.length + ' ' + countLabel));
+      const cards = node('div', 'journey-projects');
+      matches.forEach(p => {
+        const card = projectButton(p, 'journey-card');
+        const preview = projectImage(p, 'journey-card__image');
+        if (preview) card.append(preview);
+        else card.classList.add('journey-card--no-image');
+        const body = node('span', 'journey-card__body');
+        const topicLabel = node('span', 'journey-card__topic');
+        const dot = node('span', 'timeline-dot');
+        dot.setAttribute('aria-hidden', 'true');
+        topicLabel.append(dot, node('span', '', columns[p.lane].label));
+        body.append(topicLabel, node('strong', 'journey-card__name', p.name), node('span', 'journey-card__period', period(p)));
+        const meta = node('span', 'journey-card__meta');
+        meta.append(node('span', 'timeline-venue', publication(p, true)));
+        if (!p.end) meta.append(node('span', 'timeline-ongoing', words.ongoing));
+        const footer = node('span', 'journey-card__footer');
+        footer.append(meta, node('span', 'journey-card__more', words.details + ' ↗'));
+        body.append(footer);
+        card.append(body);
+        cards.append(card);
       });
+      section.append(label, cards);
       journeyContent.append(section);
     });
   }
@@ -143,8 +138,14 @@
     for (let index = first; index <= last; index++) {
       const cell = node('span', 'gantt-month');
       const m = index % 12;
-      if (m === 0 || index === first) cell.append(node('strong', 'gantt-year', Math.floor(index / 12)));
-      if (m % 3 === 0) cell.append(node('span', 'gantt-quarter', 'Q' + (Math.floor(m / 3) + 1)));
+      if (m === 0 || index === first) {
+        cell.classList.add('gantt-month--year');
+        cell.append(node('strong', 'gantt-year', Math.floor(index / 12)));
+      }
+      if (m % 3 === 0) {
+        cell.classList.add('gantt-month--quarter');
+        cell.append(node('span', 'gantt-quarter', 'Q' + (Math.floor(m / 3) + 1)));
+      }
       cell.title = dateLabel(index);
       ticks.append(cell);
     }
@@ -159,8 +160,6 @@
       lane.forEach(p => {
         const row = node('div', 'gantt-row');
         const label = projectButton(p, 'gantt-label gantt-project');
-        const preview = projectImage(p, 'gantt-project__image');
-        if (preview) label.append(preview);
         label.append(node('strong', '', p.name), node('span', '', period(p)));
         const track = node('div', 'gantt-track');
         const bar = projectButton(p, 'gantt-bar');

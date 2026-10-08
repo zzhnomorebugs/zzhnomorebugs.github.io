@@ -23,11 +23,11 @@
   </div>
 
   <section id="timeline-journey" aria-label="{% if is_zh %}研究脉络{% else %}Research journey{% endif %}" hidden>
-    <p class="timeline-note">{% if is_zh %}按研究结束年份倒序排列，进行中的项目归入当前年份。卡片间距不代表时长；点击项目查看详情。{% else %}Grouped by research end year, newest first; ongoing projects appear in the current year. Spacing does not represent duration. Select a project for details.{% endif %}</p>
+    <p class="timeline-note">{% if is_zh %}按研究结束年份倒序排列，进行中项目归入当年。点击卡片查看详情，切换项目周期比较时长。{% else %}By research end year, newest first; ongoing projects appear in the current year. Select a card for details or switch views to compare durations.{% endif %}</p>
     <div id="timeline-journey-content"></div>
   </section>
   <section id="timeline-gantt" aria-label="{% if is_zh %}项目周期{% else %}Project durations{% endif %}" hidden>
-    <p class="timeline-note" id="timeline-gantt-note">{% if is_zh %}每个月等宽，时间条包含起止月份。研究周期与论文发表年份分别标注。窄屏可左右滑动，或聚焦图表后使用方向键。{% else %}Every month has equal width; bars include both start and end months. Research periods and publication years are shown separately. Scroll horizontally on small screens, or focus the chart and use arrow keys.{% endif %}</p>
+    <p class="timeline-note" id="timeline-gantt-note">{% if is_zh %}月份等宽，含起止月；研究周期与发表年份分开标注。窄屏可左右滑动，或聚焦图表后用方向键。{% else %}Equal-width months, including start and end; research dates differ from publication years. Scroll sideways on small screens, or focus the chart and use arrow keys.{% endif %}</p>
     <div class="timeline-gantt-scroll" id="timeline-gantt-scroll" tabindex="0" role="region" aria-label="{% if is_zh %}可横向滚动的项目周期图{% else %}Horizontally scrollable project duration chart{% endif %}" aria-describedby="timeline-gantt-note"></div>
   </section>
 
