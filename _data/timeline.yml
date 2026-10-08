@@ -94,6 +94,12 @@ projects:
     publication: ocean-imputation-mask
     lane: 1
 
+  - name: "Globally Correcting Local Field Estimates"
+    start: "2026-05"
+    end: "2026-10"
+    publication: global-local-field-reconstruction
+    lane: 1
+
   - name: "Order Matters in Retrosynthesis"
     start: "2025-07"
     end: "2026-02"

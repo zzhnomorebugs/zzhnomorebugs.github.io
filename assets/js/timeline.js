@@ -204,6 +204,7 @@
     detailContent.append(heading);
     const facts = node('dl', 'timeline-details__facts');
     facts.append(node('dt', '', words.period), node('dd', '', period(p)), node('dt', '', words.publication), node('dd', '', publication(p)));
+    if (p.role) facts.append(node('dt', '', zh ? '我的角色' : 'My role'), node('dd', '', p.role));
     detailContent.append(facts);
     if (safeUrl(p.image)) {
       const figure = node('figure', 'timeline-details__figure');
@@ -219,6 +220,7 @@
     }
     detailContent.append(node('p', 'timeline-details__summary', p.summary || words.missing));
     const links = node('div', 'timeline-details__links');
+    addLink(links, 'arXiv', p.arxiv);
     addLink(links, words.paper, p.paper);
     addLink(links, words.code, p.code);
     addLink(links, words.poster, p.poster);

@@ -45,10 +45,12 @@ layout: default
       {% endunless %}
 
       <section class="page__content" itemprop="text">
+        {% if page.collection == 'publications' and page.role %}<p><strong>My role: {{ page.role }}</strong></p>{% endif %}
         {{ content }}
 
         {% if page.paperurl or page.slidesurl or page.posterurl or page.githuburl %}
           <div class="publication-links">
+            {% if page.arxivurl %}<a class="publication-link-btn" href="{{ page.arxivurl }}"{% include paper-link-target.html %}>arXiv</a>{% endif %}
             {% if page.paperurl %}<a class="publication-link-btn" href="{{ page.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
             {% if page.slidesurl %}<a class="publication-link-btn" href="{{ page.slidesurl }}"{% include paper-link-target.html %}>Slides</a>{% endif %}
             {% if page.posterurl %}<a class="publication-link-btn" href="{{ page.posterurl }}"{% include paper-link-target.html %}>Poster</a>{% endif %}

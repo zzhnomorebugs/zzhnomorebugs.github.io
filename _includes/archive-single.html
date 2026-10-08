@@ -48,6 +48,10 @@
       <p>{% if page.lang == "zh-CN" %}作者：{% else %}Authors: {% endif %}{{ post.authors | raw }}</p>
     {% endif %}
 
+    {% if post.role %}
+      <p><strong>{% if page.lang == "zh-CN" %}我的角色：{{ post.role_zh | default: post.role }}{% else %}My role: {{ post.role }}{% endif %}</strong></p>
+    {% endif %}
+
     {% if post.read_time %}
       <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
     {% endif %}
@@ -94,6 +98,7 @@
     {% endif %} -->
     {% if post.paperurl or post.slidesurl or post.posterurl or post.githuburl %}
       <div class="publication-links">
+        {% if post.arxivurl %}<a class="publication-link-btn" href="{{ post.arxivurl }}"{% include paper-link-target.html %}>arXiv</a>{% endif %}
         {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
         {% if post.slidesurl %}<a class="publication-link-btn" href="{{ post.slidesurl }}"{% include paper-link-target.html %}>Slides</a>{% endif %}
         {% if post.posterurl %}<a class="publication-link-btn" href="{{ post.posterurl }}"{% include paper-link-target.html %}>Poster</a>{% endif %}

@@ -25,6 +25,7 @@
       <div class="recent-highlight-card__body">
         <div class="recent-highlight-card__badges">
           <span class="highlight-badge">{{ venue_label }}</span>
+          {% if post.role %}<span class="highlight-badge">{% if page.lang == 'zh-CN' %}{{ post.role_zh | default: post.role }}{% else %}{{ post.role }}{% endif %}</span>{% endif %}
         </div>
         <h3 class="recent-highlight-card__title">
           {% if post.paperurl %}
@@ -44,6 +45,7 @@
         {% endif %}
         {% if post.paperurl or post.posterurl or post.githuburl %}
           <div class="publication-links recent-highlight-card__links">
+            {% if post.arxivurl %}<a class="publication-link-btn" href="{{ post.arxivurl }}"{% include paper-link-target.html %}>arXiv</a>{% endif %}
             {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
             {% if post.posterurl or post.poster_image %}<a class="publication-link-btn" href="{{ post.posterurl | default: full_src }}"{% include paper-link-target.html %}>Poster</a>{% endif %}
             {% if post.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ post.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
