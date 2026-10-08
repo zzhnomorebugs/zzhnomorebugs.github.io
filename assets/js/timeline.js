@@ -118,7 +118,8 @@
         if (!p.end) meta.append(node('span', 'timeline-ongoing', words.ongoing));
         const footer = node('span', 'journey-card__footer');
         footer.append(node('span', 'journey-card__period', period(p)), meta, node('span', 'journey-card__more', words.details + ' ↗'));
-        card.append(body, footer);
+        body.append(footer);
+        card.append(body);
         cards.append(card);
       });
       section.append(label, cards);
