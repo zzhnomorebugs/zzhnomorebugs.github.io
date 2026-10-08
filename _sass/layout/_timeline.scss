@@ -45,7 +45,7 @@
 .timeline-venue, .timeline-ongoing { display: inline-block; font-size: 11px; padding: 2px 6px; border-radius: 3px; background: #f1f3f5; color: #56606b; font-weight: 500; }
 .timeline-ongoing { color: #24796b; background: #edf6f2; }
 .journey-card__more { margin-left: auto; font-size: 12px; color: var(--global-link-color); white-space: nowrap; }
-.journey-card__image { display: block; align-self: stretch; width: 180px; height: 100%; min-height: 138px; object-fit: contain; background: #fff; border: 0; border-right: 1px solid #edf0f2; border-radius: 4px 0 0 4px; margin: 0; }
+.journey-card__image { display: block; box-sizing: border-box; align-self: stretch; width: 180px; height: 100%; min-height: 138px; padding-left: 10px; object-fit: contain; background: #fff; border: 0; border-right: 1px solid #edf0f2; border-radius: 4px 0 0 4px; margin: 0; }
 .journey-card__footer .timeline-venue { white-space: nowrap; }
 
 /* A horizontally scrollable plot with a fixed month scale in both languages. */
