@@ -25,7 +25,6 @@
       <div class="recent-highlight-card__body">
         <div class="recent-highlight-card__badges">
           <span class="highlight-badge">{{ venue_label }}</span>
-          {% if post.role %}<span class="highlight-badge">{% if page.lang == 'zh-CN' %}{{ post.role_zh | default: post.role }}{% else %}{{ post.role }}{% endif %}</span>{% endif %}
         </div>
         <h3 class="recent-highlight-card__title">
           {% if post.paperurl %}

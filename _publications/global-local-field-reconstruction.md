@@ -12,12 +12,7 @@ tldr_zh: '从不完整片段中学习局部结构，再结合原始观测对一�
 venue: 'arxiv'
 arxivurl: 'https://arxiv.org/abs/2610.05375'
 paperurl: 'https://arxiv.org/pdf/2610.05375'
-role: 'Project Leader'
-role_zh: '项目负责人'
 image: publications/global_local_field_reconstruction.png
-highlight: true
-highlight_summary: 'Local field estimates provide a consensus prior that a full-domain residual model revises using the original observations.'
-highlight_summary_zh: '将局部场预测整合为一致性先验，再通过全域残差模型结合原始观测进行修正。'
 ---
 
 {{ page.authors }}

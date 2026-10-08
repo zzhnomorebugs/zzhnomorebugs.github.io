@@ -78,7 +78,6 @@
     "summary": {{ summary | markdownify | strip_html | strip | jsonify | replace: '<', '\u003c' }},
     "paper": {{ pub.paperurl | jsonify }},
     "arxiv": {{ pub.arxivurl | jsonify }},
-    "role": {% if is_zh %}{{ pub.role_zh | default: pub.role | jsonify }}{% else %}{{ pub.role | jsonify }}{% endif %},
     "code": {{ pub.githuburl | jsonify }},
     "poster": {{ pub.posterurl | jsonify }},
     "venue": {{ pub.venue | replace: 'ICML', 'ICML ' | replace: 'ICLR', 'ICLR ' | replace: 'NeurIPS', 'NeurIPS ' | replace: 'arxiv', 'arXiv' | strip | jsonify }},

@@ -204,7 +204,6 @@
     detailContent.append(heading);
     const facts = node('dl', 'timeline-details__facts');
     facts.append(node('dt', '', words.period), node('dd', '', period(p)), node('dt', '', words.publication), node('dd', '', publication(p)));
-    if (p.role) facts.append(node('dt', '', zh ? '我的角色' : 'My role'), node('dd', '', p.role));
     detailContent.append(facts);
     if (safeUrl(p.image)) {
       const figure = node('figure', 'timeline-details__figure');

@@ -45,7 +45,6 @@ layout: default
       {% endunless %}
 
       <section class="page__content" itemprop="text">
-        {% if page.collection == 'publications' and page.role %}<p><strong>My role: {{ page.role }}</strong></p>{% endif %}
         {{ content }}
 
         {% if page.paperurl or page.slidesurl or page.posterurl or page.githuburl %}

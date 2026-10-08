@@ -48,10 +48,6 @@
       <p>{% if page.lang == "zh-CN" %}作者：{% else %}Authors: {% endif %}{{ post.authors | raw }}</p>
     {% endif %}
 
-    {% if post.role %}
-      <p><strong>{% if page.lang == "zh-CN" %}我的角色：{{ post.role_zh | default: post.role }}{% else %}My role: {{ post.role }}{% endif %}</strong></p>
-    {% endif %}
-
     {% if post.read_time %}
       <p class="page__meta"><i class="fa fa-clock" aria-hidden="true"></i> {% include read-time.html %}</p>
     {% endif %}
