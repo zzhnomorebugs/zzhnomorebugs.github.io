@@ -82,6 +82,12 @@ projects:
     publication: physics-mediated-diffusion
     lane: 2
 
+  - name: "Differentiable Liquid Chromatography"
+    start: "2024-08"
+    end: "2026-09"
+    publication: differentiable-lc
+    lane: 2
+
   - name: "Incomplete Data, Complete Dynamics"
     start: "2025-05"
     end: "2025-10"
