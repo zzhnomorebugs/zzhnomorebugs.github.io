@@ -1,0 +1,57 @@
+---
+layout: default
+---
+
+{% include base_path %}
+
+<main id="main" class="retro-project" data-retro-project>
+  <article class="retro-project__article" itemscope itemtype="https://schema.org/ScholarlyArticle">
+    <meta itemprop="headline" content="{{ page.title | strip_html | escape }}">
+    {% if page.excerpt %}<meta itemprop="description" content="{{ page.excerpt | strip_html | escape }}">{% endif %}
+
+    <header class="retro-hero">
+      <a class="retro-back" href="{{ base_path }}/zh/research/">← Research · 研究项目</a>
+      <p class="retro-eyebrow">项目解读 <span aria-hidden="true">/</span> 结构感知的分子生成</p>
+      <h1 class="retro-hero__title">RETRO<span aria-hidden="true">.</span></h1>
+      <p class="retro-hero__subtitle">{{ page.subtitle | default: page.title }}</p>
+      {% if page.excerpt %}<div class="retro-hero__summary">{{ page.excerpt | markdownify }}</div>{% endif %}
+      {% if page.authors %}<p class="retro-hero__authors">{{ page.authors }}</p>{% endif %}
+      <div class="retro-hero__actions">
+        <button class="retro-button retro-button--primary" type="button" data-retro-start hidden><span aria-hidden="true">▷</span> 演示模式</button>
+        {% if page.paperurl %}<a class="retro-paper-link" href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">阅读论文 <span aria-hidden="true">↗</span></a>{% endif %}
+      </div>
+    </header>
+
+    <nav class="retro-outline" aria-label="项目章节">
+      <ol>
+        <li><a href="#retro-problem"><span>01</span> 问题</a></li>
+        <li><a href="#retro-insight"><span>02</span> 动机</a></li>
+        <li><a href="#retro-order"><span>03</span> 排序</a></li>
+        <li><a href="#retro-model"><span>04</span> 架构</a></li>
+        <li><a href="#retro-flow"><span>05</span> 生成</a></li>
+        <li><a href="#retro-results"><span>06</span> 实验</a></li>
+        <li><a href="#retro-takeaways"><span>07</span> 总结</a></li>
+      </ol>
+    </nav>
+
+    <div class="retro-content" itemprop="articleBody">
+      {{ content }}
+    </div>
+
+    <footer class="retro-project__footer">
+      <a class="retro-back" href="{{ base_path }}/zh/research/">← 返回 Research</a>
+      {% if page.paperurl %}<a href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">论文原文 ↗</a>{% endif %}
+    </footer>
+  </article>
+
+  <div class="retro-presenter" data-retro-presenter role="region" aria-label="演示控制" hidden>
+    <div class="retro-presenter__identity"><strong>RETRO</strong><span aria-hidden="true">/</span><span data-retro-position aria-live="polite" aria-atomic="true"></span></div>
+    <div class="retro-presenter__controls">
+      <button class="retro-button" type="button" data-retro-prev aria-label="上一章节">← <span>上一章</span></button>
+      <button class="retro-button" type="button" data-retro-next aria-label="下一章节"><span>下一章</span> →</button>
+      <button class="retro-button retro-button--exit" type="button" data-retro-exit>退出演示 <kbd>Esc</kbd></button>
+    </div>
+  </div>
+</main>
+
+<script src="{{ base_path }}/assets/js/retro-project.js" defer></script>

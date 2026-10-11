@@ -16,3 +16,6 @@ package-lock.json
 vendor/
 .bundle/
 
+# Local source material, previews, and verification helpers
+tmp/
+

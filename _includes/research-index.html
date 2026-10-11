@@ -1,12 +1,15 @@
 {% include base_path %}
 
+{% include research-projects.html %}
+
 {% if page.lang == "zh-CN" %}
-  {% assign items = site.research | where: "lang", "zh-CN" | where_exp: "item", "item.published != false" | sort: "order" %}
+  {% assign items = site.research | where: "lang", "zh-CN" | where_exp: "item", "item.published != false" | where_exp: "item", "item.research_project != true" | sort: "order" %}
 {% else %}
-  {% assign items = site.research | where_exp: "item", "item.published != false" | where_exp: "item", "item.lang != 'zh-CN'" | sort: "order" %}
+  {% assign items = site.research | where_exp: "item", "item.published != false" | where_exp: "item", "item.research_project != true" | where_exp: "item", "item.lang != 'zh-CN'" | sort: "order" %}
 {% endif %}
 
 {% if items.size > 0 %}
+  <h2 class="research-index-section-title">{% if page.lang == "zh-CN" %}技术深读{% else %}Technical Notes{% endif %}</h2>
   <div class="research-index">
     {% for post in items %}
       <article class="research-index-card">

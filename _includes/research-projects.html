@@ -1,0 +1,22 @@
+{% assign projects = site.research | where: "research_project", true | where_exp: "item", "item.published != false" | sort: "order" %}
+{% if projects.size > 0 %}
+<section class="research-project-index" aria-labelledby="research-projects-title">
+  <h2 id="research-projects-title" class="research-index-section-title">{% if page.lang == "zh-CN" %}项目讲解{% else %}Project Walkthroughs{% endif %}</h2>
+  <p class="research-project-index__intro">{% if page.lang == "zh-CN" %}从研究问题到方法与实验，沿着一条完整的叙事理解项目。支持逐章演示。{% else %}Research stories from motivation to methods and evidence, with a chapter-by-chapter presentation mode.{% endif %}</p>
+  {% for project in projects %}
+  <article class="research-project-entry">
+    {% if project.project_image %}
+    <a class="research-project-entry__image" href="{{ base_path }}{{ project.url }}" tabindex="-1" aria-hidden="true">
+      <img src="{{ base_path }}{{ project.project_image }}" alt="" loading="lazy" width="960" height="480">
+    </a>
+    {% endif %}
+    <div class="research-project-entry__body">
+      <p class="research-project-entry__eyebrow">{% if page.lang == "zh-CN" %}{{ project.project_area }}{% else %}{{ project.project_area_en | default: project.project_area }}{% endif %}{% if project.lang == 'zh-CN' %}<span lang="zh-CN">中文</span>{% endif %}</p>
+      <h3><a href="{{ base_path }}{{ project.url }}">{% if page.lang == "zh-CN" %}{{ project.index_title | default: project.title }}{% else %}{{ project.index_title_en | default: project.title }}{% endif %}</a></h3>
+      <p>{% if page.lang == "zh-CN" %}{{ project.excerpt }}{% else %}{{ project.excerpt_en | default: project.excerpt }}{% endif %}</p>
+      <a class="publication-link-btn" href="{{ base_path }}{{ project.url }}">{% if page.lang == "zh-CN" %}查看项目讲解{% else %}Explore project · 中文{% endif %} <span aria-hidden="true">→</span></a>
+    </div>
+  </article>
+  {% endfor %}
+</section>
+{% endif %}

@@ -1,0 +1,197 @@
+---
+title: "RETRO"
+subtitle: "把反应位点写入原子的顺序"
+layout: research-project
+collection: research
+permalink: /zh/research/retro/
+lang: zh-CN
+lang_switch_url: /research/
+research_project: true
+mathjax: true
+order: 3
+published: true
+read_time: false
+date: 2026-10-11
+index_title: "RETRO：以反应中心排序引导逆合成"
+index_title_en: "RETRO: Reaction-center-guided generation"
+excerpt: "从反应中心出发排列分子图，用 RetroDiT 与离散流匹配生成反应物。围绕结构先验、模型设计和实验分析，讲清楚原子顺序为什么重要。"
+excerpt_en: "A Chinese walkthrough of reaction-center-rooted atom ordering, RetroDiT, and discrete flow matching for single-step retrosynthesis."
+project_image: /images/research/retro/framework.webp
+project_area: "分子生成 · 逆合成"
+project_area_en: "Molecular generation · Retrosynthesis"
+authors: "Chenguang Wang* · Zihan Zhou* · Lei Bai · Tianshu Yu"
+paperurl: https://arxiv.org/pdf/2602.13136
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="retro-problem" data-chapter-label="问题">
+  <p class="retro-kicker">Single-step retrosynthesis</p>
+  <h2><span class="retro-chapter__number">01</span> 给定一个目标分子，怎样找到它的反应物？</h2>
+  <p class="retro-lede">一步逆合成预测，从目标产物反推可能的反应物集合，是多步合成路线规划中的基础环节。</p>
+  <ol class="retro-pipeline" aria-label="一步逆合成任务">
+    <li><strong>输入：产物分子图</strong><span>原子是节点，化学键是边。</span></li>
+    <li><strong>预测：哪里发生变化</strong><span>定位可能的反应中心与结构变换。</span></li>
+    <li><strong>输出：反应物候选</strong><span>允许提出多种可能的合成方式。</span></li>
+  </ol>
+  <p>这项任务并不只是拆掉一根键。模型还需要改变原子属性、恢复产物中不存在的原子，并把这些原子连接成合理的反应物。与此同时，分子中的大部分骨架往往保持不变。</p>
+  <div class="retro-callout"><strong>项目要回答的问题</strong><p>能否把「反应发生在哪里」这个结构先验交给生成模型，让它更有效地学习「反应物应该长什么样」？</p></div>
+  <div class="retro-support">
+    <h3>任务定义与评测方式</h3>
+    <p>给定产物图 \(G_P\)，学习条件分布 \(p(G_R\mid G_P)\)。这里的 \(G_R\) 表示反应物集合对应的图，不要求只有一个连通分量。</p>
+    <p>主要指标为 Top-k Exact Match：数据集记录的反应物集合是否出现在前 k 个预测中。它衡量与已记录答案的一致程度；没有命中并不必然意味着其他合成方案在化学上不可行。本文关注一步预测，不直接解决完整多步路线搜索。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-insight" data-chapter-label="动机">
+  <p class="retro-kicker">Motivation</p>
+  <h2><span class="retro-chapter__number">02</span> 保留结构先验，也保留生成的灵活性</h2>
+  <p class="retro-lede">逆合成天然带有一个有用的任务分解：先找到反应中心，再生成相应的反应物结构。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="逆合成方法比较">
+    <table class="retro-comparison">
+      <thead><tr><th scope="col">路线</th><th scope="col">如何求解</th><th scope="col">主要取舍</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">模板方法</th><td>从反应模板库中匹配变换</td><td>规则明确，但受模板覆盖范围约束</td></tr>
+        <tr><th scope="row">半模板方法</th><td>定位反应中心，再补全中间片段</td><td>利用任务分解，但部分方法仍依赖补全规则</td></tr>
+        <tr><th scope="row">无模板方法</th><td>直接生成反应物序列或图</td><td>生成灵活，需要从数据中学习反应位置与结构变化</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>RETRO 借鉴反应中心定位的思路，把它作为条件信息交给无模板生成器。关键在于：<strong>通过分子图的原子排列顺序表达反应位点</strong>，让通用的位置编码也能承载反应中心相关的信息。</p>
+  <div class="retro-callout"><strong>关键洞察：同一个分子，可以有不同的原子顺序</strong><p>图的化学连接关系相同，送入模型的节点顺序却可以不同。若序列总是从反应中心开始，模型就获得了一个稳定的参照位置。</p></div>
+  <p class="retro-caption">这里的先验是反应中心相关的位置模式；反应物的具体原子、化学键与属性仍由生成模型预测。</p>
+</section>
+
+<section class="retro-chapter" id="retro-order" data-chapter-label="排序">
+  <p class="retro-kicker">Reaction sites → atom ordering</p>
+  <h2><span class="retro-chapter__number">03</span> 让序列的开头指向反应中心</h2>
+  <p class="retro-lede">选择一个反应中心原子作为起点，确定性地排列产物原子，再在末尾补上用于生成新增原子的占位节点。</p>
+  <ol class="retro-pipeline" aria-label="原子序列的结构">
+    <li><strong>Head · 反应中心起点</strong><span>明确当前候选反应位置。</span></li>
+    <li><strong>Body · 产物骨架</strong><span>保留与该起点一致的原子顺序。</span></li>
+    <li><strong>Tail · Dummy 节点</strong><span>为反应物中额外的原子预留空间。</span></li>
+  </ol>
+  <p>训练时，通过产物与反应物的 atom mapping 提取真实反应中心，并以不同中心原子为起点构造训练样本。推理时，只能看到产物，因此先用独立的图神经网络预测候选中心，再按各候选起点排序并生成反应物。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/framework.webp"><img src="{{ base_path }}/images/research/retro/framework.webp" alt="RETRO 总体流程：训练利用原子映射提取真实反应中心，推理由 R-GCN 预测候选中心；排序后的图经 RetroDiT 和离散流匹配生成反应物" width="2407" height="1239" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 1 · 左：训练时的中心提取、原子排序与目标预测。右：推理时的中心预测、排序与逐步生成。</figcaption>
+  </figure>
+  <div class="retro-support">
+    <h3>排序实现与反应中心的定义</h3>
+    <p>实现使用 RDKit 的 rooted canonical SMILES 确定节点顺序，设置 <code>rootedAtAtom</code> 后读取原子输出顺序，再一致地重排节点和边。SMILES 在这里用于确定排列，生成对象仍然是分子图。</p>
+    <p>反应中心包括发生键形成、断裂或键级变化的相关原子，也包括电荷、氢原子数、手性等属性改变的原子。对于一个样本中的多个中心原子，可分别构造以它们为起点的排列。</p>
+    <p>序列顺序与反应中心的结构环境相关，但序列距离不等同于图上的最短路距离。以一个中心为起点，也不意味着所有中心原子必然连续排列在最前方。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-model" data-chapter-label="架构">
+  <p class="retro-kicker">RetroDiT</p>
+  <h2><span class="retro-chapter__number">04</span> 用位置编码，让模型读懂这个顺序</h2>
+  <p class="retro-lede">原子顺序承载了反应先验，RetroDiT 通过 RoPE 将相对序列位置引入注意力，并联合更新节点与边。</p>
+  <div class="retro-two-column">
+    <div>
+      <h3>节点与化学键共同建模</h3>
+      <p>节点分支处理原子属性，边分支处理化学键信息。边特征调制节点间的注意力，注意力中的交互信息也参与边的更新。</p>
+      <h3>RoPE 提供相对位置参照</h3>
+      <p>当反应中心固定为序列起点，位置编码就可以帮助模型区分起点、骨架和末尾占位区，并学习这些区域之间的关系。</p>
+      <h3>时间条件控制生成阶段</h3>
+      <p>模型同时接收当前时间与中间分子图，预测最终反应物的节点、边类别分布。</p>
+    </div>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/retrodit.webp"><img src="{{ base_path }}/images/research/retro/retrodit.webp" alt="RetroDiT 模块：边嵌入调制多头注意力，节点注意力加入旋转位置编码，节点与边分别经前馈网络更新" width="1419" height="1270" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">图 2 · RetroDiT 的节点与边交互模块。</figcaption>
+    </figure>
+  </div>
+  <div class="retro-support">
+    <h3>RoPE 如何进入注意力？</h3>
+    <div class="retro-equation">\[(R_iq_i)^\top(R_jk_j)=q_i^\top R_{j-i}k_j.\]</div>
+    <p>位置相关的旋转作用于 query 与 key，使注意力得分依赖相对序号 \(j-i\)。排序提供语义参照，RoPE 则让模型能够利用这一参照。仅改变排列而不让模型感知位置，无法充分发挥这个设计的作用。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-flow" data-chapter-label="生成">
+  <p class="retro-kicker">Discrete flow matching</p>
+  <h2><span class="retro-chapter__number">05</span> 从产物图出发，逐步生成反应物</h2>
+  <p class="retro-lede">离散流匹配直接连接产物与反应物这两个结构化状态。训练时学习预测终点，推理时用预测分布构造离散状态间的转移。</p>
+  <ol class="retro-pipeline" aria-label="离散流匹配的训练和生成">
+    <li><strong>构造中间状态</strong><span>在产物与反应物的节点、边类别之间采样。</span></li>
+    <li><strong>学习预测终点</strong><span>RetroDiT 从中间图与时间预测反应物。</span></li>
+    <li><strong>沿轨迹采样</strong><span>从产物开始，逐步更新节点和化学键。</span></li>
+  </ol>
+  <p><strong>训练不必模拟完整生成轨迹。</strong>每次直接采样时间和中间状态，用节点、边类别的交叉熵监督终点预测。推理时，再通过连续时间马尔可夫链的离散化采样完成图变换。</p>
+  <div class="retro-results-grid">
+    <div><span class="retro-result__value">20–50</span><span class="retro-result__label">采样步数</span><p class="retro-result__note">论文实验中可获得较好的生成效果；主实验使用 50 步。</p></div>
+    <div><span class="retro-result__value">500</span><span class="retro-result__label">对照采样步数</span><p class="retro-result__note">RetroBridge 的设置。步数减少 10–25 倍，不等于端到端耗时按同比例减少。</p></div>
+    <div><span class="retro-result__value">72 → 12</span><span class="retro-result__label">训练 GPU-hours</span><p class="retro-result__note">USPTO-50k 上论文报告的收敛成本，相比 RetroBridge 降至约六分之一。</p></div>
+  </div>
+  <div class="retro-support">
+    <h3>训练目标、采样曲线与效率口径</h3>
+    <p>训练时，产物与反应物根据 atom mapping 保持节点索引一致，新增原子对应末尾的占位节点。</p>
+    <p>对一个离散节点或边变量 \(z\)，以产物状态 \(z_0\) 与反应物状态 \(z_1\) 构造插值：</p>
+    <div class="retro-equation">\[p_t(z\mid z_0,z_1)=(1-t)\delta_{z_0}(z)+t\delta_{z_1}(z).\]</div>
+    <p>图中的节点和边分别按这个方式采样，因此中间图可以同时包含产物和反应物的局部状态。训练目标可概括为：</p>
+    <div class="retro-equation">\[\mathcal L=\mathbb E_{t,G_0,G_1,G_t}\!\left[\operatorname{CE}\!\left(G_1,p^\theta_{1\mid t}(\cdot\mid G_t)\right)\right].\]</div>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/sampling-steps.webp"><img src="{{ base_path }}/images/research/retro/sampling-steps.webp" alt="USPTO-50k 不同模型规模在 10、20、50、100 采样步下的 Top-1 准确率曲线，较少步数后趋于稳定" width="2088" height="546" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">图 3 · 采样步数与准确率。</figcaption>
+    </figure>
+    <p>训练成本比较为 RetroBridge：单卡约 72 小时，合计 72 GPU-hours；本方法：8 卡约 1.5 小时，合计 12 GPU-hours。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-results" data-chapter-label="实验">
+  <p class="retro-kicker">Evidence</p>
+  <h2><span class="retro-chapter__number">06</span> 原子排序带来了什么收益？</h2>
+  <p class="retro-lede">先看真实推理条件下的预测结果，再用排序消融和 Oracle 对照，理解性能提升来自哪里。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="USPTO-50k 与 USPTO-Full 主实验 Top-1 结果">
+    <table class="retro-comparison">
+      <thead><tr><th scope="col">方法 / 条件</th><th scope="col">USPTO-50k</th><th scope="col">USPTO-Full</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">NAG2G</th><td>55.1%</td><td>49.7%</td></tr>
+        <tr><th scope="row">R-SMILES</th><td>56.3%</td><td>48.9%</td></tr>
+        <tr><th scope="row">RSGPT（大规模预训练）</th><td>63.4%</td><td>59.2%</td></tr>
+        <tr><th scope="row">RETRO · 预测反应中心</th><td><strong>61.2%</strong></td><td><strong>51.3%</strong></td></tr>
+        <tr><th scope="row">RETRO · 真实反应中心（Oracle）</th><td>71.1%</td><td>63.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="retro-caption">Top-1 Exact Match；反应类别未知。所列方法为代表性对照。Oracle 使用额外的真实中心信息，仅用于内部诊断。50k 主要模型为 8M 参数；Full 的高性能结果对应 65M 模型。</p>
+  <p>在 USPTO-50k 上，预测中心的结果相较 RetroBridge（50.8%）提高 <strong>10.4 个百分点</strong>；相较 EditRetro（60.8%）提高 <strong>0.4 个百分点</strong>。与 RSGPT 相比仍有差距，这项工作的价值在于利用结构先验改善生成与学习效率。</p>
+  <h3>结构指导能在多大程度上替代模型规模？</h3>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/scaling.webp"><img src="{{ base_path }}/images/research/retro/scaling.webp" alt="USPTO-Full 上从 280K 到 65M 参数的规模实验，对比 canonical 排序、预测中心排序和 Oracle 中心排序的 Top-1、Top-3、Top-5" width="1779" height="530" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 4 · USPTO-Full 上的排序与规模消融。蓝色：Canonical；绿色：预测中心；紫色：真实中心。</figcaption>
+  </figure>
+  <p>最醒目的对照是：<strong>280K 参数模型在 Oracle 中心指导下达到约 51% Top-1，与 Canonical 排序的 65M 模型（50.4%）相当。</strong>这说明准确的结构先验可以显著降低学习负担；这个结论依赖已知真实反应中心的条件。</p>
+  <div class="retro-support">
+    <h3>候选生成案例与评测细节</h3>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/ordering-cases.webp"><img src="{{ base_path }}/images/research/retro/ordering-cases.webp" alt="同一产物在反应中心起始排序与 canonical 排序下的候选生成分布案例，黄色标记数据集记录的反应物" width="2658" height="1825" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">图 5 · 一个具体产物的候选生成分布。图中的 95% 与 83% 是该案例的采样频率，不能作为总体准确率。</figcaption>
+    </figure>
+    <p>该案例展示同一化学结构在不同输入排列下，可以得到不同的候选分布。它用于解释排序的作用，整体收益应以数据集实验与消融为依据。</p>
+    <p>论文评测对每个产物进行 100 次采样，对生成结构标准化、去重，并按出现频率排序后计算 Top-k。主表与规模消融数值存在小幅差异，本页分别引用对应实验。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-takeaways" data-chapter-label="总结">
+  <p class="retro-kicker">What remains</p>
+  <h2><span class="retro-chapter__number">07</span> 当前瓶颈：先验的质量决定它能帮多少忙</h2>
+  <p class="retro-lede">Oracle 与预测中心之间存在明显差距。反应中心是有效的指导信息，也可能在预测错误时误导生成。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/rc-accuracy.webp"><img src="{{ base_path }}/images/research/retro/rc-accuracy.webp" alt="反应中心预测准确率敏感性实验：随中心准确率提高，两个 USPTO 数据集的生成 Top-1 上升；中心质量过低时可低于 canonical 基线" width="1383" height="822" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 6 · 控制反应中心准确率的敏感性实验。横轴是实验设定的中心准确率；它用于分析趋势，不直接等同于主实验中心预测器的表现。</figcaption>
+  </figure>
+  <p>这个结果提示，后续改进应同时考虑中心预测的准确性与不确定性：提高候选中心覆盖率，在不确定时保留多个假设，并研究生成器如何减少对错误中心的依赖。</p>
+  <div class="retro-callout"><strong>这个项目留下的核心认识</strong><p>分子图的表示顺序也可以成为反应位点先验的载体。以反应中心为起点的排序，让位置编码与化学任务建立联系；再与图生成和离散流匹配结合，形成一个可分别改进的逆合成系统。</p></div>
+  <div class="retro-support">
+    <h3>局限与可以进一步讨论的问题</h3>
+    <ul>
+      <li><strong>中心误差会传递。</strong>已知真实中心的实验刻画的是诊断参照，无法保证改进预测器后就一定达到该结果。</li>
+      <li><strong>新增原子容量有限。</strong>Dummy 节点数量限制了可容纳的反应物额外原子数，超出预留容量的结构需要扩展表示。</li>
+      <li><strong>基准分数不等于实验成功率。</strong>Exact Match 依赖数据集中的记录；真实合成还需要反应条件、可得性和实验验证。</li>
+      <li><strong>一步预测与多步规划存在距离。</strong>如何把候选多样性、置信度与路线搜索结合，仍是后续问题。</li>
+    </ul>
+    <p>上述改进方向是基于实验结果的讨论，不是本工作已经验证的结果。</p>
+  </div>
+</section>

@@ -155,6 +155,8 @@ include:
   - _pages
   - files
 exclude:
+  - AGENTS.md
+  - docs
   - "*.sublime-project"
   - "*.sublime-workspace"
   - .asset-cache
