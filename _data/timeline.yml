@@ -49,6 +49,7 @@ projects:
     start: "2023-09"
     end: "2024-03"
     publication: se3-diffusion
+    hide_publication_year: true
     lane: 3
 
   - name: "TEMPO"
