@@ -112,12 +112,23 @@
         const dot = node('span', 'timeline-dot');
         dot.setAttribute('aria-hidden', 'true');
         topicLabel.append(dot, node('span', '', columns[p.lane].label));
-        body.append(topicLabel, node('strong', 'journey-card__name', p.name));
-        const meta = node('span', 'journey-card__meta');
-        meta.append(node('span', 'timeline-venue', publication(p, true)));
-        if (!p.end) meta.append(node('span', 'timeline-ongoing', words.ongoing));
+        const header = node('span', 'journey-card__header');
+        const venue = node('span', 'timeline-venue');
+        if (safeUrl(p.venueLogo)) {
+          const logo = node('img', 'timeline-venue__logo');
+          logo.src = safeUrl(p.venueLogo);
+          logo.alt = '';
+          logo.width = 20;
+          logo.height = 20;
+          venue.append(logo);
+        }
+        venue.append(node('span', '', publication(p, true)));
+        header.append(topicLabel, venue);
+        body.append(header, node('strong', 'journey-card__name', p.name));
         const footer = node('span', 'journey-card__footer');
-        footer.append(node('span', 'journey-card__period', period(p)), meta, node('span', 'journey-card__more', words.details + ' ↗'));
+        footer.append(node('span', 'journey-card__period', period(p)));
+        if (!p.end) footer.append(node('span', 'timeline-ongoing', words.ongoing));
+        footer.append(node('span', 'journey-card__more', words.details + ' ↗'));
         body.append(footer);
         card.append(body);
         cards.append(card);
