@@ -86,6 +86,7 @@ entries:
     role:
       en: "Research Collaboration, Differentiable Liquid Chromatography"
       zh: "科研项目合作，可微液相色谱建模"
+    logo: "experience/logos/chemlex.png"
     publication: "differentiable-lc"
     highlights:
       en:
