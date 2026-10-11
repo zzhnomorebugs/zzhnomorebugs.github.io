@@ -133,10 +133,16 @@
       event.preventDefault();
       // This page owns its outline; avoid the theme's separate smooth-scroll handler.
       event.stopImmediatePropagation();
-      chapter.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+      var index = chapters.indexOf(chapter);
+      if (index < 0) return;
+      if (presenting) {
+        showChapter(index, true);
+      } else {
+        chapter.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+      }
       // Preserve shareable chapter links without adding an entry for every click.
       if (window.history && window.history.replaceState) window.history.replaceState(null, "", "#" + chapter.id);
-      setOutline(chapters.indexOf(chapter));
+      setOutline(index);
     });
   });
 

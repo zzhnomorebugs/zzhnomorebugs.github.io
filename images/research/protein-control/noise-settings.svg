@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="890" viewBox="0 0 1400 890" role="img" aria-labelledby="title desc">
+  <title id="title">BFN、DFM-abs 与 DFM-uni 的带噪输入对比</title>
+  <desc id="desc">箭头表示从同一抽象干净序列构造训练时的带噪输入。BFN 将带噪消息映射为每个位点的 K 维类别概率向量，网络看到概率信念 θ。DFM-abs 将部分 token 替换为 MASK。DFM-uni 将部分 token 替换为从类别表均匀采样的随机 token，可能恰好采回原类别。两种 DFM 的网络都看到离散 token。α、β、γ、δ 为抽象类别符号。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#25766c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#213b36}
+      .title{font-size:37px;font-weight:700;letter-spacing:-1px}
+      .sub{font-size:24px;fill:#60756f}
+      .heading{font-size:29px;font-weight:700}
+      .label{font-size:24px;font-weight:600;fill:#25766c}
+      .body{font-size:23px;fill:#536d65}
+      .type{font-size:27px;font-weight:700}
+      .token{font-family:"Cambria Math","Times New Roman",serif;fill:#213b36}
+      .vector-label{font-family:"Cambria Math","Times New Roman",serif;font-weight:600;fill:#25766c}
+      .ellipsis{fill:#78948e}
+    </style>
+  </defs>
+  <rect width="1400" height="890" fill="#fff"/>
+
+<text x="50" y="62" class="title">同样加噪，网络看到的状态不同</text>
+<text x="50" y="106" class="sub">箭头表示构造训练时的带噪输入；α、β、γ、δ 为抽象 token</text>
+<text x="280" y="168" class="label">同一干净序列</text>
+<text x="590" y="168" class="label">加噪后的网络输入</text>
+<text x="1110" y="168" class="label">输入状态</text>
+<rect x="50" y="200" width="1300" height="185" rx="14" fill="#fff" stroke="#d3e2dd" stroke-width="2"/>
+<text x="78" y="266" class="heading">BFN</text>
+<text x="78" y="308" class="body">贝叶斯信念更新</text>
+<rect x="280" y="259" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="305.0" y="296.26" class="token" font-size="32" text-anchor="middle">α</text><rect x="340" y="259" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="365.0" y="296.26" class="token" font-size="32" text-anchor="middle">β</text><rect x="400" y="259" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="425.0" y="296.26" class="token" font-size="32" text-anchor="middle">γ</text><rect x="460" y="259" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="485.0" y="296.26" class="token" font-size="32" text-anchor="middle">δ</text>
+<path d="M518 286 L564 286" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1010 286 L1071 286" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="590" y="227" width="84" height="113" rx="10" fill="#f7faf8" stroke="#c9ddd4" stroke-width="2"/><text x="632.0" y="253" class="vector-label" font-size="23" text-anchor="middle">θ1</text><rect x="600" y="275.76" width="10" height="48.239999999999995" rx="3" fill="#25766c"/><rect x="615" y="299.88" width="10" height="24.119999999999997" rx="3" fill="#9bbdb0"/><rect x="630" y="311.94" width="10" height="12.059999999999999" rx="3" fill="#9bbdb0"/><rect x="645" y="307.92" width="10" height="16.08" rx="3" fill="#9bbdb0"/><text x="662" y="320" class="ellipsis" font-size="22" text-anchor="middle">⋮</text><rect x="686" y="227" width="84" height="113" rx="10" fill="#f7faf8" stroke="#c9ddd4" stroke-width="2"/><text x="728.0" y="253" class="vector-label" font-size="23" text-anchor="middle">θ2</text><rect x="696" y="311.94" width="10" height="12.059999999999999" rx="3" fill="#9bbdb0"/><rect x="711" y="283.13" width="10" height="40.87" rx="3" fill="#25766c"/><rect x="726" y="295.19" width="10" height="28.81" rx="3" fill="#9bbdb0"/><rect x="741" y="307.92" width="10" height="16.08" rx="3" fill="#9bbdb0"/><text x="758" y="320" class="ellipsis" font-size="22" text-anchor="middle">⋮</text><rect x="782" y="227" width="84" height="113" rx="10" fill="#f7faf8" stroke="#c9ddd4" stroke-width="2"/><text x="824.0" y="253" class="vector-label" font-size="23" text-anchor="middle">θ3</text><rect x="792" y="304.57" width="10" height="19.43" rx="3" fill="#9bbdb0"/><rect x="807" y="311.94" width="10" height="12.059999999999999" rx="3" fill="#9bbdb0"/><rect x="822" y="279.11" width="10" height="44.89" rx="3" fill="#25766c"/><rect x="837" y="300.55" width="10" height="23.45" rx="3" fill="#9bbdb0"/><text x="854" y="320" class="ellipsis" font-size="22" text-anchor="middle">⋮</text><rect x="878" y="227" width="84" height="113" rx="10" fill="#f7faf8" stroke="#c9ddd4" stroke-width="2"/><text x="920.0" y="253" class="vector-label" font-size="23" text-anchor="middle">θ4</text><rect x="888" y="305.24" width="10" height="18.76" rx="3" fill="#9bbdb0"/><rect x="903" y="295.86" width="10" height="28.14" rx="3" fill="#9bbdb0"/><rect x="918" y="309.26" width="10" height="14.74" rx="3" fill="#9bbdb0"/><rect x="933" y="282.46" width="10" height="41.54" rx="3" fill="#25766c"/><text x="950" y="320" class="ellipsis" font-size="22" text-anchor="middle">⋮</text>
+<text x="590" y="367" class="body">类别 α · β · γ · δ · …</text>
+<text x="1110" y="280" class="type">概率向量 θ</text>
+<text x="1110" y="322" class="body">每个位点为 K 维</text>
+<rect x="50" y="405" width="1300" height="185" rx="14" fill="#fff" stroke="#d3e2dd" stroke-width="2"/>
+<text x="78" y="471" class="heading">DFM-abs</text>
+<text x="78" y="513" class="body">吸收态 / MASK</text>
+<rect x="280" y="464" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="305.0" y="501.26" class="token" font-size="32" text-anchor="middle">α</text><rect x="340" y="464" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="365.0" y="501.26" class="token" font-size="32" text-anchor="middle">β</text><rect x="400" y="464" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="425.0" y="501.26" class="token" font-size="32" text-anchor="middle">γ</text><rect x="460" y="464" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="485.0" y="501.26" class="token" font-size="32" text-anchor="middle">δ</text>
+<path d="M518 491 L564 491" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1010 491 L1071 491" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="590" y="464" width="90" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="635.0" y="501.26" class="token" font-size="25" text-anchor="middle">α</text><rect x="692" y="464" width="90" height="54" rx="10" fill="#e1f0e9" stroke="#72a899" stroke-width="2"/><text x="737.0" y="501.26" class="token" font-size="25" text-anchor="middle">[MASK]</text><rect x="794" y="464" width="90" height="54" rx="10" fill="#e1f0e9" stroke="#72a899" stroke-width="2"/><text x="839.0" y="501.26" class="token" font-size="25" text-anchor="middle">[MASK]</text><rect x="896" y="464" width="90" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="941.0" y="501.26" class="token" font-size="25" text-anchor="middle">δ</text>
+<text x="590" y="562" class="body">部分位点被掩码，其余 token 保留</text>
+<text x="1110" y="485" class="type">离散 token</text>
+<text x="1110" y="527" class="body">原类别或 [MASK]</text>
+<rect x="50" y="610" width="1300" height="185" rx="14" fill="#fff" stroke="#d3e2dd" stroke-width="2"/>
+<text x="78" y="676" class="heading">DFM-uni</text>
+<text x="78" y="718" class="body">均匀随机替换</text>
+<rect x="280" y="669" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="305.0" y="706.26" class="token" font-size="32" text-anchor="middle">α</text><rect x="340" y="669" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="365.0" y="706.26" class="token" font-size="32" text-anchor="middle">β</text><rect x="400" y="669" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="425.0" y="706.26" class="token" font-size="32" text-anchor="middle">γ</text><rect x="460" y="669" width="50" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="485.0" y="706.26" class="token" font-size="32" text-anchor="middle">δ</text>
+<path d="M518 696 L564 696" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<path d="M1010 696 L1071 696" fill="none" stroke="#25766c" stroke-width="3" marker-end="url(#arrow)"/>
+<rect x="590" y="669" width="90" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="635.0" y="706.26" class="token" font-size="32" text-anchor="middle">α</text><rect x="692" y="669" width="90" height="54" rx="10" fill="#e1f0e9" stroke="#72a899" stroke-width="2"/><text x="737.0" y="706.26" class="token" font-size="32" text-anchor="middle">δ</text><rect x="794" y="669" width="90" height="54" rx="10" fill="#e1f0e9" stroke="#72a899" stroke-width="2"/><text x="839.0" y="706.26" class="token" font-size="32" text-anchor="middle">β</text><rect x="896" y="669" width="90" height="54" rx="10" fill="#f1f5f2" stroke="#dce7e2" stroke-width="2"/><text x="941.0" y="706.26" class="token" font-size="32" text-anchor="middle">δ</text>
+<text x="590" y="767" class="body">部分位点替换成随机类别</text>
+<text x="1110" y="690" class="type">离散 token</text>
+<text x="1110" y="732" class="body">原类别或随机类别</text>
+<path d="M50 823 H1350" stroke="#dce7e2" stroke-width="2"/>
+<text x="50" y="860" class="sub">BFN：带噪消息 → 贝叶斯更新 → 概率信念　　DFM-uni：随机替换可能恰好采回原类别</text>
+</svg>

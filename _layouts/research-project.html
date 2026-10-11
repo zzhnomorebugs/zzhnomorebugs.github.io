@@ -4,15 +4,20 @@ layout: default
 
 {% include base_path %}
 
-<main id="main" class="retro-project" data-retro-project>
+{% assign project_title = page.project_title | default: page.title %}
+{% assign project_label = page.project_label | default: project_title %}
+{% if page.lang == "zh-CN" %}{% assign project_research_url = "/zh/research/" %}{% else %}{% assign project_research_url = "/research/" %}{% endif %}
+{% assign project_research_url = page.project_research_url | default: project_research_url %}
+
+<main id="main" class="retro-project{% if page.project_class %} {{ page.project_class | escape }}{% endif %}" data-retro-project>
   <article class="retro-project__article" itemscope itemtype="https://schema.org/ScholarlyArticle">
     <meta itemprop="headline" content="{{ page.title | strip_html | escape }}">
     {% if page.excerpt %}<meta itemprop="description" content="{{ page.excerpt | strip_html | escape }}">{% endif %}
 
     <header class="retro-hero">
-      <a class="retro-back" href="{{ base_path }}/zh/research/">← Research · 研究项目</a>
-      <p class="retro-eyebrow">项目解读 <span aria-hidden="true">/</span> 结构感知的分子生成</p>
-      <h1 class="retro-hero__title">RETRO<span aria-hidden="true">.</span></h1>
+      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← Research · 研究项目</a>
+      <p class="retro-eyebrow">{{ page.project_eyebrow | default: "项目解读" }} <span aria-hidden="true">/</span> {{ page.project_eyebrow_area | default: page.project_area | default: "结构感知的分子生成" }}</p>
+      <h1 class="retro-hero__title">{{ project_title | escape }}</h1>
       <p class="retro-hero__subtitle">{{ page.subtitle | default: page.title }}</p>
       {% if page.excerpt %}<div class="retro-hero__summary">{{ page.excerpt | markdownify }}</div>{% endif %}
       {% if page.authors %}<p class="retro-hero__authors">{{ page.authors }}</p>{% endif %}
@@ -24,6 +29,11 @@ layout: default
 
     <nav class="retro-outline" aria-label="项目章节">
       <ol>
+        {% if page.project_chapters %}
+        {% for chapter in page.project_chapters %}
+        <li><a href="#{{ chapter.id | escape }}"><span>{% if forloop.index < 10 %}0{% endif %}{{ forloop.index }}</span> {{ chapter.label | escape }}</a></li>
+        {% endfor %}
+        {% else %}
         <li><a href="#retro-problem"><span>01</span> 问题</a></li>
         <li><a href="#retro-insight"><span>02</span> 动机</a></li>
         <li><a href="#retro-order"><span>03</span> 排序</a></li>
@@ -31,6 +41,7 @@ layout: default
         <li><a href="#retro-flow"><span>05</span> 生成</a></li>
         <li><a href="#retro-results"><span>06</span> 实验</a></li>
         <li><a href="#retro-takeaways"><span>07</span> 总结</a></li>
+        {% endif %}
       </ol>
     </nav>
 
@@ -39,13 +50,13 @@ layout: default
     </div>
 
     <footer class="retro-project__footer">
-      <a class="retro-back" href="{{ base_path }}/zh/research/">← 返回 Research</a>
+      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← 返回 Research</a>
       {% if page.paperurl %}<a href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">论文原文 ↗</a>{% endif %}
     </footer>
   </article>
 
   <div class="retro-presenter" data-retro-presenter role="region" aria-label="演示控制" hidden>
-    <div class="retro-presenter__identity"><strong>RETRO</strong><span aria-hidden="true">/</span><span data-retro-position aria-live="polite" aria-atomic="true"></span></div>
+    <div class="retro-presenter__identity"><strong>{{ project_label | escape }}</strong><span aria-hidden="true">/</span><span data-retro-position aria-live="polite" aria-atomic="true"></span></div>
     <div class="retro-presenter__controls">
       <button class="retro-button" type="button" data-retro-prev aria-label="上一章节">← <span>上一章</span></button>
       <button class="retro-button" type="button" data-retro-next aria-label="下一章节"><span>下一章</span> →</button>

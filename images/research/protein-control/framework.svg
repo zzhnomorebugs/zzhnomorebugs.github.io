@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="840" viewBox="0 0 1440 840" role="img" aria-labelledby="title desc">
+  <title id="title">蛋白质序列可控生成的方法总览</title>
+  <desc id="desc">通用序列先验、参考蛋白上下文与目标性质共同支持条件序列生成。生成候选序列后，独立检查条件遵循、序列编辑行为与结构合理性。本图不展示真实蛋白序列、模型规格或实验指标。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#25766c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <marker id="arrow-muted" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#78948e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:"Noto Sans CJK SC","Microsoft YaHei","PingFang SC",sans-serif;fill:#213b36} .title{font-size:38px;font-weight:700;letter-spacing:-1px} .sub{font-size:23px;fill:#60756f} .label{font-size:21px;font-weight:600;fill:#25766c;letter-spacing:2px} .heading{font-size:29px;font-weight:700} .body{font-size:23px;fill:#536d65} .small{font-size:21px;fill:#536d65} .center{text-anchor:middle} .card{fill:#fff;stroke:#d3e2dd;stroke-width:2} .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linejoin:round;stroke-linecap:round} .pill{fill:#eff7f4}
+    </style>
+  </defs>
+  <rect width="1440" height="840" fill="#fff"/>
+  <text x="64" y="68" class="title">从蛋白质先验到目标条件下的候选序列</text>
+  <text x="64" y="111" class="sub">以参考蛋白为上下文，在序列合理性与目标性质之间寻找可用的编辑方向</text>
+
+  <rect x="64" y="158" width="330" height="170" rx="14" class="card"/>
+  <rect x="64" y="158" width="8" height="170" rx="4" fill="#25766c"/>
+  <text x="94" y="200" class="label">通用知识</text>
+  <text x="94" y="248" class="heading">蛋白质序列先验</text>
+  <text x="94" y="290" class="body">学习序列的统计规律</text>
+
+  <rect x="64" y="362" width="330" height="160" rx="14" class="card"/>
+  <text x="94" y="405" class="label">参考上下文</text>
+  <text x="94" y="453" class="heading">野生型 / 参考蛋白</text>
+  <text x="94" y="495" class="body">提供相对编辑的条件</text>
+
+  <rect x="64" y="556" width="330" height="160" rx="14" class="card"/>
+  <text x="94" y="599" class="label">设计目标</text>
+  <text x="94" y="647" class="heading">功能或性质条件</text>
+  <text x="94" y="689" class="body">表达希望改变的方向</text>
+
+  <path d="M394 242 H445 V385 H493" class="line" marker-end="url(#arrow)"/>
+  <path d="M394 442 H493" class="line" marker-end="url(#arrow)"/>
+  <path d="M394 636 H445 V499 H493" class="line" marker-end="url(#arrow)"/>
+
+  <rect x="505" y="332" width="405" height="220" rx="18" fill="#f2f8f5" stroke="#9ebdb3" stroke-width="2"/>
+  <text x="707.5" y="385" class="label center">离散序列生成</text>
+  <text x="707.5" y="435" class="heading center">条件生成网络</text>
+  <text x="707.5" y="480" class="body center">融合先验、上下文与条件</text>
+
+  <path d="M910 442 H1013" class="line" marker-end="url(#arrow)"/>
+  <rect x="1025" y="262" width="350" height="300" rx="18" class="card"/>
+  <text x="1200" y="315" class="label center">生成输出</text>
+  <text x="1200" y="365" class="heading center">候选蛋白质序列</text>
+  <text x="1200" y="407" class="body center">在参考上下文中探索变体</text>
+  <g transform="translate(1081 430)">
+    <rect x="0" y="0" width="238" height="28" rx="7" fill="#edf3ef"/>
+    <rect x="0" y="44" width="238" height="28" rx="7" fill="#edf3ef"/>
+    <rect x="0" y="88" width="238" height="28" rx="7" fill="#edf3ef"/>
+    <g fill="#a4cabb"><rect x="18" y="6" width="34" height="16" rx="4"/><rect x="66" y="6" width="34" height="16" rx="4"/><rect x="114" y="6" width="34" height="16" rx="4"/><rect x="162" y="6" width="58" height="16" rx="4"/><rect x="18" y="50" width="34" height="16" rx="4"/><rect x="66" y="50" width="34" height="16" rx="4"/><rect x="114" y="50" width="34" height="16" rx="4"/><rect x="162" y="50" width="58" height="16" rx="4"/><rect x="18" y="94" width="34" height="16" rx="4"/><rect x="66" y="94" width="34" height="16" rx="4"/><rect x="114" y="94" width="34" height="16" rx="4"/><rect x="162" y="94" width="58" height="16" rx="4"/></g>
+    <g fill="#25766c"><rect x="66" y="50" width="34" height="16" rx="4"/><rect x="162" y="94" width="58" height="16" rx="4"/></g>
+  </g>
+
+  <path d="M1200 562 V593" fill="none" stroke="#78948e" stroke-width="3" marker-end="url(#arrow-muted)"/>
+  <rect x="1025" y="605" width="350" height="128" rx="12" fill="#eff7f4" stroke="#b8d1c7" stroke-width="2"/>
+  <text x="1200" y="646" class="heading center" style="font-size:27px">独立评价</text>
+  <text x="1200" y="680" class="small center">条件遵循 · 编辑行为</text>
+  <text x="1200" y="707" class="small center">序列与结构合理性</text>
+
+  <path d="M64 756 H1375" stroke="#dce7e2" stroke-width="2"/>
+  <circle cx="77" cy="798" r="5" fill="#25766c"/>
+  <text x="97" y="806" class="sub">生成负责提出候选；独立评价负责检验是否真正遵循目标条件。</text>
+</svg>
