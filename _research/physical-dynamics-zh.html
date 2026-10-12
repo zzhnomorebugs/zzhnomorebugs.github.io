@@ -10,7 +10,6 @@ mathjax: true
 project_class: physical-project
 project_stylesheet: physical-dynamics.css
 project_title: "物理先验下的动力学生成"
-project_label: "Physical Dynamics"
 project_eyebrow: "ICLR 2025 · 项目解读"
 project_area: "AI4Physics · 扩散生成"
 project_area_en: "AI4Physics · Diffusion models"
@@ -23,7 +22,7 @@ index_title: "物理动力学生成：把对称性与守恒律融入扩散模型
 index_title_en: "Generating Physical Dynamics under Priors"
 excerpt: "生成的轨迹看起来合理，并不意味着它遵循物理规律。从分布对称性与守恒约束出发，解释扩散模型的条件均值为何带来 Jensen gap，以及如何设计训练目标，改善粒子轨迹与物理场的生成。"
 excerpt_en: "A Chinese walkthrough of distributional symmetries, the Jensen gap in physical constraints, and training objectives for diffusion-based generation of particle trajectories and PDE fields."
-project_image: /images/research/physical-dynamics/framework.svg
+project_image: /images/publications/generating_under_prior.png
 authors: "Zihan Zhou · Xiaoxue Wang · Tianshu Yu（通讯作者）"
 paperurl: https://arxiv.org/pdf/2409.00730v3
 githuburl: https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors
@@ -50,7 +49,7 @@ project_chapters:
 
 {% include base_path %}
 
-<section class="retro-chapter" id="physical-task" data-chapter-label="问题">
+<section class="retro-chapter" id="physical-task">
   <p class="retro-kicker">Generating Physical Dynamics under Priors</p>
   <h2><span class="retro-chapter__number">01</span> 生成一段运动，怎样知道它符合物理？</h2>
   <p class="retro-lede">粒子轨迹可以连续而平滑，流场也可以具有熟悉的纹理，但这些外观特征并不能保证能量守恒、动量守恒，或满足控制系统演化的方程。</p>
@@ -67,7 +66,7 @@ project_chapters:
   <div class="retro-callout"><strong>核心问题</strong><p>怎样把“分布具有对称性”和“样本需要满足方程”同时交给扩散模型，并让约束作用于正确的预测对象？</p></div>
 </section>
 
-<section class="retro-chapter" id="physical-diffusion" data-chapter-label="扩散">
+<section class="retro-chapter" id="physical-diffusion">
   <p class="retro-kicker">从整段样本到去噪预测</p>
   <h2><span class="retro-chapter__number">02</span> 扩散模型预测的，究竟是什么？</h2>
   <p class="retro-lede">用 \(x_0\) 表示一整段干净轨迹或物理场。扩散时间 \(t\) 控制噪声强度，它与轨迹内部的物理时间是两个不同的维度。</p>
@@ -91,7 +90,7 @@ project_chapters:
   <div class="retro-callout"><strong>后续约束设计的出发点</strong><p>去噪预测在理想情形下是条件均值 \(\mathbb E[x_0\mid x_t]\)。它并不等同于某一个真实的干净样本。</p></div>
 </section>
 
-<section class="retro-chapter" id="physical-symmetry" data-chapter-label="对称性">
+<section class="retro-chapter" id="physical-symmetry">
   <p class="retro-kicker">Distributional priors</p>
   <h2><span class="retro-chapter__number">03</span> 让坐标变换与模型预测保持一致</h2>
   <p class="retro-lede">物理内容与表示方式可以分开：同一段粒子运动换一个观察方向，仍然描述同一个系统。</p>
@@ -117,7 +116,7 @@ project_chapters:
   <p>这些是结合数据结构提出的设计选择。数据增强有助于学习对称性，但不等同于网络在所有输入上都具有严格的结构性等变保证。</p>
 </section>
 
-<section class="retro-chapter" id="physical-jensen" data-chapter-label="难点">
+<section class="retro-chapter" id="physical-jensen">
   <p class="retro-kicker">The Jensen gap</p>
   <h2><span class="retro-chapter__number">04</span> 每个样本都可行，为什么均值却可能违规？</h2>
   <p class="retro-lede">设干净样本满足物理残差 \(\mathcal R(x_0)=0\)。能否直接要求去噪预测也满足同一个方程？答案取决于约束的形式。</p>
@@ -136,7 +135,7 @@ project_chapters:
   <div class="retro-callout"><strong>难点不只是给训练加一个物理损失</strong><p>还需要判断：这个物理损失是否适合施加在模型当前预测的统计量上。</p></div>
 </section>
 
-<section class="retro-chapter" id="physical-constraints" data-chapter-label="约束">
+<section class="retro-chapter" id="physical-constraints">
   <p class="retro-kicker">Physical feasibility priors</p>
   <h2><span class="retro-chapter__number">05</span> 按约束结构，选择合适的监督方式</h2>
   <p class="retro-lede">保留扩散学习目标，再加入与物理结构对应的训练项。\(\lambda\) 控制数据拟合与物理监督的相对强度。</p>
@@ -159,7 +158,7 @@ project_chapters:
   <p>例如，让辅助头学习速度平方或距离相关量，使共享表示接收能量相关监督。这与先预测平均速度、再把它平方是不同的任务。辅助监督帮助主模型学习物理结构，效果仍需在最终生成样本上验证。</p>
 </section>
 
-<section class="retro-chapter" id="physical-particles" data-chapter-label="粒子">
+<section class="retro-chapter" id="physical-particles">
   <p class="retro-kicker">从守恒律到训练项</p>
   <h2><span class="retro-chapter__number">06</span> 动量与能量，为什么需要不同处理？</h2>
   <p class="retro-lede">粒子样本同时包含位置 \(C\) 和速度 \(V\)。用 \(\ell\) 表示轨迹中的物理时间，用 \(t\) 表示扩散噪声时间。</p>
@@ -182,7 +181,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="physical-results" data-chapter-label="实验">
+<section class="retro-chapter" id="physical-results">
   <p class="retro-kicker">Sample quality &amp; physical feasibility</p>
   <h2><span class="retro-chapter__number">07</span> 生成样本的误差，实际改善了多少？</h2>
   <p class="retro-lede">主要对照是在相应扩散建模方案中，比较加入与不加入物理可行性训练项的结果。双方分别进行超参数搜索，因此结论针对训练方案，而不是固定参数配置下的单一网络。</p>
@@ -245,7 +244,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="physical-ablation" data-chapter-label="消融">
+<section class="retro-chapter" id="physical-ablation">
   <p class="retro-kicker">Why the design matters</p>
   <h2><span class="retro-chapter__number">08</span> 改善来自哪里？</h2>
   <h3>直接加入非线性能量约束，未必有效</h3>
@@ -282,7 +281,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="physical-takeaways" data-chapter-label="总结">
+<section class="retro-chapter" id="physical-takeaways">
   <p class="retro-kicker">物理知识如何进入生成模型</p>
   <h2><span class="retro-chapter__number">09</span> 约束之前，先理解模型的预测对象</h2>
   <p class="retro-lede physical-summary">这个项目的关键，是把物理先验与扩散模型的统计目标对齐。</p>

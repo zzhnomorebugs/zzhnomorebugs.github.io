@@ -5,7 +5,6 @@ layout: default
 {% include base_path %}
 
 {% assign project_title = page.project_title | default: page.title %}
-{% assign project_label = page.project_label | default: project_title %}
 {% if page.lang == "zh-CN" %}{% assign project_research_url = "/zh/research/" %}{% else %}{% assign project_research_url = "/research/" %}{% endif %}
 {% assign project_research_url = page.project_research_url | default: project_research_url %}
 
@@ -21,10 +20,7 @@ layout: default
       <p class="retro-hero__subtitle">{{ page.subtitle | default: page.title }}</p>
       {% if page.excerpt %}<div class="retro-hero__summary">{{ page.excerpt | markdownify }}</div>{% endif %}
       {% if page.authors %}<p class="retro-hero__authors">{{ page.authors }}</p>{% endif %}
-      <div class="retro-hero__actions">
-        <button class="retro-button retro-button--primary" type="button" data-retro-start hidden><span aria-hidden="true">▷</span> 演示模式</button>
-        {% if page.paperurl %}<a class="retro-paper-link" href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">阅读论文 <span aria-hidden="true">↗</span></a>{% endif %}
-      </div>
+      {% if page.paperurl %}<div class="retro-hero__actions"><a class="retro-paper-link" href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">阅读论文 <span aria-hidden="true">↗</span></a></div>{% endif %}
     </header>
 
     <nav class="retro-outline" aria-label="项目章节">
@@ -55,14 +51,6 @@ layout: default
     </footer>
   </article>
 
-  <div class="retro-presenter" data-retro-presenter role="region" aria-label="演示控制" hidden>
-    <div class="retro-presenter__identity"><strong>{{ project_label | escape }}</strong><span aria-hidden="true">/</span><span data-retro-position aria-live="polite" aria-atomic="true"></span></div>
-    <div class="retro-presenter__controls">
-      <button class="retro-button" type="button" data-retro-prev aria-label="上一章节">← <span>上一章</span></button>
-      <button class="retro-button" type="button" data-retro-next aria-label="下一章节"><span>下一章</span> →</button>
-      <button class="retro-button retro-button--exit" type="button" data-retro-exit>退出演示 <kbd>Esc</kbd></button>
-    </div>
-  </div>
 </main>
 
 <script src="{{ base_path }}/assets/js/retro-project.js" defer></script>

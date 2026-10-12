@@ -40,7 +40,7 @@ project_chapters:
 
 {% include base_path %}
 
-<section class="retro-chapter" id="protein-task" data-chapter-label="任务">
+<section class="retro-chapter" id="protein-task">
   <p class="retro-kicker">性质驱动的蛋白质设计</p>
   <h2><span class="retro-chapter__number">01</span> 给定目标性质，生成值得验证的序列</h2>
   <p class="retro-lede">蛋白质工程希望找到具有目标功能的氨基酸序列。可控生成把目标性质直接交给生成模型，让候选提出过程具有明确方向。</p>
@@ -57,7 +57,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="protein-prior" data-chapter-label="设计">
+<section class="retro-chapter" id="protein-prior">
   <p class="retro-kicker">通用先验与任务条件的分工</p>
   <h2><span class="retro-chapter__number">02</span> 先学习序列规律，再学习目标条件</h2>
   <p class="retro-lede">天然蛋白质序列提供广泛的统计规律，参考序列提供相对编辑的条件，性质标签则描述任务方向。这几类信息共同参与候选序列的生成。</p>
@@ -76,7 +76,7 @@ project_chapters:
   <p>其中，\(x_{\mathrm{ref}}\) 是参考序列，\(y\) 是目标性质，\(x\) 是候选序列。这一写法表达任务目标，不意味着模型已经保证每个候选都满足条件。</p>
 </section>
 
-<section class="retro-chapter" id="protein-flow" data-chapter-label="方法">
+<section class="retro-chapter" id="protein-flow">
   <span id="protein-transfer" aria-hidden="true"></span>
   <p class="retro-kicker">从条件 score 分解到 Residual Prediction</p>
   <h2><span class="retro-chapter__number">03</span> 一个模型学习序列语言，一个模型学习条件遵循</h2>
@@ -96,7 +96,7 @@ project_chapters:
   <p>组合预测随后交给各自的生成规则：<a href="https://arxiv.org/abs/2308.07037" target="_blank" rel="noopener noreferrer">BFN</a> 更新氨基酸类别的概率信念，<a href="https://arxiv.org/abs/2407.15595" target="_blank" rel="noopener noreferrer">DFM</a> 更新离散 token 序列。两者都复用固定的序列先验，由残差承担条件适配。</p>
 </section>
 
-<section class="retro-chapter protein-dynamics" id="protein-dynamics" data-chapter-label="BFN / DFM">
+<section class="retro-chapter protein-dynamics" id="protein-dynamics">
   <p class="retro-kicker">从 Diffusion 到离散序列生成</p>
   <h2><span class="retro-chapter__number">04</span> 从逐步去噪，理解概率信念与离散跃迁</h2>
   <figure class="retro-figure protein-figure protein-noise-figure">
@@ -129,7 +129,7 @@ project_chapters:
   <div class="retro-callout"><strong>残差改变预测分布，生成框架决定如何更新</strong><p>两者都能使用 \(q=\operatorname{softmax}(\ell_{\mathrm{prior}}+r_\phi)\) 作为干净 token 预测。BFN 用它产生消息并更新信念，DFM 用它构造跳变速率；前一页的条件残差因此可以沿用相同的分工。</p></div>
 </section>
 
-<section class="retro-chapter" id="protein-pretraining" data-chapter-label="预训练">
+<section class="retro-chapter" id="protein-pretraining">
   <p class="retro-kicker">通用序列生成先验</p>
   <h2><span class="retro-chapter__number">05</span> 先验证基础模型在学习，再进行条件残差训练</h2>
   <p class="retro-lede">残差方案依赖基础生成器提供可用的先验。预训练阶段先学习天然蛋白质序列的生成规律，下游阶段再冻结先验，训练性质条件对应的修正。</p>
@@ -158,7 +158,7 @@ project_chapters:
   <div class="retro-callout"><strong>loss 下降与性质控制分别检验</strong><p>预训练 loss 检查基础模型对生成目标的学习；下游实验检查候选是否接近给定性质。前者改善不能替代后者，也不能直接推断新序列已经具有真实实验功能。</p></div>
 </section>
 
-<section class="retro-chapter" id="protein-evaluation" data-chapter-label="实验">
+<section class="retro-chapter" id="protein-evaluation">
   <p class="retro-kicker">Residual Prediction · 相对 baseline 的表现</p>
   <h2><span class="retro-chapter__number">06</span> 残差方案在哪些性质任务上带来改善？</h2>
   <p class="retro-lede">实验聚焦 BFN 和掩码路径 DFM 的残差方案，与各自的单网络直接条件预测 baseline 比较。不同任务呈现不同幅度的变化，提升需要结合评估覆盖与编辑行为解读。</p>
@@ -199,7 +199,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="protein-outlook" data-chapter-label="总结">
+<section class="retro-chapter" id="protein-outlook">
   <p class="retro-kicker">方法回顾</p>
   <h2><span class="retro-chapter__number">07</span> 显式分解序列先验与条件修正，改善性质控制</h2>
   <p class="retro-lede">显式分解序列先验与条件修正的残差方案，相比对应 baseline 改善了变异效应控制，DFM 在结合性质任务上的改善更明显。</p>

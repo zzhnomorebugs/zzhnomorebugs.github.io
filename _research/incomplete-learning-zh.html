@@ -10,7 +10,6 @@ mathjax: true
 project_class: incomplete-project
 project_stylesheet: incomplete-project.css
 project_title: "从不完整观测中学习物理场"
-project_label: "Learning from Incomplete Data"
 project_eyebrow_area: "不完整数据与科学机器学习"
 project_area: "不完整观测 · 物理场重建"
 project_area_en: "Incomplete observations · Physical field reconstruction"
@@ -49,7 +48,7 @@ project_chapters:
 
 {% include base_path %}
 
-<section class="retro-chapter" id="incomplete-problem" data-chapter-label="不完整观测">
+<section class="retro-chapter" id="incomplete-problem">
   <p class="retro-kicker">Learning from never-complete observations</p>
   <h2><span class="retro-chapter__number">01</span> 如果训练集里从未出现过完整答案，模型还能学会补全吗？</h2>
   <p class="retro-lede">云层遮住海面，卫星沿轨道采样，传感器只覆盖少数位置。缺失不仅发生在推理时：用于训练的每一幅场也都缺一部分，而且无法再找回这幅场原本缺失的真值。</p>
@@ -85,7 +84,7 @@ project_chapters:
   </div>
 </section>
 
-<section class="retro-chapter" id="incomplete-supervision" data-chapter-label="训练与采样">
+<section class="retro-chapter" id="incomplete-supervision">
   <p class="retro-kicker">The context–query framework: training and sampling</p>
   <h2><span class="retro-chapter__number">02</span> 一个上下文—查询框架，接通训练、重建与采样</h2>
   <p class="retro-lede">无法在真正缺失的位置计算误差，却可以暂时隐藏已有测量。Incomplete Data, Complete Dynamics（IDCD）据此训练场预测器，再在推理时组合多个上下文的预测，形成点重建或用于多步生成。</p>
@@ -235,7 +234,7 @@ project_chapters:
   <p>多步版本从高斯噪声开始。先固定上述近零噪声下的观测条件集成预测；反向扩散的每一步，再从当前完整生成状态抽取一个随机掩码，得到动态去噪预测，并与固定的观测条件预测作加权融合。更新时，已观测位置使用给定测量对应的噪声项，缺失位置使用融合预测对应的噪声项；最终仍写回原始观测。融合权重属于启发式实现选择，上述均值与平方误差结论本身不构成完整采样分布的恢复保证。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-exposure" data-chapter-label="查询覆盖">
+<section class="retro-chapter" id="incomplete-exposure">
   <p class="retro-kicker">Observation geometry determines supervision</p>
   <h2><span class="retro-chapter__number">03</span> 少看一些点还不够：不能让上下文泄露哪些地方永远没有答案</h2>
   <p class="retro-lede">划分方式会决定模型实际接受什么监督。随机丢弃像素在像素采样数据上自然，但对于整块缺失的数据，它可能把原始缺失形状暴露得过于清楚。</p>
@@ -283,7 +282,7 @@ project_chapters:
   <p>这个结论指出，需要保留的是足够丰富的掩码支撑，而不只是某个平均缺失率。掩码先验随后承担两项任务：保留真实观测几何，并为同一个样本产生变化的上下文。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-mask-prior" data-chapter-label="学习掩码">
+<section class="retro-chapter" id="incomplete-mask-prior">
   <p class="retro-kicker">A generative prior over observation masks</p>
   <h2><span class="retro-chapter__number">04</span> 先学习“哪里可能被看见”，再学习“那里是什么”</h2>
   <p class="retro-lede">掩码模型只看二值观测形状。它学习云层或轨道采样所形成的空间分布，随后帮助重建模型构造训练任务；它不接触需要补出的场真值。</p>
@@ -389,7 +388,7 @@ project_chapters:
   <p>重建出的 score 可用于反向概率流 ODE。生成从高斯终端近似开始，最后逐像素取最大 logit 对应的类别，得到二值 \(\widehat{\boldsymbol M}\)。这里的精确数学关系针对指定的高斯潜变量模型；与其他 BFN 写法的等价需要匹配潜变量与时间日程。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-alignment" data-chapter-label="对齐观测">
+<section class="retro-chapter" id="incomplete-alignment">
   <p class="retro-kicker">Observation-aligned generation</p>
   <h2><span class="retro-chapter__number">05</span> 真实形状还要与当前观测重合，才能留下有用的上下文</h2>
   <p class="retro-lede">无条件生成可以得到真实感的掩码，却可能和当前样本几乎没有交集。上下文过少，查询虽多，模型却失去了判断空间结构所需的线索。</p>
@@ -452,7 +451,7 @@ project_chapters:
   <p>即使一个位置在跨轮次采样中能被查询，也仍要区分查询选择偏差、有限数据误差与完整分布的可识别性。掩码学习改善监督组织方式，但不会凭空补充缺失真值。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-identifiability" data-chapter-label="可识别性">
+<section class="retro-chapter" id="incomplete-identifiability">
   <p class="retro-kicker">What incomplete observations can identify</p>
   <h2><span class="retro-chapter__number">06</span> 条件监督成立，为什么仍需要结构先验？</h2>
   <p class="retro-lede">一个模型可以在被监督的条件状态上学到有效预测，却仍无法从所有碎片唯一确定任意完整联合分布。这两个问题的对象不同。</p>
@@ -486,7 +485,7 @@ project_chapters:
   <div class="retro-callout"><strong>从分布恢复转向有结构的点重建</strong><p>接下来的目标，是学习更好的重建规则：让重复出现的局部关系获得专门监督，再让全部观测修正局部估计。局部先验提供归纳偏置，并不解除任意分布下的非可识别性。</p></div>
 </section>
 
-<section class="retro-chapter" id="incomplete-local-global" data-chapter-label="局部到全局">
+<section class="retro-chapter" id="incomplete-local-global">
   <p class="retro-kicker">Estimate locally, correct globally</p>
   <h2><span class="retro-chapter__number">07</span> 先从邻域学结构，再让全域证据修订它</h2>
   <p class="retro-lede">一幅场整体很稀疏，仍可能包含观测相对丰富的局部片段。共享的局部模型把这些片段变成较小的学习任务；重叠预测形成参考场，全局模型再学习如何修正它。</p>
@@ -512,7 +511,7 @@ project_chapters:
   <p>监督仍来自真实查询值：在查询位置，用“暂时隐藏的测量减去局部先验”告诉模型需要的修正。局部估计不必已经是最强的独立预测器，它的作用是提供一个有结构、可以被全域证据修订的起点。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-reconstruction" data-chapter-label="完整方法">
+<section class="retro-chapter" id="incomplete-reconstruction">
   <p class="retro-kicker">A single observation interface throughout</p>
   <h2><span class="retro-chapter__number">08</span> 把划分、局部先验与全局修正接成一个训练和重建流程</h2>
   <p class="retro-lede">整个流程始终只依赖可用观测。掩码构造决定如何练习，局部模型建立参考，全局模型学习修正；推理时再恢复给定的真实测量。</p>
@@ -533,7 +532,7 @@ project_chapters:
   <p>64×64 下，CHL 与 NANO 使用 32×32、步幅 16 的九个重叠片段；SSS 使用 16×16、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-results" data-chapter-label="实验证据">
+<section class="retro-chapter" id="incomplete-results">
   <p class="retro-kicker">Evidence for each link in the method</p>
   <h2><span class="retro-chapter__number">09</span> 实验逐步检验：监督形状、真实遮挡与可修订的局部估计</h2>
   <p class="retro-lede">不同阶段回答不同问题。先检查划分是否造成死区，再看真实观测几何下的重建，最后用参数匹配对照区分局部先验与残差修正的作用。</p>
@@ -636,7 +635,7 @@ project_chapters:
   <p>输入消融中，去掉两张差异图后，最终 MSE 在 CHL、NANO、SSS 上分别增加 36.8%、22.9%、17.4%。这支持把先验—观测关系显式交给有限修正器；由于每个变体都重新训练，不能把这些数值解释为各特征独立的因果贡献。</p>
 </section>
 
-<section class="retro-chapter" id="incomplete-summary" data-chapter-label="总结">
+<section class="retro-chapter" id="incomplete-summary">
   <p class="retro-kicker">From fragments to a revisable reconstruction</p>
   <h2><span class="retro-chapter__number">10</span> 同一条路线：让已有证据更有效地参与学习与重建</h2>
   <p class="retro-lede">从不完整数据学习，首先要弄清楚哪些目标有监督，然后让训练任务匹配真实观测，最后组织模型如何利用有限证据。</p>
