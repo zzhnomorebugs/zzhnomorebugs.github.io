@@ -1,0 +1,655 @@
+---
+title: "从不完整观测中学习物理场"
+subtitle: "让碎片成为监督，让观测决定划分，让局部结构接受全局修正"
+layout: research-project
+collection: research
+permalink: /zh/research/incomplete-learning/
+lang: zh-CN
+research_project: true
+mathjax: true
+project_class: incomplete-project
+project_stylesheet: incomplete-project.css
+project_title: "从不完整观测中学习物理场"
+project_label: "Learning from Incomplete Data"
+project_eyebrow_area: "不完整数据与科学机器学习"
+project_area: "不完整观测 · 物理场重建"
+project_area_en: "Incomplete observations · Physical field reconstruction"
+order: 6
+published: true
+read_time: false
+date: 2026-10-12
+index_title: "从不完整观测学习：监督、掩码先验与局部到全局重建"
+index_title_en: "Learning from incomplete data: Supervision, mask priors, and local-to-global reconstruction"
+excerpt: "从上下文—查询训练与集成采样出发，逐步理解观测对齐掩码与可识别性边界，再走向局部估计和全局残差修正。结合方法直觉、重建案例与实验对照，讲清楚如何从始终不完整的观测中学习物理场。"
+excerpt_en: "A Chinese walkthrough connecting context–query training and ensemble sampling, observation-aligned mask priors, identifiability limits, and the intuition, method, and results of globally corrected local field estimates."
+project_image: /images/research/incomplete-learning/local-global-architecture.webp
+paperurl: https://arxiv.org/pdf/2610.05375
+project_chapters:
+  - id: incomplete-problem
+    label: 不完整观测
+  - id: incomplete-supervision
+    label: 训练与采样
+  - id: incomplete-exposure
+    label: 查询覆盖
+  - id: incomplete-mask-prior
+    label: 学习掩码
+  - id: incomplete-alignment
+    label: 对齐观测
+  - id: incomplete-identifiability
+    label: 可识别性
+  - id: incomplete-local-global
+    label: 局部到全局
+  - id: incomplete-reconstruction
+    label: 完整方法
+  - id: incomplete-results
+    label: 实验证据
+  - id: incomplete-summary
+    label: 总结
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="incomplete-problem" data-chapter-label="不完整观测">
+  <p class="retro-kicker">Learning from never-complete observations</p>
+  <h2><span class="retro-chapter__number">01</span> 如果训练集里从未出现过完整答案，模型还能学会补全吗？</h2>
+  <p class="retro-lede">云层遮住海面，卫星沿轨道采样，传感器只覆盖少数位置。缺失不仅发生在推理时：用于训练的每一幅场也都缺一部分，而且无法再找回这幅场原本缺失的真值。</p>
+  <div class="incomplete-figure-grid incomplete-dataset-demos" aria-label="三个海洋数据集的原始不完整观测示例">
+    <figure class="retro-figure"><h4>Black Sea CHL · 叶绿素 a</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/demo-chl.webp"><img src="{{ base_path }}/images/research/incomplete-learning/demo-chl.webp" width="1202" height="1202" loading="lazy" alt="黑海叶绿素a原始不完整记录：已有观测形成斑块，大片白色海域没有源测量"></a></figure>
+    <figure class="retro-figure"><h4>Baltic Sea NANO · 浮游植物</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/demo-nano.webp"><img src="{{ base_path }}/images/research/incomplete-learning/demo-nano.webp" width="1202" height="1202" loading="lazy" alt="波罗的海NANO原始不完整记录：彩色已有观测之间分布着白色源缺失区域"></a></figure>
+    <figure class="retro-figure"><h4>Global Ocean SSS · 海表盐度</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/demo-sss.webp"><img src="{{ base_path }}/images/research/incomplete-learning/demo-sss.webp" width="1202" height="1202" loading="lazy" alt="全球海洋海表盐度原始不完整记录：狭长彩色观测带之间存在大片白色源缺失"></a></figure>
+  </div>
+  <p class="retro-caption">三个海洋数据集的原始观测示例，每个数据集各取一个样本。<strong>有颜色的位置有测量，白色位置没有源数据，灰色是固定的非观测域。</strong>这些空白在训练数据里就已存在；不是为了演示补全而额外遮掉的答案。颜色表示各产品的场值，三个样本不共用物理单位。</p>
+  <ol class="retro-pipeline" aria-label="不完整观测学习任务">
+    <li><strong>输入：不完整训练集</strong><span>每个样本只有已观测数值及其位置。</span></li>
+    <li><strong>学习：碎片之间的关系</strong><span>从共同出现的观测构造监督，学习空间与时空结构。</span></li>
+    <li><strong>输出：新样本的重建场</strong><span>保留给定观测，估计有效域内的缺失值。</span></li>
+  </ol>
+  <p>常见的补全训练从完整数据出发，人工遮掉一些值，再用完整答案计算误差。这里没有这样的完整训练目标。对同一样本重复训练，能改变的只是哪些已有观测被送入模型；原本没有测到的数值始终不能作为监督。</p>
+  <div class="retro-equation incomplete-math-key">\[
+    \boldsymbol{x}_{\mathrm{obs}}=\boldsymbol{M}\odot\boldsymbol{x}_0,
+    \qquad \boldsymbol{M}\le\boldsymbol{V},\qquad \boldsymbol{M}\ne\boldsymbol{V}.
+  \]</div>
+  <p>\(\boldsymbol{x}_0\) 是概念上的完整场，\(\boldsymbol{M}\) 标记实际观测，\(\boldsymbol{V}\) 指定有效物理域；域外位置不属于重建目标。零填充只是存储约定，因此模型需要同时看到数值与掩码，才能区分“测到零”和“没有测到”。</p>
+  <div class="retro-callout"><strong>整条研究路线的核心问题</strong><p>如何从不完整观测中构造有效监督，避免缺失模式造成学习死区，并在证据有限时形成更好的重建规则？这依次要求理解监督目标、设计观测划分，以及组织模型学习局部与全局结构的方式。</p></div>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="主要符号">
+    <table class="retro-comparison incomplete-notation">
+      <thead><tr><th scope="col">符号</th><th scope="col">含义</th><th scope="col">在训练中扮演的角色</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">\(\boldsymbol M\)</th><td>样本原始观测支持</td><td>固定不变，限定哪些值能够成为输入或目标</td></tr>
+        <tr><th scope="row">\(\boldsymbol M_{\mathrm{ctx}}\)</th><td>上下文 context</td><td>送入模型的观测子集，可在访问样本时重新采样</td></tr>
+        <tr><th scope="row">\(\boldsymbol M_{\mathrm{qry}}\)</th><td>查询 query</td><td>选择损失计算位置，不作为额外模型输入</td></tr>
+        <tr><th scope="row">\(\widehat{\boldsymbol M}\)</th><td>生成的观测形状</td><td>用于选择上下文，不生成场数值或伪标签</td></tr>
+        <tr><th scope="row">\(\boldsymbol\Pi_t\)</th><td>局部场先验</td><td>当前观测下的中间场估计，供全局模型修正</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="retro-chapter" id="incomplete-supervision" data-chapter-label="训练与采样">
+  <p class="retro-kicker">The context–query framework: training and sampling</p>
+  <h2><span class="retro-chapter__number">02</span> 一个上下文—查询框架，接通训练、重建与采样</h2>
+  <p class="retro-lede">无法在真正缺失的位置计算误差，却可以暂时隐藏已有测量。Incomplete Data, Complete Dynamics（IDCD）据此训练场预测器，再在推理时组合多个上下文的预测，形成点重建或用于多步生成。</p>
+  <p>先看一个直观例子：蓝色观测送入模型，橙色观测暂时隐藏、作为查询答案。上排按像素划分，下排按整块划分；如何划分，会影响其他样本能否为当前缺失区域提供监督。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/context-query.webp"><img src="{{ base_path }}/images/research/incomplete-learning/context-query.webp" width="2400" height="1548" loading="lazy" alt="块状缺失示例：像素上下文可能唯一暴露原始观测掩码，而整块上下文允许多个原始掩码解释相同输入"></a>
+    <figcaption class="retro-figure__caption">图 1 · 九块网格中有两块缺失。上排的像素划分可能在每个已观测块留下痕迹，使上下文唯一指向原始掩码，原本缺失的块便成为零查询区域。下排按完整块取上下文，同一上下文可来自多种原始观测掩码，其他样本仍能为当前空白位置提供监督。蓝色为上下文，橙色为查询；结论依赖可行掩码的支撑与覆盖。</figcaption>
+  </figure>
+  <ol class="retro-pipeline" aria-label="IDCD 的训练和采样框架">
+    <li><strong>训练：从已有观测构造监督</strong><span>上下文作为输入，查询位置的真实测量作为答案。</span></li>
+    <li><strong>重建：集成子上下文预测</strong><span>在近零噪声时刻重复取上下文，平均预测并恢复给定观测。</span></li>
+    <li><strong>生成：逐步反向更新</strong><span>在反向扩散的各步使用集成预测，生成可能的补全。</span></li>
+  </ol>
+  <h3>训练：把一部分已有观测变成问题，另一部分变成答案</h3>
+  <p>首先取 \(\boldsymbol M_{\mathrm{ctx}},\boldsymbol M_{\mathrm{qry}}\le\boldsymbol M\)。IDCD 的一般分析允许两者重叠，并不预设它们必须穷尽或互斥；后续的观测对齐方案采用明确的互斥划分 \(\boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\boldsymbol M_{\mathrm{ctx}})\)。所有监督值都来自原始可观测支持。</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \boldsymbol{x}_{\mathrm{obs},t}
+      &=\boldsymbol M\odot(\alpha_t\boldsymbol{x}_{\mathrm{obs}}+\sigma_t\boldsymbol\epsilon),
+      &&\boldsymbol\epsilon\sim\mathcal N(0,I),\\
+    O_t&=(\boldsymbol{x}_{\mathrm{ctx},t},\boldsymbol M_{\mathrm{ctx}}),
+      &&\boldsymbol{x}_{\mathrm{ctx},t}=\boldsymbol M_{\mathrm{ctx}}\odot\boldsymbol{x}_{\mathrm{obs},t},\\
+    \mathcal L_{\mathrm{qry}}(\theta)
+      &=\mathbb E\!\left[\left\|\boldsymbol M_{\mathrm{qry}}\odot
+      \left(f_\theta(t;O_t)-\boldsymbol{x}_{\mathrm{obs}}\right)\right\|_2^2\right].
+  \end{aligned}
+  \]</div>
+  <p>网络预测干净场，输入只有时间、带噪上下文和上下文掩码。查询掩码留在损失端。这种信息安排使一个上下文对应的所有有效查询共同约束预测，而不是让模型针对已知的评分位置做特殊处理。</p>
+  <h3>平方损失究竟学到什么？</h3>
+  <p>需要先区分一般的查询选择规律与掩码独立的特殊情形。真实观测可能依赖场本身；只有满足相应条件时，才能从“被查询时的条件均值”简化为通常写出的“给定上下文的条件均值”。</p>
+  <div class="incomplete-theorem" id="theorem-weighted-mse">
+  <h4>Theorem 1 · 逐坐标加权均方误差的最优解</h4>
+  <p>设随机向量 \(X,Y,Z\in\mathbb R^d\) 的相关二阶矩有限，\(g:\operatorname{Space}(Y)\to\mathbb R^d\) 是确定的可测函数，目标为</p>
+  \[
+  L(g)=\mathbb E\left[\|Z\odot g(Y)-Z\odot X\|^2\right].
+  \]
+  <p>若 \(\mathbb E[Z\odot Z\mid Y]\) 的每个坐标几乎处处严格为正，则在几乎处处相等的意义下，唯一最优函数为</p>
+  \[
+  g^*(Y)=\frac{\mathbb E[Z\odot Z\odot X\mid Y]}{\mathbb E[Z\odot Z\mid Y]},\qquad
+  g_i^*(Y)=\frac{\mathbb E[Z_i^2X_i\mid Y]}{\mathbb E[Z_i^2\mid Y]}.
+  \]
+  <p>向量除法按坐标进行。若某坐标分母为零，该坐标的输出不影响目标函数，因此无法由这一损失确定。</p>
+</div>
+  <div class="incomplete-theorem" id="theorem-query-conditional-mean">
+  <h4>Theorem 2 · 查询损失识别的是查询条件均值</h4>
+  <p>令 \(O_t=(\boldsymbol{x}_{\mathrm{ctx},t},\boldsymbol M_{\mathrm{ctx}})\)，预测器只接收 \((t,O_t)\)。对坐标 \(i\)，假设相关二阶矩有限，并且当前状态有正查询暴露 \(\Pr(\boldsymbol M_{\mathrm{qry},i}=1\mid t,O_t)>0\)。对于观察查询上的掩码平方损失，非受限预测器的最优值为</p>
+  <div class="retro-equation">\[\mu_{O,i}(t,O_t)=\mathbb E_{\mathrm{train}}\!\left[\boldsymbol{x}_{0,i}\mid t,O_t,\boldsymbol M_{\mathrm{qry},i}=1\right].\]</div>
+  <p>这里 \(\boldsymbol{x}_{0,i}\) 可以是一个值或一个通道向量。真实采集与分区机制不预设能够消去查询选择事件的额外独立条件，因此必须保留 \(\boldsymbol M_{\mathrm{qry},i}=1\)。若条件查询暴露为零，损失就不约束该状态下该坐标的预测。</p>
+</div>
+  <div class="incomplete-theorem" id="theorem-context-optimum">
+  <h4>Theorem 3 · 隐藏 query 信息时的最优预测与学习频率</h4>
+  <p>设完整数据为 \(X_0\)，原始观测为 \(X_{\mathrm{obs}}=M\odot X_0\)，其中 \(M\) 与数据独立。取 \(C=M_{\mathrm{ctx}}\subseteq M\)、\(Q=M_{\mathrm{qry}}\subseteq M\)，掩码抽样仅依赖观测结构；模型只接收 \(t\) 与 \(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\)，不接收 \(Q\) 或原始 \(M\)。令</p>
+  \[
+  X_{\mathrm{obs},t}=M\odot(\alpha_tX_{\mathrm{obs}}+\sigma_t\epsilon),\quad
+  \epsilon\sim\mathcal N(0,I),\qquad
+  \mathcal L=\|Q\odot(x_\theta(t,\mathrm{ctx})-X_{\mathrm{obs}})\|^2.
+  \]
+  <p>设 \(x_\theta^*\) 达到总体期望损失的最优解，相关二阶矩有限，且 \(X_0\) 与 \(Q\) 在给定 \(\mathrm{ctx}\) 后条件独立。固定 \(C\)，记 \(p_i=\mathbb P(Q_i=1\mid C)\)，并要求 \(\mathbb P(Q_i=1\mid\mathrm{ctx})=p_i\)。则：</p>
+  <p><strong>（i）最优输出。</strong></p>
+  \[
+  (x_\theta^*(t,\mathrm{ctx}))_i=
+  \begin{cases}
+  \mathbb E[(X_0)_i\mid\mathrm{ctx}],&p_i>0,\\
+  \text{任意值},&p_i=0.
+  \end{cases}
+  \]
+  <p>特别地，对给定 \(C\)，若所有可能 query 掩码的支持并集覆盖全部坐标，即 \(\bigcup_{Q:\,\mathbb P(Q\mid C)>0}\operatorname{supp}(Q)=\{1,\ldots,d\}\)，则</p>
+  \[
+  x_\theta^*(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}].
+  \]
+  <p><strong>（ii）梯度幅度。</strong>对固定 context 掩码下的抽样分布，在 \(p_i>0\) 时有</p>
+  \[
+  \frac{\partial\mathcal L}{\partial(x_\theta)_i}=2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i),
+  \]
+  \[
+  \mathbb E\left[\left(\frac{\partial\mathcal L}{\partial(x_\theta)_i}\right)^2\right]
+  =4p_i\mathbb E\left[((x_\theta)_i-(X_{\mathrm{obs}})_i)^2\mid Q_i=1\right].
+  \]
+  <p>在条件误差因子固定时，期望梯度平方随 \(p_i\) 线性变化。若 \(p_i=0\)，该坐标的损失梯度恒为零，此时无需定义零概率事件上的条件期望。</p>
+  <p><strong>（iii）更新机会。</strong>坐标 \(i\) 被纳入损失、能够贡献参数更新的概率为</p>
+  \[
+  \mathbb P(\text{坐标 }i\text{ 进入参数更新项}\mid C)
+  =\mathbb P(Q_i=1\mid C)=p_i.
+  \]
+  <p>该坐标的参数梯度贡献为 \(2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i)\,\partial(x_\theta)_i/\partial\theta\)。若被选中时残差与相应雅可比不为零，实际非零更新频率也等于 \(p_i\)；残差已为零时，进入损失并不意味着产生非零更新。</p>
+</div>
+  <p>因此，某个样本在位置 \(i\) 没有观测，并不意味着所有样本在相似上下文下都不能监督 \(i\)。真正重要的是：在训练分布中，给定这种上下文后，这个位置是否仍有可能被查询。没有这种机会，输出在该状态下就不受损失约束。</p>
+  <h3 id="incomplete-ensemble">采样：用多个上下文的预测形成重建</h3>
+  <p>训练时模型学会的是子上下文预测，推理时却拥有全部已给定观测。IDCD 先对这些观测施加一次近零噪声，再从同一份带噪观测里重复抽取上下文，分别预测并取平均；这一操作首先降低上下文抽样引起的方差。</p>
+  <div class="retro-equation">\[
+    \widehat{\boldsymbol\mu}_K
+    =\frac1K\sum_{k=1}^K f_\theta
+      \left(\delta;\boldsymbol M_{\mathrm{ctx}}^{(k)}\odot
+      \boldsymbol{x}_{\mathrm{obs},\delta},\boldsymbol M_{\mathrm{ctx}}^{(k)}\right),
+    \qquad 0&lt;\delta\ll1.
+  \]</div>
+  <p>这里的 single-step 指一次接近零噪声时刻的去噪预测；\(K\) 个上下文仍需 \(K\) 次模型求值。平均结果用于补充有效域内的缺失位置，给定的真实观测则写回输出。对于后验较集中的重建任务，条件均值可以作为代表性答案；若要表示多种可能补全，则需进一步考虑多步生成。</p>
+  <div class="incomplete-theorem" id="theorem-ensemble-limit">
+  <h4>Theorem 4 · 集成降低方差，并保留信息差与系统偏差</h4>
+<p><strong>假设：集成误差的非相关分解。</strong></p>
+  <p>将模型输出写为</p>
+  \[
+  x_\theta(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}]+b(\mathrm{ctx})+\epsilon_{\mathrm{bias}}(\mathrm{ctx}),
+  \qquad\mathbb E[\epsilon_{\mathrm{bias}}]=0.
+  \]
+  <p>其中 \(b\) 是随 context 变化的确定性偏差，\(\epsilon_{\mathrm{bias}}\) 是零均值随机误差。所有项的二阶矩有限，并假设以下三个中心化分量两两不相关：</p>
+  \[
+  \mathbb E[X_0\mid\mathrm{ctx}]-\mathbb E[\mathbb E[X_0\mid\mathrm{ctx}]],\qquad
+  b(\mathrm{ctx})-\mathbb E[b(\mathrm{ctx})],\qquad
+  \epsilon_{\mathrm{bias}}(\mathrm{ctx}).
+  \]
+  <p>不同集成成员的随机误差 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(i)})\) 与 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(j)})\) 在 \(i\ne j\) 时独立。对固定完整观测的集成分析，下述中心化、不相关性和零均值均按给定该观测的条件分布理解。</p>
+  <p>设 \(\mathrm{obs}=(M\odot X_{\mathrm{obs},t},M)\) 为完整可用观测，\(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\) 为其子观测，\(C\subseteq M\) 的抽样不额外依赖数据值。令</p>
+  \[
+  \mu=\mathbb E[X_0\mid\mathrm{obs}],\qquad
+  \mu_c=\mathbb E[X_0\mid\mathrm{ctx}].
+  \]
+  <p>若相关二阶矩有限，并满足嵌套观测的塔式关系 \(\mathbb E[\mu\mid\mathrm{ctx}]=\mu_c\)，则 context 所丢失的信息对应以下均方差：</p>
+  \[
+  \mathbb E[\|\mu_c-\mu\|^2]
+  =\mathbb E[\operatorname{Var}(X_0\mid\mathrm{ctx})]
+  -\mathbb E[\operatorname{Var}(X_0\mid\mathrm{obs})].
+  \]
+  <p>这里向量方差表示协方差矩阵的迹，即均方欧氏偏差。进一步固定 \(\mathrm{obs}\)，独立同分布地抽取 \(K\) 个 context 掩码，并满足上述非相关误差分解。以 \(\mathbb E_c\)、\(\operatorname{Var}_c\) 表示给定该观测后的 context 与模型随机误差分布，令</p>
+  \[
+  \widehat\mu_K=\frac1K\sum_{k=1}^Kx_\theta(t,\mathrm{ctx}^{(k)}).
+  \]
+  <p>集成估计的均方误差精确分解为</p>
+  \[
+  \begin{aligned}
+  \mathbb E_c[\|\widehat\mu_K-\mu\|^2]
+  ={}&\left\|\underbrace{\mathbb E_c[\mu_c]-\mu}_{\text{信息差}}
+  +\underbrace{\mathbb E_c[b(\mathrm{ctx})]}_{\text{平均模型偏差}}\right\|^2\\
+  &+\frac1K\left(\underbrace{\operatorname{Var}_c(\mu_c)}_{\text{context 引入的方差}}
+  +\underbrace{\operatorname{Var}_c(b(\mathrm{ctx}))+\operatorname{Var}_c(\epsilon_{\mathrm{bias}})}_{\text{模型方差}}\right).
+  \end{aligned}
+  \]
+  <p>因此，</p>
+  \[
+  \lim_{K\to\infty}\mathbb E_c[\|\widehat\mu_K-\mu\|^2]
+  =\left\|\mathbb E_c[\mu_c]-\mu+\mathbb E_c[b(\mathrm{ctx})]\right\|^2.
+  \]
+  <p>数据方差、随 context 变化的偏差方差和随机误差方差都按 \(1/K\) 缩小；平均系统偏差并不随集成消失。只有 \(\mathbb E_c[\mu_c]+\mathbb E_c[b]=\mu\) 时，该极限才为零。</p>
+</div>
+  <div class="retro-callout"><strong>集成降低方差，不自动消除信息缺口</strong><p>当 \(K\) 增大，随机上下文引起的方差项衰减；上下文不足和系统偏差形成的误差底仍可能存在。需要更好的上下文与更好的估计结构，不能只靠增加平均次数。</p></div>
+  <h3>从单步重建到多步生成</h3>
+  <p>多步版本从高斯噪声开始。先固定上述近零噪声下的观测条件集成预测；反向扩散的每一步，再从当前完整生成状态抽取一个随机掩码，得到动态去噪预测，并与固定的观测条件预测作加权融合。更新时，已观测位置使用给定测量对应的噪声项，缺失位置使用融合预测对应的噪声项；最终仍写回原始观测。融合权重属于启发式实现选择，上述均值与平方误差结论本身不构成完整采样分布的恢复保证。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-exposure" data-chapter-label="查询覆盖">
+  <p class="retro-kicker">Observation geometry determines supervision</p>
+  <h2><span class="retro-chapter__number">03</span> 少看一些点还不够：不能让上下文泄露哪些地方永远没有答案</h2>
+  <p class="retro-lede">划分方式会决定模型实际接受什么监督。随机丢弃像素在像素采样数据上自然，但对于整块缺失的数据，它可能把原始缺失形状暴露得过于清楚。</p>
+  <div class="incomplete-theorem incomplete-principle" id="theorem-query-exposure">
+  <h4>Principle · 每个未知坐标都要有机会成为 query</h4>
+  <p>有效的 context–query 抽样应满足以下两条条件。第一，对每个 context 以外的坐标 \(i\)，必须有正的条件 query 概率：</p>
+  \[
+  C_i=0\quad\Longrightarrow\quad\mathbb P(Q_i=1\mid C)>0.
+  \]
+  <p>第二，为了平衡各坐标的学习频率，这些概率应尽量接近：</p>
+  \[
+  \mathbb P(Q_i=1\mid C)\approx\mathbb P(Q_j=1\mid C),
+  \qquad\forall i,j:\ C_i=C_j=0.
+  \]
+  <p>由全概率公式，</p>
+  \[
+  \mathbb P(Q_i=1\mid C)
+  =\sum_M\mathbb P(Q_i=1\mid C,M)\mathbb P(M\mid C).
+  \]
+<p>因此，对每个待预测坐标，都需要存在与当前 \(C\) 相容、且具有正概率的原始掩码 \(M\)，其中该坐标被实际观测，并有机会被选为 query。近似均匀是平衡学习的设计目标；正查询概率是第二章中识别相应条件均值的关键条件。</p>
+</div>
+  <h3>从手工规则到掩码分布的交集</h3>
+  <p>已知传感方式时，可以按像素采样像素、按块采样完整块。但真实卫星遮挡包含云团、狭长轨迹和复杂边界，很难用一条规则概括。更一般的思路是：学习观测掩码的分布，再用两幅掩码的交集生成上下文。Observation-Aligned Mask Priors（OAMP）把这一步变成可学习的对象。</p>
+  <div class="incomplete-theorem" id="ocean-theorem-intersection">
+  <h4>Theorem 5 · 独立掩码交集带来的条件查询正性</h4>
+<p><strong>假设：交集覆盖完备性。</strong></p>
+  <p>记真实二值观测掩码分布的支撑集为 \(S=\{\boldsymbol{x}\in\{0,1\}^d:P(\boldsymbol{M}=\boldsymbol{x})&gt;0\}\)。称 \(\boldsymbol{m}\) 为有效上下文掩码，当且仅当存在 \(\boldsymbol{x},\boldsymbol{y}\in S\) 使 \(\boldsymbol{x}\odot\boldsymbol{y}=\boldsymbol{m}\)。对每个这样的 \(\boldsymbol{m}\)，以及每个 \(m_i=0\) 的坐标，假设存在 \(\boldsymbol{M}_a,\boldsymbol{M}_b\in S\) 同时满足</p>
+  \[
+    \boldsymbol{M}_a\odot\boldsymbol{M}_b=\boldsymbol{m},
+    \qquad (\boldsymbol{M}_a)_i=1.
+  \]
+  <p>第一项要求两幅支撑内掩码可以生成该上下文；第二项要求该坐标至少能在其中一幅观测里出现。永久没有观测的坐标不满足此假设。</p>
+  <p>设 \(\boldsymbol{M}_1,\boldsymbol{M}_2\in\{0,1\}^d\) 从同一分布 \(P(\boldsymbol{M})\) <strong>独立</strong>采样，定义</p>
+  \[
+    \boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{M}_1\odot\boldsymbol{M}_2,
+    \qquad
+    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}_1\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
+  \]
+  <p>若交集覆盖完备性成立，则对任意有效上下文 \(\boldsymbol{m}\) 及任意 \(m_i=0\) 的坐标，均有</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m}\big)&gt;0.
+  \]
+  <p>证明要点：有效性保证分母 \(P(\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m})&gt;0\)；假设中的掩码对以 \(P(\boldsymbol{M}_a)P(\boldsymbol{M}_b)&gt;0\) 的概率出现，且在 \(m_i=0\) 时使 \((M_{\mathrm{qry}})_i=(M_1)_i=1\)，所以分子也严格为正。这是支撑与覆盖条件下的结论，不是任意掩码分布的无条件保证。</p>
+</div>
+  <p>这个结论指出，需要保留的是足够丰富的掩码支撑，而不只是某个平均缺失率。掩码先验随后承担两项任务：保留真实观测几何，并为同一个样本产生变化的上下文。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-mask-prior" data-chapter-label="学习掩码">
+  <p class="retro-kicker">A generative prior over observation masks</p>
+  <h2><span class="retro-chapter__number">04</span> 先学习“哪里可能被看见”，再学习“那里是什么”</h2>
+  <p class="retro-lede">掩码模型只看二值观测形状。它学习云层或轨道采样所形成的空间分布，随后帮助重建模型构造训练任务；它不接触需要补出的场真值。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp"><img src="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp" width="2400" height="1002" loading="lazy" alt="真实二值掩码预训练、随机锚点引导掩码生成、与当前观测求交集并训练场重建模型的完整流程"></a>
+    <figcaption class="retro-figure__caption">图 2 · 真实掩码用于预训练生成先验；当前样本的随机观测锚点引导生成；生成掩码与原始观测求交得到上下文，剩余观测成为查询。图中损失统一按正文公式理解：全局交叉熵带负号并最小化，查询掩码同时作用于预测与目标，误差只在真实查询位置计算。</figcaption>
+  </figure>
+  <h3>二值掩码，在连续潜变量中建模</h3>
+  <p>实现采用受 Bayesian Flow Network（BFN）启发的连续潜变量参数化。每个像素有 \(C=2\) 个类别：缺失与观测。令 \(c\) 为类别、\(\boldsymbol e_c\) 为 one-hot 向量，使用缩放 \(\kappa&gt;0\) 嵌入后加高斯噪声：</p>
+  <div class="retro-equation">\[
+    \boldsymbol z_0=\kappa\boldsymbol e_c,\qquad
+    \boldsymbol z_t=\alpha_t\boldsymbol z_0+\sigma_t\boldsymbol\epsilon,
+    \qquad \widehat{\boldsymbol e}_\eta
+      \big(t,\operatorname{softmax}(\boldsymbol z_t)\big)\in\Delta^{C-1}.
+  \]</div>
+  <p>Softmax 在每个像素的类别轴上进行。网络看到的是概率向量，并输出干净类别的预测概率；各像素之间可以具有任意空间依赖。这里用 \(\kappa\) 区别于前面的集成次数；以下保留数学表述中的缩放记号 \(K\equiv\kappa\)。</p>
+  <div class="incomplete-theorem" id="ocean-theorem-softmax">
+  <h4>Theorem 6 · Softmax 因子分解</h4>
+  <p>设 \(h:\mathbb{R}^{C}\to\mathbb{R}^{m}\) 满足对任意 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 和 \(a\in\mathbb{R}\)，\(h(\boldsymbol{x}+a\boldsymbol{1})=h(\boldsymbol{x})\)。定义概率单纯形的相对内部</p>
+  \[
+    \Delta^{C-1}_{\circ}=\operatorname{ri}(\Delta^{C-1})
+    =\left\{\boldsymbol{p}\in\mathbb{R}^{C}:p_j&gt;0,\ \sum_{j=1}^{C}p_j=1\right\}.
+  \]
+  <p>则存在唯一函数 \(g:\Delta^{C-1}_{\circ}\to\mathbb{R}^{m}\)，使对所有 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 都有</p>
+  \[
+    h(\boldsymbol{x})=g(\operatorname{softmax}(\boldsymbol{x})),
+    \qquad g(\boldsymbol{p})=h(\log\boldsymbol{p}).
+  \]
+  <p>这里对数逐坐标作用。因为 \(\log\operatorname{softmax}(\boldsymbol{x})=\boldsymbol{x}-\log(\sum_je^{x_j})\boldsymbol{1}\)，平移不变性给出存在性；\(\operatorname{softmax}(\log\boldsymbol{p})=\boldsymbol{p}\) 给出唯一性。对 \(d\) 个像素，如果每个像素的 \(C\) 维 logits 均可独立加常数而不改变 \(h\)，则结论逐块推广为经 \((\Delta^{C-1}_{\circ})^d\) 的唯一分解。</p>
+  <p>有限 logits 不到达单纯形边界，所以定理不规定边界值。如果到闭单纯形的连续延拓存在，它唯一；单凭 \(h\) 连续不能保证该延拓存在。例如 \(h(\boldsymbol{x})=x_1-x_2\) 对应 \(g(\boldsymbol{p})=\log(p_1/p_2)\)，在整个边界上没有有限连续延拓。</p>
+</div>
+  <div class="incomplete-theorem" id="ocean-theorem-posterior">
+  <h4>Theorem 7 · 最优数据预测器的平移不变性</h4>
+  <p>设 \(c\in\{1,\ldots,C\}\) 的先验为 \(\pi_j=P(c=j)\)，\(K&gt;0\)，\(\boldsymbol{x}_0=K\boldsymbol{e}_c\)。固定时间 \(t\)，设</p>
+  \[
+    \boldsymbol{x}_t=\alpha_tK\boldsymbol{e}_c+\sigma_t\boldsymbol{\epsilon},
+    \quad \boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C),
+    \quad \boldsymbol{\epsilon}\perp c,\quad \sigma_t&gt;0.
+  \]
+  <p>则类别后验以及平方损失下的最优数据预测器 \(D_t^*(\boldsymbol{x})=\mathbb{E}[\boldsymbol{x}_0\mid\boldsymbol{x}_t=\boldsymbol{x}]\)，均在 \(\boldsymbol{x}\mapsto\boldsymbol{x}+a\boldsymbol{1}\) 下保持不变。具体地，</p>
+  \[
+    P(c=j\mid\boldsymbol{x}_t=\boldsymbol{x})
+    =\frac{\pi_j e^{\lambda_t x_j}}{\sum_{\ell=1}^{C}\pi_\ell e^{\lambda_t x_\ell}},
+    \quad \lambda_t=\frac{\alpha_tK}{\sigma_t^2},
+    \quad D_t^*(\boldsymbol{x})=K\big(P(c=j\mid\boldsymbol{x}_t=\boldsymbol{x})\big)_{j=1}^{C}.
+  \]
+  <p>对完整掩码，允许像素类别 \(\boldsymbol{c}=(c_1,\ldots,c_d)\) 具有任意联合先验 \(\pi(\boldsymbol{c})\)。若堆叠 logits 上的高斯噪声独立，则</p>
+  \[
+    P(\boldsymbol{c}\mid\boldsymbol{x}_t=\boldsymbol{x})
+    \propto\pi(\boldsymbol{c})\exp\left(\lambda_t\sum_{i=1}^{d}x_{i,c_i}\right).
+  \]
+  <p>对每个像素作独立平移 \(x_{i,j}\mapsto x_{i,j}+a_i\) 时，各类别配置共同乘以 \(\exp(\lambda_t\sum_i a_i)\)，归一化后抵消。因此联合后验、逐像素边际后验和堆叠目标的后验均值都不变；不要求掩码像素相互独立。结合 Softmax 因子分解，数据预测器可仅以逐像素 Softmax 概率为输入。输入概率本身不必等于类别后验。</p>
+</div>
+  <p>这两条结果回答了架构上的关键问题：丢弃 logits 的共同平移，不会损失最优数据预测器需要的信息。但完整 score 含有潜变量的线性项，不能直接把它也当作平移不变函数。</p>
+  <div class="incomplete-theorem" id="ocean-theorem-reparameterization">
+  <h4>Theorem 8 · 离散数据匹配与噪声匹配的精确重参数化</h4>
+  <p>设 \(\boldsymbol{x}_0=K\boldsymbol{e}_c\)、\(K&gt;0\)，且 \(\boldsymbol{x}_t=\alpha_t\boldsymbol{x}_0+\sigma_t\boldsymbol{\epsilon}\)，其中独立噪声 \(\boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C)\)。以下等式适用于 \(\alpha_t&gt;0\)、\(\sigma_t&gt;0\) 的非退化时间；端点须单独取极限。设时间权重严格为正、期望有限，采用同一时间采样分布。若 \(s_t^*=\nabla_{\boldsymbol{x}}\log p_t\)，则平方损失的总体最优预测器为</p>
+  \[
+    \boldsymbol{\epsilon}_t^*(\boldsymbol{x})
+    =\mathbb{E}[\boldsymbol{\epsilon}\mid\boldsymbol{x}_t=\boldsymbol{x}]
+    =-\sigma_t\boldsymbol{s}_t^*(\boldsymbol{x}),
+    \qquad
+    D_t^*(\boldsymbol{x})
+    =\frac{\boldsymbol{x}+\sigma_t^2\boldsymbol{s}_t^*(\boldsymbol{x})}{\alpha_t}.
+  \]
+  <p>定义类别概率网络及其对应噪声预测器为</p>
+  \[
+    D_{\theta}(t,\boldsymbol{x})=K\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x})),
+    \qquad
+    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})
+    =\frac{\boldsymbol{x}-\alpha_tD_{\theta}(t,\boldsymbol{x})}{\sigma_t}.
+  \]
+  <p>则对每个样本和每组参数，都有</p>
+  \[
+    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}
+    =\frac{\alpha_tK}{\sigma_t}
+       \left(\boldsymbol{e}_c-\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))\right),
+  \]
+  \[
+    \begin{aligned}
+    \mathcal{J}_{\mathrm{noise}}(\theta)
+    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\|\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}\|^2\right]\\
+    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\frac{\alpha_t^2K^2}{\sigma_t^2}
+    \|\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))-\boldsymbol{e}_c\|^2\right].
+    \end{aligned}
+  \]
+  <p>取数据权重 \(w(t)=w_{\mathrm{NM}}(t)\alpha_t^2K^2/\sigma_t^2\) 时，离散数据匹配损失与该噪声匹配损失精确相等。其他严格正的时间权重在无限制预测器下具有相同的逐时间总体最优解，但有限容量模型下不保证目标相等或最优参数相同。完整掩码的等式对所有像素类别坐标求和即可。</p>
+  \[
+    \boldsymbol{s}_{\theta}(t,\boldsymbol{x})
+    =-\frac{\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})}{\sigma_t}
+    =\frac{\alpha_tK\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}))-\boldsymbol{x}}{\sigma_t^2}.
+  \]
+  <p>当类别概率预测等于真实后验时，该式等于真实 score。数据预测器平移不变，而完整 score 与噪声预测器分别满足</p>
+  \[
+    \boldsymbol{s}_t^*(\boldsymbol{x}+a\boldsymbol{1})
+    =\boldsymbol{s}_t^*(\boldsymbol{x})-\frac{a}{\sigma_t^2}\boldsymbol{1},
+    \qquad
+    \boldsymbol{\epsilon}_t^*(\boldsymbol{x}+a\boldsymbol{1})
+    =\boldsymbol{\epsilon}_t^*(\boldsymbol{x})+\frac{a}{\sigma_t}\boldsymbol{1}.
+  \]
+  <p>因此只有 Softmax 输入的网络通过数据预测器间接表示 score，必须保留显式的线性潜变量项。上述精确重参数化针对所定义的高斯潜变量模型；与原始 Bayesian Flow Network 完全等价还要求潜变量参数化与噪声日程一致。</p>
+</div>
+  <p>重建出的 score 可用于反向概率流 ODE。生成从高斯终端近似开始，最后逐像素取最大 logit 对应的类别，得到二值 \(\widehat{\boldsymbol M}\)。这里的精确数学关系针对指定的高斯潜变量模型；与其他 BFN 写法的等价需要匹配潜变量与时间日程。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-alignment" data-chapter-label="对齐观测">
+  <p class="retro-kicker">Observation-aligned generation</p>
+  <h2><span class="retro-chapter__number">05</span> 真实形状还要与当前观测重合，才能留下有用的上下文</h2>
+  <p class="retro-lede">无条件生成可以得到真实感的掩码，却可能和当前样本几乎没有交集。上下文过少，查询虽多，模型却失去了判断空间结构所需的线索。</p>
+  <p>OAMP 从当前有效观测里随机保留一部分锚点，而不是把所有观测位置都强制留在上下文。随机锚点使同一样本仍能形成不同划分。</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    y_i&=\boldsymbol 1[r_i&lt;\rho]M_i,
+       &&r_i\sim\operatorname{Unif}(0,1),\quad 0&lt;\rho&lt;1,\\
+    \widehat e_i&=\left[\widehat{\boldsymbol e}_\eta
+       (t,\operatorname{softmax}(\boldsymbol z_t))\right]_{i,2},\\
+    \mathcal L_{\mathrm{guide}}(\boldsymbol z_t,\boldsymbol y)
+      &=-\frac1d\sum_{i=1}^d
+       \left[y_i\log\widehat e_i+(1-y_i)\log(1-\widehat e_i)\right],\\
+    \boldsymbol z_{t_{j+1}}
+      &\leftarrow\boldsymbol z_{t_{j+1}}^{\mathrm{base}}
+       -w_g\nabla_{\boldsymbol z_{t_j}}\mathcal L_{\mathrm{guide}}.
+  \end{aligned}
+  \]</div>
+  <p>引导作用于反向采样的潜变量，\(w_g\) 控制其强度。损失在整个空间上归一化，避免因样本观测数量变化而直接改变归一化分母。生成后采用 \(\boldsymbol M_{\mathrm{ctx}}=\boldsymbol M\odot\widehat{\boldsymbol M}\)、\(\boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\widehat{\boldsymbol M})\)。锚点只是生成约束，不是新的场测量。</p>
+  <div class="incomplete-theorem" id="ocean-theorem-guided">
+  <h4>Theorem 9 · 容量引导分割下的边际查询正性</h4>
+<p><strong>假设：固定交集容量下的覆盖完备性。</strong></p>
+  <p>固定观测掩码 \(\boldsymbol{M}\in\{0,1\}^d\)，以 \(|\boldsymbol{M}|=\sum_iM_i\) 表示有效观测数。令 \(C_k\) 为生成掩码满足的硬约束</p>
+  \[
+    C_k:\quad |\widehat{\boldsymbol{M}}\odot\boldsymbol{M}|=k,
+    \qquad 0&lt;k&lt;|\boldsymbol{M}|.
+  \]
+  <p>记条件生成分布的支撑为</p>
+  \[
+    S_{\mathrm{guided}}=\{\widehat{\boldsymbol{m}}\in\{0,1\}^d:P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)&gt;0\}.
+  \]
+  <p>假设对每个 \(M_i=1\) 的坐标，都存在至少一个 \(\widehat{\boldsymbol{M}}_a\in S_{\mathrm{guided}}\) 使 \((\widehat{\boldsymbol{M}}_a)_i=0\)。也就是说，限制上下文容量之后，没有某个有效坐标被所有支撑内掩码永远保留。</p>
+  <p>固定 \(\boldsymbol{M}\in\{0,1\}^d\)，设 \(\widehat{\boldsymbol{M}}\sim P(\widehat{\boldsymbol{M}}\mid C_k)\) 满足上面的硬交集约束，并定义</p>
+  \[
+    \boldsymbol{M}_{\mathrm{ctx}}=\widehat{\boldsymbol{M}}\odot\boldsymbol{M},
+    \qquad
+    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
+  \]
+  <p>若固定交集容量下的覆盖完备性成立，则对每个 \(M_i=1\) 的有效观测坐标，</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)&gt;0.
+  \]
+  <p>因为 \(\boldsymbol{M}\) 为二值掩码，\(\boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\widehat{\boldsymbol{M}})\)。所以在 \(M_i=1\) 时，</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)
+    =P(\widehat M_i=0\mid C_k)
+    =\sum_{\substack{\widehat{\boldsymbol{m}}\in S_{\mathrm{guided}}\\\widehat m_i=0}}
+      P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)
+    \ge P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{M}}_a\mid C_k)&gt;0.
+  \]
+  <p><strong>适用范围：</strong>此处的正性条件以固定观测与容量事件 \(C_k\) 为条件，表示跨采样的边际查询机会；它不等价于给定每个上下文后的条件查询正性。实际采样采用随机锚点与软交叉熵引导，没有精确固定交集大小；因此上述定理给出支撑层面的充分条件，实际采样器的覆盖还需实验检查。</p>
+</div>
+  <h3>覆盖的数学条件与实际采样表现</h3>
+  <p>独立交集定理以“给定上下文”为条件；容量引导定理则以固定观测和容量事件为条件。两者解决不同层次的覆盖问题。实际使用的软引导不等于精确采样硬约束分布，不能仅由定理推断每个实际上下文都满足正性。</p>
+  <div class="incomplete-figure-grid incomplete-heatmaps">
+    <figure class="retro-figure"><h4>均匀随机划分</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-random.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-random.webp" width="2400" height="2081" loading="lazy" alt="Black Sea 数据在随机上下文策略下的经验查询概率热图，部分海域接近零"></a></figure>
+    <figure class="retro-figure"><h4>观测对齐划分</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp" width="2400" height="2081" loading="lazy" alt="Black Sea 数据在 BFN 观测对齐策略下的经验查询概率热图，空间覆盖更均衡"></a></figure>
+  </div>
+  <p class="retro-caption">图 3 · Black Sea 上重复 200 次划分得到的经验查询概率，色标为 0–1。这里比较的是实际监督机会的空间分布；有限次采样热图不能证明概率严格大于零。灰色为固定的非观测域掩码。</p>
+  <p>即使一个位置在跨轮次采样中能被查询，也仍要区分查询选择偏差、有限数据误差与完整分布的可识别性。掩码学习改善监督组织方式，但不会凭空补充缺失真值。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-identifiability" data-chapter-label="可识别性">
+  <p class="retro-kicker">What incomplete observations can identify</p>
+  <h2><span class="retro-chapter__number">06</span> 条件监督成立，为什么仍需要结构先验？</h2>
+  <p class="retro-lede">一个模型可以在被监督的条件状态上学到有效预测，却仍无法从所有碎片唯一确定任意完整联合分布。这两个问题的对象不同。</p>
+  <div class="incomplete-theorem" id="theorem-never-complete">
+  <h4>Theorem 10 · 从未完整观测时，非受限完整场分布不能普遍识别</h4>
+  <p>设完整场在有效区域向量化为 \(\boldsymbol{x}_0\in\mathbb R^d\)，二值观测掩码 \(\boldsymbol M\) 的分布 \(q\) 固定且已知，并且独立于 \(\boldsymbol{x}_0\)。若 \(\Pr_q(\boldsymbol M=\boldsymbol 1_d)=0\)，则在 \(\mathbb R^d\) 上所有概率分布组成的非受限类别中，完整场分布不能由 \((\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M)\) 识别。因此，不存在对这个类别内每一种完整场分布都一致的恢复算法。</p>
+  <p>具体地，定义观测算子</p>
+  <div class="retro-equation">\[\mathcal T_q(P)=\operatorname{Law}_{P,q}(\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M).\]</div>
+  <p>可识别性要求：对类别内所有 \(P_1,P_2\)，\(\mathcal T_q(P_1)=\mathcal T_q(P_2)\Rightarrow P_1=P_2\)。取 \(\boldsymbol{x}_0\in\{-1,+1\}^d\)，分别在下列两个互不相交、均有 \(2^{d-1}\) 个元素的集合上定义均匀分布 \(P_+,P_-\)：</p>
+  <div class="retro-equation">\[\mathcal X_+=\left\{\boldsymbol x:\prod_{i=1}^d x_i=+1\right\},\qquad\mathcal X_-=\left\{\boldsymbol x:\prod_{i=1}^d x_i=-1\right\}.\]</div>
+  <p>对任一真子集 \(S\subsetneq[d]\) 和任一符号赋值 \(\boldsymbol x_S\)，剩余坐标中至少有一个未赋值。在固定乘积的约束下，除最后一个符号外均可自由选择，因此两种分布下都恰有 \(2^{d-|S|-1}\) 个合法补全：</p>
+  <div class="retro-equation">\[P_+(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=P_-(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=\frac{2^{d-|S|-1}}{2^{d-1}}=2^{-|S|}.\]</div>
+  <p>对任一 \(q(m)>0\) 的掩码，\(S_m=\{i:m_i=1\}\subsetneq[d]\)。设 \(\boldsymbol Y=\boldsymbol M\odot\boldsymbol{x}_0\)，则条件观测律及其联合律相同：</p>
+  <div class="retro-equation">\[\begin{aligned}\operatorname{Law}_{P_+}(\boldsymbol Y\mid\boldsymbol M=m)&=\operatorname{Law}_{P_-}(\boldsymbol Y\mid\boldsymbol M=m),\\\Pr_{P_+,q}(\boldsymbol Y\in A,\boldsymbol M=m)&=q(m)\Pr_{P_+}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=q(m)\Pr_{P_-}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=\Pr_{P_-,q}(\boldsymbol Y\in A,\boldsymbol M=m).\end{aligned}\]</div>
+  <p>故 \(\mathcal T_q(P_+)=\mathcal T_q(P_-)\)，但 \(P_+\ne P_-\)。从任意 \(n\) 个独立同分布的观测对得到的估计器 \(\widehat P_n\)，在这两个世界中具有相同的输出分布（内部随机性可作相同耦合），不能分别收敛到两个不同的真分布。</p>
+  <p>二维时，令 \(\boldsymbol M=(1,0)\) 或 \((0,1)\)，各以 \(1/2\) 的概率出现并独立于场。取</p>
+  <div class="retro-equation">\[\begin{aligned}P_1((1,1))=P_1((-1,-1))&=\tfrac12,\\P_2((1,-1))=P_2((-1,1))&=\tfrac12.\end{aligned}\]</div>
+  <p>两个完整场的相关结构相反，却给出同一观测律；只观测 \(x_{0,1}\) 时，缺失坐标的条件均值分别是</p>
+  <div class="retro-equation">\[\mathbb E_{P_1}[x_{0,2}\mid x_{0,1}]=x_{0,1},\qquad\mathbb E_{P_2}[x_{0,2}\mid x_{0,1}]=-x_{0,1}.\]</div>
+  <p>这说明缺乏联合暴露会产生预测歧义。结论不排除引入结构假设后的可识别性，也不否定有正查询暴露状态上的监督学习；这里的掩码独立假设仅用于本定理，真实海洋实验仍使用实际采集掩码。</p>
+</div>
+  <h3>一个两维例子：边际完全一样，关联恰好相反</h3>
+  <p>若每次最多看到两个坐标中的一个，下面两个分布会产生相同的观测：单个坐标都以一半概率取 \(+1\) 或 \(-1\)。但一个分布让两坐标同号，另一个让它们异号；只看碎片无法分辨这种完整关联。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="非可识别性的两维奇偶例子">
+    <table class="retro-comparison incomplete-parity"><thead><tr><th scope="col">完整场分布</th><th scope="col">概率 1/2</th><th scope="col">概率 1/2</th><th scope="col">任一单坐标边际</th></tr></thead><tbody>
+      <tr><th scope="row">\(P_+\)：同号</th><td>\((+1,+1)\)</td><td>\((-1,-1)\)</td><td>\(\{-1,+1\}\) 上均匀</td></tr>
+      <tr><th scope="row">\(P_-\)：异号</th><td>\((+1,-1)\)</td><td>\((-1,+1)\)</td><td>\(\{-1,+1\}\) 上均匀</td></tr>
+    </tbody></table>
+  </div>
+  <p>这不是说物理场无法重建，而是说普遍恢复需要额外限制：例如可识别的结构化分布族、观测机制条件或有效的领域先验。有限数据下，稀疏证据还容易让平方损失偏向多种可能形状的平均，从而削弱锋面、细长涡旋或局部高低值结构。</p>
+  <div class="retro-callout"><strong>从分布恢复转向有结构的点重建</strong><p>接下来的目标，是学习更好的重建规则：让重复出现的局部关系获得专门监督，再让全部观测修正局部估计。局部先验提供归纳偏置，并不解除任意分布下的非可识别性。</p></div>
+</section>
+
+<section class="retro-chapter" id="incomplete-local-global" data-chapter-label="局部到全局">
+  <p class="retro-kicker">Estimate locally, correct globally</p>
+  <h2><span class="retro-chapter__number">07</span> 先从邻域学结构，再让全域证据修订它</h2>
+  <p class="retro-lede">一幅场整体很稀疏，仍可能包含观测相对丰富的局部片段。共享的局部模型把这些片段变成较小的学习任务；重叠预测形成参考场，全局模型再学习如何修正它。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp"><img src="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp" width="2400" height="1352" loading="lazy" alt="观测对齐划分、共享局部模型、重叠平均构建局部先验、结合全部上下文的全局残差修正，以及两阶段查询损失"></a>
+    <figcaption class="retro-figure__caption">图 4 · 相同的上下文—查询接口贯穿两个学习阶段。局部模型用位置坐标和局部带噪观测预测片段；冻结后把所有重叠预测汇成参考场。全局修正器接收原始上下文、参考场与差异特征，预测残差并加回参考场。查询真值只进入训练损失。</figcaption>
+  </figure>
+  <h3>共享局部预测器：位置有别，参数共享</h3>
+  <p>局部模型每次只处理一个片段：输入片内的带噪观测、观测掩码，以及这块片段在完整场中的绝对坐标，预测其中的场值。所有片段共享一套参数，让不同样本、不同邻域中学到的局部关系可以共同帮助重建；坐标则告诉模型当前位于哪里，使它能够适应不同海域的统计差异。</p>
+  <p>训练时，从含有查询目标的片段中均匀选择一个，只在片内暂时隐藏的真实观测上计算误差。这样，局部变化获得了专门的学习任务。裁剪只是重新组织已有监督，没有增加独立观测，也没有补入原本缺失的标签。</p>
+  <h3>把重叠片段拼成参考场</h3>
+  <p>局部模型训练完成后先冻结，再根据当前上下文预测覆盖全域的所有片段，包括这一次没有查询目标的片段。同一个位置可能被多个片段预测，模型看到的邻域不同，答案也可能不同。我们对覆盖该位置的预测取平均，把重叠处的多个估计协调成一幅完整尺寸的参考场。</p>
+  <p>这幅参考场就是<strong>局部场先验</strong>：它与最终目标具有相同的空间、通道和单位，提供的是当前观测条件下的中间估计。前面的掩码先验回答“哪里可能被看见”，这里的场先验则回答“根据附近观测，这里的值可能是多少”。</p>
+  <p>拼成完整尺寸并不代表已经使用了全部信息。每个片段独立预测，只能看到自己的上下文。对一个目标区域，找出所有覆盖它的局部片段；这些片段之外的观测不会影响该区域的参考值。重叠平均能协调局部答案，远处证据仍需通过下一阶段进入。</p>
+  <h3>让全域模型学习如何修订参考场</h3>
+  <p>全域模型同时看到全部保留的上下文与局部参考场，预测需要加到参考场上的残差。它可以根据片段之外的观测调整局部判断，也可以修补局部模型在已有邻域信息下仍未预测好的部分：</p>
+  <div class="retro-equation incomplete-math-key">\[
+    \underbrace{\text{最终预测}}_{\text{全域场估计}}
+      =\underbrace{\text{局部先验}}_{\text{重叠片段的平均}}
+      +\underbrace{\text{全局残差}}_{\text{根据全部上下文学习修正}}.
+  \]</div>
+  <p>残差输出头初始化为零，因此全域训练开始时，预测恰好就是局部先验。随后模型学习在什么位置、向什么方向、修正多少，允许改变任意预测位置。局部模型始终冻结；每次上下文改变，都重新构建与之对应的先验。</p>
+  <p>监督仍来自真实查询值：在查询位置，用“暂时隐藏的测量减去局部先验”告诉模型需要的修正。局部估计不必已经是最强的独立预测器，它的作用是提供一个有结构、可以被全域证据修订的起点。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-reconstruction" data-chapter-label="完整方法">
+  <p class="retro-kicker">A single observation interface throughout</p>
+  <h2><span class="retro-chapter__number">08</span> 把划分、局部先验与全局修正接成一个训练和重建流程</h2>
+  <p class="retro-lede">整个流程始终只依赖可用观测。掩码构造决定如何练习，局部模型建立参考，全局模型学习修正；推理时再恢复给定的真实测量。</p>
+  <h3>显式告诉修正器：参考场在哪些地方与观测不一致</h3>
+  <p>把参考场交给全域模型之后，还可以让两者的关系更容易读懂。除了带噪上下文、观测掩码与局部先验，修正器还接收三张直观的辅助图。</p>
+  <p><strong>重叠数图</strong>记录每个位置由多少个局部片段共同预测，让模型知道参考场是怎样拼出来的。它描述构建几何，并不是校准后的不确定性。</p>
+  <p><strong>上下文差异图</strong>比较已供给观测位置上的先验预测与带噪测量，显示参考场在哪里与当前证据不一致。<strong>边界差异图</strong>关注与观测四邻接的非上下文位置，将先验与邻近带噪观测的平均值比较，提供观测边界附近的修正线索。差异取绝对值，并在通道间平均。</p>
+  <p>所有辅助图都由同一次实际带噪上下文计算，查询真值只留在损失端。这些图让修正器更容易利用已有信息；它们是可观测的线索，不能当作缺失位置的真实误差标签。</p>
+  <h3>从训练到推理</h3>
+  <ol class="incomplete-algorithm">
+    <li><strong>构造观察方式匹配的练习。</strong>保持每个样本原始支持固定，按像素、完整块或真实掩码形状构造上下文／查询。Black Sea CHL 与 Baltic Sea NANO 使用冻结的掩码 BFN；Global Ocean SSS 使用真实轨迹掩码库。交集后处理不可行或空查询的划分。</li>
+    <li><strong>训练局部模型。</strong>对带噪上下文裁片，加上绝对坐标，只在片内查询真值上计算平方误差。随后冻结局部模型。</li>
+    <li><strong>构建参考，训练全局残差。</strong>对当前上下文评估所有片段，通过重叠平均形成先验，再计算差异特征。只更新全局修正器，它在查询位置学习“真实值减去局部先验”。</li>
+    <li><strong>根据给定观测重建。</strong>在同一个近零噪声时刻 \(\delta\) 构造参考和残差。海洋实验默认使用全部给定观测；PDE 实验默认平均 \(K=8\) 个子上下文。每个子上下文分别完成局部构建与全局修正，最后才平均。</li>
+    <li><strong>保留真实测量。</strong>输出时把给定观测写回，并仅填充有效域中的缺失位置。</li>
+  </ol>
+  <p>同一评测样本的各个上下文共用一次近零加噪，每个上下文各自完成一遍局部预测与全域修正。海洋默认的 full-mask 模式只评估一次，使用全部已给定观测；这里的“全部”不意味着获得完整参考场。它也不同于只随机抽取一次子上下文。</p>
+  <p>64×64 下，CHL 与 NANO 使用 32×32、步幅 16 的九个重叠片段；SSS 使用 16×16、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-results" data-chapter-label="实验证据">
+  <p class="retro-kicker">Evidence for each link in the method</p>
+  <h2><span class="retro-chapter__number">09</span> 实验逐步检验：监督形状、真实遮挡与可修订的局部估计</h2>
+  <p class="retro-lede">不同阶段回答不同问题。先检查划分是否造成死区，再看真实观测几何下的重建，最后用参数匹配对照区分局部先验与残差修正的作用。</p>
+  <h3>结构化缺失：改变划分，就能显著改变学习结果</h3>
+  <p>在 Navier–Stokes 的九块中观测八块（8/9 观测比例）设置下，相同 IDCD 框架从像素划分改为块划分，MSE 从 \(1.4925\pm0.2609\) 降为 \(0.7592\pm0.0386\)，约降低 <strong>49.1%</strong>。这直接检验了“划分应匹配观测结构”的设计，而不是仅比较模型名称。</p>
+  <figure class="retro-figure incomplete-compact-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp"><img src="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp" width="2400" height="1350" loading="lazy" alt="Navier–Stokes 块缺失条件下，Ground Truth、IDCD 和 MissDiff 的场重建示例"></a>
+    <figcaption class="retro-figure__caption">图 5 · 块缺失下的 Navier–Stokes 重建，按 Ground Truth、IDCD（Ours）、MissDiff 排列。局部纹理与跨缺失区域的连续性说明，模型不能只在原始已观测位置拟合数值。该图是定性案例，整体改善以上述同设置消融为准。</figcaption>
+  </figure>
+  <h3>稀疏点观测：沿时间检查补全的场结构</h3>
+  <p>块状缺失之外，也可以检查只有少量空间点被观测的情形。下面沿同一条 Navier–Stokes 轨迹展开原始场与重建场，观察模型是否保留主要涡旋及其随时间的变化。</p>
+  <figure class="retro-figure" id="incomplete-idcd-timeseries">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp"><img src="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp" width="2400" height="670" loading="lazy" alt="20%空间点观测下Navier–Stokes的原始场与IDCD重建，上下两排、七个时间点"></a>
+    <figcaption class="retro-figure__caption">图 6 · 20% 空间点观测设置下的 Navier–Stokes 重建案例。上排为原始场，下排为 IDCD 补全；七列为同一序列的 T=0、16、33、49、66、82、99，表示物理时间而非去噪迭代。主要涡旋得到恢复，细节仍可见平滑与局部偏差。</figcaption>
+  </figure>
+  <h3>真实海洋遮挡：只在存在参考测量的位置评分</h3>
+  <p>真实海洋场本来就没有完整真值。评测把另一幅真实掩码叠加到当前样本支持上，输入与评分位置在方法间共享；只在“原始已观测、现在暂时隐藏”的位置计算 MSE 与 PSNR。</p>
+  <p>因此实验支持对隐藏测量的重建能力，不能直接验证海洋源数据从未观测区域的真实误差。OAMP 在三类真实海洋数据、最高 256×256 的实验中检验观测对齐掩码；以下 64×64 数字来自同一组局部到全局对照，避免跨实验口径比较。</p>
+  <div class="retro-results-grid">
+    <div><strong>30.2%</strong><span class="retro-result__label">Black Sea CHL</span><p>相对该数据集最低 MSE 外部基线 OAMP 的降幅</p></div>
+    <div><strong>28.9%</strong><span class="retro-result__label">Baltic Sea NANO</span><p>相对该数据集最低 MSE 外部基线 OAMP 的降幅</p></div>
+    <div><strong>34.5%</strong><span class="retro-result__label">Global Ocean SSS</span><p>相对该数据集最低 MSE 外部基线 MSM 的降幅</p></div>
+  </div>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="64乘64海洋重建完整对照">
+    <table class="retro-comparison">
+      <thead><tr><th scope="col" rowspan="2">方法</th><th scope="col" colspan="2">Black Sea CHL</th><th scope="col" colspan="2">Baltic Sea NANO</th><th scope="col" colspan="2">Global Ocean SSS</th></tr><tr><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">DINEOF</th><td>21.457</td><td>16.89</td><td>37.398</td><td>14.37</td><td>44.451</td><td>13.68</td></tr>
+        <tr><th scope="row">AmbientDiff</th><td>12.204 ± 0.156</td><td>19.17 ± 0.03</td><td>28.304 ± 0.206</td><td>15.72 ± 0.03</td><td>47.458 ± 1.718</td><td>14.07 ± 0.12</td></tr>
+        <tr><th scope="row">DINDiff</th><td>43.830 ± 1.515</td><td>14.77 ± 0.09</td><td>53.153 ± 1.775</td><td>13.22 ± 0.04</td><td>61.082 ± 0.960</td><td>12.73 ± 0.07</td></tr>
+        <tr><th scope="row">MissDiff</th><td>25.636 ± 0.300</td><td>15.92 ± 0.08</td><td>47.818 ± 1.704</td><td>13.29 ± 0.16</td><td>41.935 ± 0.173</td><td>14.01 ± 0.03</td></tr>
+        <tr><th scope="row">MSM</th><td>15.077 ± 0.184</td><td>18.27 ± 0.04</td><td>30.206 ± 1.170</td><td>15.37 ± 0.19</td><td>40.901 ± 0.277</td><td>14.13 ± 0.03</td></tr>
+        <tr><th scope="row">OAMP</th><td>10.263 ± 0.162</td><td>19.84 ± 0.10</td><td>27.220 ± 0.458</td><td>15.60 ± 0.24</td><td>44.082 ± 0.472</td><td>14.04 ± 0.05</td></tr>
+        <tr class="retro-highlight"><th scope="row">局部先验 + 全局残差</th><td>7.164 ± 0.060</td><td>21.79 ± 0.04</td><td>19.345 ± 0.741</td><td>17.37 ± 0.07</td><td>26.798 ± 0.533</td><td>15.93 ± 0.05</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="retro-caption">表 1 · 64×64、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
+  <h3>观测对齐掩码：三类海洋场的定性对照</h3>
+  <p>在相同样本与相同给定观测下，比较 MissDiff 与 OAMP 的重建。每行先展示原始不完整参考，再看两种模型如何补出有效域中的场；重点观察隐藏测量所在区域的空间变化。</p>
+  <div class="incomplete-oamp-examples" id="incomplete-oamp-visuals">
+    <h4 class="incomplete-dataset-label">Black Sea CHL</h4>
+    <div class="incomplete-figure-grid">
+    <figure class="retro-figure"><h4>原始不完整参考</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-gt.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-gt.webp" width="1202" height="1202" loading="lazy" alt="Black Sea CHL同一样本的原始不完整参考，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>MissDiff</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-missdiff.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-missdiff.webp" width="1202" height="1202" loading="lazy" alt="Black Sea CHL同一样本的MissDiff，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-black_sea-ours.webp" width="1202" height="1202" loading="lazy" alt="Black Sea CHL同一样本的OAMP，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    </div>
+    <h4 class="incomplete-dataset-label">Baltic Sea NANO</h4>
+    <div class="incomplete-figure-grid">
+    <figure class="retro-figure"><h4>原始不完整参考</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-nano-gt.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-nano-gt.webp" width="1202" height="1202" loading="lazy" alt="Baltic Sea NANO同一样本的原始不完整参考，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>MissDiff</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-nano-missdiff.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-nano-missdiff.webp" width="1202" height="1202" loading="lazy" alt="Baltic Sea NANO同一样本的MissDiff，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-nano-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-nano-ours.webp" width="1202" height="1202" loading="lazy" alt="Baltic Sea NANO同一样本的OAMP，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    </div>
+    <h4 class="incomplete-dataset-label">Global Ocean SSS</h4>
+    <div class="incomplete-figure-grid">
+    <figure class="retro-figure"><h4>原始不完整参考</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-gt.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-gt.webp" width="1202" height="1202" loading="lazy" alt="Global Ocean SSS同一样本的原始不完整参考，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>MissDiff</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-missdiff.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-missdiff.webp" width="1202" height="1202" loading="lazy" alt="Global Ocean SSS同一样本的MissDiff，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp" width="1202" height="1202" loading="lazy" alt="Global Ocean SSS同一样本的OAMP，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
+    </div>
+  </div>
+  <p class="retro-caption">图 7 · 64×64 海洋重建案例。预测图的黑色轮廓标记给定观测，红色轮廓标记原有观测中暂时隐藏的评分位置；参考图中的白色仍是没有源真值的位置。灰色为固定非观测域。不同产品分别展示，颜色仅在同一行内比较；源缺失位置没有参考值，不能从这组图判定其真实误差。</p>
+  <h3>局部先验的价值，来自它能被全局模型利用和修正</h3>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="参数匹配的估计器组织对照">
+    <table class="retro-comparison"><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE ×10⁻³</th><th scope="col">NANO MSE ×10⁻³</th><th scope="col">SSS MSE ×10⁻³</th></tr></thead><tbody>
+      <tr><th scope="row">Local Prior · 仅局部估计</th><td>15.227 ± 0.103</td><td>30.576 ± 0.479</td><td>32.053 ± 0.276</td></tr>
+      <tr><th scope="row">Full Direct · 全域直接预测</th><td>9.350 ± 0.306</td><td>23.559 ± 0.834</td><td>32.895 ± 0.967</td></tr>
+      <tr><th scope="row">Prior Direct · 先验作为输入</th><td>8.546 ± 0.062</td><td>21.445 ± 0.417</td><td>30.151 ± 0.197</td></tr>
+      <tr class="retro-highlight"><th scope="row">Prior Residual · 先验 + 残差</th><td>7.164 ± 0.060</td><td>19.345 ± 0.741</td><td>26.798 ± 0.533</td></tr>
+    </tbody></table>
+  </div>
+  <p class="retro-caption">表 2 · 相同不完整训练对与查询监督下的参数匹配对照。Full Direct 匹配总参数量；Prior Direct 与 Prior Residual 共享冻结局部预测器和全局骨干。两者的零输出头分别使初始场预测为零与局部先验，所以比较包含残差参数化及其诱导的初始化。</p>
+  <p>局部模型单独在 CHL、NANO 上弱于全域直接预测，但把它作为输入后，MSE 仍下降 8.3%–9.0%；进一步采用残差输出，相对 Prior Direct 再下降 9.8%–16.2%。中间估计不必独立胜过主模型，仍可能成为有用的可修订表示。</p>
+  <div class="incomplete-figure-grid incomplete-field-panels">
+    <figure class="retro-figure"><h4>参考观测</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-reference.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-reference.webp" width="590" height="590" loading="lazy" alt="Baltic Sea NANO 原始参考观测，白色位置没有源真值"></a></figure>
+    <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-oamp.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-oamp.webp" width="590" height="590" loading="lazy" alt="相同 NANO 案例的 OAMP 全域直接重建"></a></figure>
+    <figure class="retro-figure"><h4>局部先验</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-local-prior.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-local-prior.webp" width="590" height="590" loading="lazy" alt="重叠局部预测形成的 NANO 中间场先验"></a></figure>
+    <figure class="retro-figure"><h4>全局修正后</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-corrected.webp" width="590" height="590" loading="lazy" alt="局部先验加全局残差的 NANO 预测，在写回给定观测之前展示"></a></figure>
+    <figure class="retro-figure"><h4>学习到的残差</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp" width="590" height="590" loading="lazy" alt="全域模型对 NANO 局部先验作出的有正负号的残差修正"></a></figure>
+  </div>
+  <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>前四幅：归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/field-colorbar.svg" width="276" height="36" loading="lazy" alt="归一化场值色标从负1到1"></div><div class="incomplete-colorbar"><span>残差值</span><img src="{{ base_path }}/images/research/incomplete-learning/residual-colorbar.svg" width="276" height="36" loading="lazy" alt="残差色标从负0.344到0.344，端点之外截断"></div></div>
+  <p class="retro-caption">图 8 · 64×64 NANO 完整输入掩码下的预测分解。黑色与红色轮廓分别标记给定观测和隐藏的可评分位置；灰色为有效域外，参考图中的白色为源数据缺失。预测均在写回给定观测之前展示，因此“全局修正后 = 局部先验 + 学习到的残差”；实际重建输出随后恢复给定观测。</p>
+  <div class="incomplete-figure-grid">
+    <figure class="retro-figure"><h4>OAMP 参数匹配对照 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp" width="545" height="545" loading="lazy" alt="NANO 橙色框区域中参数匹配全域直接模型的预测放大图"></a></figure>
+    <figure class="retro-figure"><h4>参考观测 · 橙色框标记放大区域</h4><a class="image-popup incomplete-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp" width="545" height="545" loading="lazy" alt="NANO 原始参考全图，橙色矩形标出两侧的局部放大区域"></a></figure>
+    <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp" width="545" height="545" loading="lazy" alt="相同 NANO 橙色框区域经局部到全局方法重建后的细节放大图"></a></figure>
+  </div>
+  <p class="retro-caption">图 9 · 参数匹配的 NANO 细节对照，左右为中间参考图橙色区域的放大，场值色标与前一组 NANO 分解图一致。局部到全局预测在这个案例中保留了更明显的细尺度变化；总体结论由表 1、表 2 的评分支持。</p>
+  <h3>从海洋场到流体场：缺失块内的细节修正</h3>
+  <p>局部到全局的组织方式也可以用于模拟物理场。下面在 Navier–Stokes 的九块中观测八块设置下，将参数匹配的 IDCD 全域直接预测与局部到全局预测放大比较。</p>
+  <div class="incomplete-figure-grid" id="incomplete-ns-detail">
+    <figure class="retro-figure"><h4>IDCD 参数匹配对照 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-direct.webp"><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-direct.webp" width="600" height="600" loading="lazy" alt="Navier–Stokes缺失块附近的参数匹配IDCD全域直接预测放大，红色虚线标记缺失块"></a></figure>
+    <figure class="retro-figure"><h4>完整参考场 · 橙色框标记放大区域</h4><a class="image-popup incomplete-roi-figure incomplete-ns-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-reference.webp" width="600" height="600" loading="lazy" alt="Navier–Stokes完整参考场，黑色线为九块网格、红虚线为缺失块、橙色框为两侧放大区域"></a></figure>
+    <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp" width="600" height="600" loading="lazy" alt="相同Navier–Stokes区域的局部到全局重建，缺失块内保留更明显的涡量结构"></a></figure>
+  </div>
+  <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/ns-colorbar.svg" width="276" height="36" loading="lazy" alt="Navier–Stokes共同场值色标从负1经白色零到正1"></div></div>
+  <p class="retro-caption">图 10 · 64×64、Block 8/9 的重建细节。左右为中间参考场橙色区域的放大；黑色线为观测块网格，红色虚线标出缺失块。两种预测均恢复给定观测，局部到全局方法使用 K=8 上下文集成。在这个案例中，残差修正保留了更明显的细长涡量结构；图中场值使用 −1 到 1 的共同色标。</p>
+  <h3>全局修正是否真的会看邻域外的观测？</h3>
+  <p>固定一个目标块，只删除所有相关局部片段之外的远端观测。局部模型接收的输入保持相同，所以目标块上的参考场不变；实际全局输出在三个产品上都产生了非零平均平方位移，说明修正器会响应局部构建不可见的证据。</p>
+  <p>响应不等于总是获益。进一步按相同删除数量比较距离分组：CHL、NANO 的 Remote Mid 与 Remote Far 删除使平均误差增加，95% 置信区间高于零；SSS 的 Remote Near 删除使误差增加，Remote Far 删除反而降低误差，Remote Mid 的区间跨零。远端证据的作用依赖数据产品与距离范围。</p>
+  <p>输入消融中，去掉两张差异图后，最终 MSE 在 CHL、NANO、SSS 上分别增加 36.8%、22.9%、17.4%。这支持把先验—观测关系显式交给有限修正器；由于每个变体都重新训练，不能把这些数值解释为各特征独立的因果贡献。</p>
+</section>
+
+<section class="retro-chapter" id="incomplete-summary" data-chapter-label="总结">
+  <p class="retro-kicker">From fragments to a revisable reconstruction</p>
+  <h2><span class="retro-chapter__number">10</span> 同一条路线：让已有证据更有效地参与学习与重建</h2>
+  <p class="retro-lede">从不完整数据学习，首先要弄清楚哪些目标有监督，然后让训练任务匹配真实观测，最后组织模型如何利用有限证据。</p>
+  <ol class="retro-pipeline" aria-label="研究路线的三个递进问题">
+    <li><strong>有效的条件监督</strong><span>上下文作为输入，查询决定损失；覆盖与选择条件限定学到的目标。</span></li>
+    <li><strong>观测对齐的练习</strong><span>学习掩码几何，兼顾查询机会与上下文信息量。</span></li>
+    <li><strong>可修订的结构先验</strong><span>先学习局部关系，再让全域观测修正局部估计。</span></li>
+  </ol>
+  <p>上下文—查询框架解决监督和采样的组织，掩码先验进一步匹配真实观测形状。面对完整分布的可识别性边界，局部到全局方法转而把重建任务拆成“先形成参考，再学习修正”。实验表明，局部估计即使不是最强的独立预测器，也能成为有用的中间表示，并接受全域证据的修订。</p>
+  <p>仍需保留实际边界：查询覆盖不能替代缺失机制假设，集成不能自动消除偏差，确定性先验不会增加新观测。部分块缺失重建仍有边界接缝；海洋真实缺失区域没有可评分真值，当前结果主要验证隐藏测量上的点重建质量。</p>
+  <nav class="incomplete-paper-links" aria-label="相关论文原文">
+    <a href="https://arxiv.org/pdf/2509.20098" target="_blank" rel="noopener noreferrer">Incomplete Data, Complete Dynamics: A Diffusion Approach ↗<small>条件监督与观测结构匹配</small></a>
+    <a href="https://arxiv.org/pdf/2605.16818" target="_blank" rel="noopener noreferrer">Observation-Aligned Mask Priors ↗<small>真实掩码分布与样本特定划分</small></a>
+    <a href="https://arxiv.org/pdf/2610.05375" target="_blank" rel="noopener noreferrer">Learning Field Reconstruction from Incomplete Data by Globally Correcting Local Estimates ↗<small>可修订的局部场先验与全局修正</small></a>
+  </nav>
+</section>

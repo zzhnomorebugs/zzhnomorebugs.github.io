@@ -1,0 +1,128 @@
+---
+---
+
+.incomplete-project .retro-hero__title {
+  max-width: 1030px;
+  font-size: clamp(2.05rem, 4.8vw, 3.8rem);
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.incomplete-project .retro-hero__subtitle { max-width: 950px; }
+.incomplete-project .retro-outline ol { gap: 0.1rem; }
+.incomplete-project .retro-outline a { padding-right: 0.4rem; padding-left: 0.4rem; }
+.incomplete-project .retro-chapter h3 { margin-top: 2.3rem; }
+.incomplete-project .retro-equation { margin: 0.8rem 0 1.2rem; }
+.incomplete-project .retro-figure img { width: 100%; max-height: none; }
+.incomplete-project .incomplete-compact-figure { max-width: 880px; margin-right: auto; margin-left: auto; }
+.incomplete-project .incomplete-theorem {
+  min-width: 0;
+  margin: 1.8rem 0;
+  padding: 1.2rem 1.4rem 1rem;
+  border: 1px solid var(--retro-line);
+  border-left: 3px solid var(--retro-accent);
+  border-radius: 3px;
+  background: var(--retro-accent-soft);
+  scroll-margin-top: 140px;
+}
+.incomplete-project .incomplete-theorem h4 {
+  margin: 0 0 0.8rem;
+  font-size: 0.91rem;
+  font-weight: 650;
+  line-height: 1.65;
+}
+.incomplete-project .incomplete-theorem h4 { color: var(--retro-accent); font-variant-numeric: tabular-nums; }
+.incomplete-project .incomplete-theorem p,
+.incomplete-project .incomplete-theorem li { font-size: 0.87rem; }
+.incomplete-project .incomplete-theorem > :last-child { margin-bottom: 0; }
+.incomplete-project .incomplete-proof,
+.incomplete-project .incomplete-scope { color: var(--retro-muted); }
+.incomplete-project .incomplete-scope { margin-top: 0.8rem; }
+.incomplete-project .incomplete-notation { font-size: 0.81rem; }
+.incomplete-project .incomplete-notation td:first-child { min-width: 125px; }
+.incomplete-project .incomplete-notation td { min-width: 230px; }
+.incomplete-project .incomplete-math-key {
+  padding: 0.5rem 1rem;
+  border-left: 3px solid var(--retro-accent);
+  background: var(--retro-accent-soft);
+}
+.incomplete-project .incomplete-figure-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.2rem;
+  margin: 1.8rem 0;
+  text-align: center;
+}
+.incomplete-project .incomplete-figure-grid > * { min-width: 0; margin: 0; }
+.incomplete-project .incomplete-figure-grid h4 {
+  margin: 0 0 0.7rem;
+  font-size: 0.83rem;
+  line-height: 1.6;
+}
+.incomplete-project .incomplete-figure-grid .retro-figure > a { padding: 0.35rem; }
+.incomplete-project .incomplete-heatmaps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.incomplete-project .incomplete-figure-grid .retro-figure > .incomplete-roi-figure { position: relative; padding: 0; }
+.incomplete-project .incomplete-roi {
+  position: absolute;
+  left: 35.9375%;
+  top: 25%;
+  width: 25%;
+  height: 25%;
+  border: 2px solid #f09a00;
+  pointer-events: none;
+}
+.incomplete-project .incomplete-ns-roi-figure .incomplete-roi {
+  left: 28.125%;
+  top: 59.375%;
+  width: 40.625%;
+  height: 40.625%;
+}
+.incomplete-project .incomplete-oamp-examples { margin: 1.8rem 0; }
+.incomplete-project .incomplete-dataset-label {
+  margin: 2rem 0 0.7rem;
+  color: var(--retro-accent);
+  font-size: 0.9rem;
+}
+.incomplete-project .incomplete-oamp-examples .incomplete-figure-grid { margin-top: 0.7rem; }
+.incomplete-project .incomplete-field-panels { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.65rem; }
+.incomplete-project .incomplete-colorbars { display: flex; flex-wrap: wrap; gap: 1rem 2rem; justify-content: center; margin: 1rem 0; }
+.incomplete-project .incomplete-colorbar { display: grid; grid-template-columns: auto 180px; align-items: center; gap: 0.75rem; font-size: 0.72rem; }
+.incomplete-project .incomplete-colorbar img { width: 180px; height: auto; }
+.incomplete-project .incomplete-paper-links { display: grid; gap: 0.7rem; margin: 1.8rem 0; }
+.incomplete-project .incomplete-paper-links a { text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+.incomplete-project .incomplete-paper-links small { display: block; margin-top: 0.2rem; color: var(--retro-muted); font-size: 0.73rem; }
+.incomplete-project .retro-comparison td { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.incomplete-project .incomplete-notation td { white-space: normal; }
+.incomplete-project .incomplete-parity td { text-align: center; min-width: 95px; }
+.incomplete-project .incomplete-parity th { text-align: center; }
+.incomplete-project .incomplete-algorithm { margin: 1.7rem 0; padding-left: 1.6rem; }
+.incomplete-project .incomplete-algorithm li { padding-left: 0.3rem; margin-top: 0.8rem; }
+
+@media (max-width: 740px) {
+  .incomplete-project .incomplete-theorem { padding: 0.9rem 0.75rem; }
+  .incomplete-project .incomplete-theorem p,
+  .incomplete-project .incomplete-theorem li { font-size: 0.82rem; }
+  .incomplete-project .retro-equation { font-size: 0.82rem; }
+  .incomplete-project .retro-outline a { padding-right: 0.7rem; padding-left: 0.7rem; }
+  .incomplete-project .incomplete-figure-grid,
+  .incomplete-project .incomplete-heatmaps,
+  .incomplete-project .incomplete-field-panels { grid-template-columns: 1fr; gap: 1.4rem; }
+  .incomplete-project .incomplete-field-panels .retro-figure { width: 100%; max-width: 400px; margin: 0 auto; }
+  .incomplete-project .incomplete-colorbar { grid-template-columns: 1fr; gap: 0.3rem; text-align: center; }
+  .incomplete-project #incomplete-idcd-timeseries > a,
+  .incomplete-project #incomplete-results .incomplete-compact-figure > a {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .incomplete-project #incomplete-idcd-timeseries img,
+  .incomplete-project #incomplete-results .incomplete-compact-figure img {
+    min-width: 760px;
+    max-width: none;
+  }
+}
+
+@media print {
+  .incomplete-project .incomplete-theorem { background: transparent; }
+  .incomplete-project .incomplete-theorem h4 { break-after: avoid; }
+}
