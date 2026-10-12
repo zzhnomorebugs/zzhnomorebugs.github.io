@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="900" viewBox="0 0 640 900" role="img" aria-labelledby="title desc">
+  <title id="title">可行样本的均值，未必仍然可行，手机排版</title>
+  <desc id="desc">单位圆上 a 等于负一、零，b 等于一、零，两个点的平方范数均为一。等权条件均值为原点，平方范数为零。约束 R(x) 等于平方范数减一：R(a) 与 R(b) 为零，而 R((a+b)/2) 为负一。</desc>
+  <defs>
+    <style>
+      text{font-family:"Microsoft YaHei","Noto Sans CJK SC",sans-serif;fill:#263833}.title{font-size:29px;font-weight:700}
+      .label{font-size:22px;font-weight:700}.body{font-size:23px}.note{font-size:20px;fill:#60716b}.accent{fill:#25766c}.formula{font-size:28px;font-weight:700}
+    </style>
+  </defs>
+  <rect width="640" height="900" fill="#fafbf8"/>
+  <text x="40" y="49" class="title">可行样本的均值，</text>
+  <text x="40" y="89" class="title">未必仍然可行</text>
+  <text x="40" y="126" class="note">一个非线性约束的二维示例</text>
+
+  <circle cx="320" cy="328" r="150" fill="#edf5ef" stroke="#25766c" stroke-width="3"/>
+  <path d="M127 328 H513 M320 156 V497" fill="none" stroke="#ccd9d1" stroke-width="2"/>
+  <path d="M170 328 H470" fill="none" stroke="#8eaaa0" stroke-width="3" stroke-dasharray="7 7"/>
+  <circle cx="170" cy="328" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
+  <circle cx="470" cy="328" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
+  <circle cx="320" cy="328" r="9" fill="#b77545" stroke="#fff" stroke-width="3"/>
+  <text x="40" y="278" class="label">a = (−1, 0)</text>
+  <text x="40" y="307" class="note">‖a‖² = 1</text>
+  <text x="466" y="278" class="label">b = (1, 0)</text>
+  <text x="466" y="307" class="note">‖b‖² = 1</text>
+  <text x="320" y="368" text-anchor="middle" class="label">均值 = (0, 0)</text>
+  <text x="320" y="400" text-anchor="middle" class="note">‖(a + b) / 2‖² = 0</text>
+  <text x="320" y="516" text-anchor="middle" class="note">圆周：满足约束的样本集合</text>
+
+  <rect x="40" y="551" width="560" height="310" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
+  <text x="66" y="590" class="label accent">约束函数</text>
+  <text x="66" y="634" class="formula">R(x) = ‖x‖² − 1</text>
+  <path d="M66 655 H574" stroke="#d5dfd9" stroke-width="2"/>
+  <text x="66" y="693" class="body">两个样本均可行：</text>
+  <text x="66" y="730" class="formula accent">R(a) = R(b) = 0</text>
+  <text x="66" y="783" class="body">等权条件均值却偏离约束：</text>
+  <text x="66" y="824" class="formula">R((a + b) / 2) = −1</text>
+</svg>

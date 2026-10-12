@@ -1,0 +1,299 @@
+---
+title: "物理先验下的动力学生成"
+subtitle: "让扩散模型学会对称性，也学会遵循物理规律"
+layout: research-project
+collection: research
+permalink: /zh/research/physical-dynamics/
+lang: zh-CN
+research_project: true
+mathjax: true
+project_class: physical-project
+project_stylesheet: physical-dynamics.css
+project_title: "物理先验下的动力学生成"
+project_label: "Physical Dynamics"
+project_eyebrow: "ICLR 2025 · 项目解读"
+project_area: "AI4Physics · 扩散生成"
+project_area_en: "AI4Physics · Diffusion models"
+project_eyebrow_area: "对称性与物理可行性"
+order: 6
+published: true
+read_time: false
+date: 2026-10-12
+index_title: "物理动力学生成：把对称性与守恒律融入扩散模型"
+index_title_en: "Generating Physical Dynamics under Priors"
+excerpt: "生成的轨迹看起来合理，并不意味着它遵循物理规律。从分布对称性与守恒约束出发，解释扩散模型的条件均值为何带来 Jensen gap，以及如何设计训练目标，改善粒子轨迹与物理场的生成。"
+excerpt_en: "A Chinese walkthrough of distributional symmetries, the Jensen gap in physical constraints, and training objectives for diffusion-based generation of particle trajectories and PDE fields."
+project_image: /images/research/physical-dynamics/framework.svg
+authors: "Zihan Zhou · Xiaoxue Wang · Tianshu Yu（通讯作者）"
+paperurl: https://arxiv.org/pdf/2409.00730v3
+githuburl: https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors
+project_chapters:
+  - id: physical-task
+    label: 问题
+  - id: physical-diffusion
+    label: 扩散
+  - id: physical-symmetry
+    label: 对称性
+  - id: physical-jensen
+    label: 难点
+  - id: physical-constraints
+    label: 约束
+  - id: physical-particles
+    label: 粒子
+  - id: physical-results
+    label: 实验
+  - id: physical-ablation
+    label: 消融
+  - id: physical-takeaways
+    label: 总结
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="physical-task" data-chapter-label="问题">
+  <p class="retro-kicker">Generating Physical Dynamics under Priors</p>
+  <h2><span class="retro-chapter__number">01</span> 生成一段运动，怎样知道它符合物理？</h2>
+  <p class="retro-lede">粒子轨迹可以连续而平滑，流场也可以具有熟悉的纹理，但这些外观特征并不能保证能量守恒、动量守恒，或满足控制系统演化的方程。</p>
+  <ol class="retro-pipeline" aria-label="物理动力学生成任务">
+    <li><strong>输入：数据与已知先验</strong><span>训练轨迹或物理场，以及对称性、守恒律或已知方程。</span></li>
+    <li><strong>学习：动力学的分布</strong><span>通过扩散训练，学习整段轨迹或场的联合变化。</span></li>
+    <li><strong>输出：新的物理样本</strong><span>生成粒子的位置与速度，或随空间、时间变化的物理场。</span></li>
+  </ol>
+  <p>这里的目标是学习样本分布，而不只是拟合某个确定的未来值。三体系统无条件生成三颗粒子的三维运动；五弹簧系统以粒子间的弹簧连接图为条件生成二维运动；PDE 任务则包含给定条件的预测与物理场生成。</p>
+  <div class="retro-two-column">
+    <div><h3>分布先验：哪些变化不改变物理内容？</h3><p>整体旋转、改变坐标原点、对可交换粒子重新编号，会改变样本的表示。模型应当以一致的方式响应这些变换，利用数据的内在对称性。</p></div>
+    <div><h3>可行性先验：哪些样本违反物理？</h3><p>一条轨迹的总动量、总能量应按系统设定保持恒定；一个物理场应满足相应方程。这些要求可以用残差衡量，并参与训练。</p></div>
+  </div>
+  <div class="retro-callout"><strong>核心问题</strong><p>怎样把“分布具有对称性”和“样本需要满足方程”同时交给扩散模型，并让约束作用于正确的预测对象？</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-diffusion" data-chapter-label="扩散">
+  <p class="retro-kicker">从整段样本到去噪预测</p>
+  <h2><span class="retro-chapter__number">02</span> 扩散模型预测的，究竟是什么？</h2>
+  <p class="retro-lede">用 \(x_0\) 表示一整段干净轨迹或物理场。扩散时间 \(t\) 控制噪声强度，它与轨迹内部的物理时间是两个不同的维度。</p>
+  <div class="retro-equation">\[x_t=\alpha_t x_0+\sigma_t\epsilon,\qquad \epsilon\sim\mathcal N(0,I).\]</div>
+  <p>训练时，对整段样本加噪，再学习恢复干净数据或预测加入的噪声。生成时，从高斯噪声出发，沿反向扩散过程逐步得到新的轨迹或场；这里并不是每次仅预测下一个物理时间步。</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/framework.svg">
+      <picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/physical-dynamics/framework-mobile.svg" width="640" height="1080"><img src="{{ base_path }}/images/research/physical-dynamics/framework.svg" alt="训练时，整段样本加噪后由扩散模型预测；分布先验指导模型与匹配目标，物理可行性先验参与训练损失；生成时从高斯噪声经反向扩散得到轨迹或场" width="1440" height="660" loading="lazy"></picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 1 · 两类先验在训练中的分工。物理约束通过训练目标注入，生成仍使用反向扩散过程。</figcaption>
+  </figure>
+  <h3>两种训练目标，连接到同一个 score</h3>
+  <div class="retro-equation">\[\begin{aligned}
+    \mathcal L_{\mathrm{noise}}&=\mathbb E\!\left[w(t)\|\epsilon_\theta(x_t,t)-\epsilon\|^2\right],\\
+    \mathcal L_{\mathrm{data}}&=\mathbb E\!\left[w(t)\|x_\theta(x_t,t)-x_0\|^2\right].
+  \end{aligned}\]</div>
+  <p>在理想的平方误差最优解下，噪声预测与数据预测分别对应：</p>
+  <div class="retro-equation">\[\epsilon_\theta^*(x_t,t)=-\sigma_t\nabla_{x_t}\log q_t(x_t),\qquad x_\theta^*(x_t,t)=\mathbb E[x_0\mid x_t].\]</div>
+  <p>其中 score \(\nabla_{x_t}\log q_t(x_t)\) 描述当前噪声分布的局部变化方向。噪声预测也可以转换为干净数据估计：</p>
+  <div class="retro-equation">\[\hat x_0(x_t,t)=\frac{x_t-\sigma_t\epsilon_\theta(x_t,t)}{\alpha_t}.\]</div>
+  <div class="retro-callout"><strong>后续约束设计的出发点</strong><p>去噪预测在理想情形下是条件均值 \(\mathbb E[x_0\mid x_t]\)。它并不等同于某一个真实的干净样本。</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-symmetry" data-chapter-label="对称性">
+  <p class="retro-kicker">Distributional priors</p>
+  <h2><span class="retro-chapter__number">03</span> 让坐标变换与模型预测保持一致</h2>
+  <p class="retro-lede">物理内容与表示方式可以分开：同一段粒子运动换一个观察方向，仍然描述同一个系统。</p>
+  <p>若分布在群变换 \(G\) 下满足 \(q_t(Gx)=q_t(x)\)，score 的变化就受到相应规则约束。以刚体变换为例，旋转矩阵 \(Q\) 与整体平移 \(b\) 给出：</p>
+  <div class="retro-equation">\[s(Qx+b,t)=Q\,s(x,t).\]</div>
+  <p>旋转输入时，score 的向量方向一起旋转；整体平移不应给这个向量场增加一个平移量。对于位置与速度联合表示，平移只作用于位置，旋转同时作用于位置和速度。粒子重新编号时，输出也应相应重排；五弹簧的条件连接图需要同步重排。</p>
+  <div class="retro-support">
+    <h3>从群轨道理解等价类流形（ECM）</h3>
+    <p>把可以通过这些对称变换互相得到的样本看作一个等价类：</p>
+    <div class="retro-equation">\[[x]=\{Gx:G\in\mathcal G\}.\]</div>
+    <p>选择代表元后，模型可以把注意力放在轨迹的内在结构上；满足相应等变规则的预测能够延伸到同一轨道的其他表示。ECM 在这里提供理论视角，实验流程并没有增加一个逐步投影到 ECM 的生成模块。</p>
+  </div>
+  <h3>理论要求，如何落实为训练设计？</h3>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="两类数据的扩散建模选择">
+    <table class="retro-comparison">
+      <thead><tr><th scope="col">数据</th><th scope="col">采用的匹配目标</th><th scope="col">设计理由与实现</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">粒子运动</th><td>Noise matching</td><td>噪声预测直接对应 score 的变换性质；训练中使用旋转、平移与置换增强，促使模型学习这些规律。</td></tr>
+        <tr><th scope="row">PDE 物理场</th><td>Data matching</td><td>直接学习较平滑的场，避免把逐像素噪声预测作为主要输出任务；按任务采用 GRU 或 U-Net 系列。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>这些是结合数据结构提出的设计选择。数据增强有助于学习对称性，但不等同于网络在所有输入上都具有严格的结构性等变保证。</p>
+</section>
+
+<section class="retro-chapter" id="physical-jensen" data-chapter-label="难点">
+  <p class="retro-kicker">The Jensen gap</p>
+  <h2><span class="retro-chapter__number">04</span> 每个样本都可行，为什么均值却可能违规？</h2>
+  <p class="retro-lede">设干净样本满足物理残差 \(\mathcal R(x_0)=0\)。能否直接要求去噪预测也满足同一个方程？答案取决于约束的形式。</p>
+  <div class="retro-equation">\[\mathcal R\!\left(\mathbb E[x_0\mid x_t]\right)\ne\mathbb E[\mathcal R(x_0)\mid x_t]=0.\]</div>
+  <p>非线性变换与取期望通常不能交换，这就是此处的 Jensen gap。高噪声下，同一个 \(x_t\) 可以对应多个合理的干净样本；把这些可能性平均后，得到的状态可能离开可行集合。</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/jensen-gap.svg">
+      <picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/physical-dynamics/jensen-gap-mobile.svg" width="640" height="900"><img src="{{ base_path }}/images/research/physical-dynamics/jensen-gap.svg" alt="单位圆上的两个可行点分别为负一零和一零，等概率均值在原点；两个点的平方范数都为一，均值的平方范数为零，因而均值不再满足同一约束" width="1200" height="500" loading="lazy"></picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 2 · 一个几何例子：两个样本都位于单位圆上，它们的均值却位于圆心。约束满足于每个样本，并不自动传递给条件均值。</figcaption>
+  </figure>
+  <div class="retro-two-column">
+    <div><h3>线性动量约束可以交换</h3><p>总动量是速度的线性组合。对固定质量取加权求和与条件期望可以交换，因此线性残差可以直接作用于去噪估计。</p></div>
+    <div><h3>非线性能量约束需要处理</h3><p>动能包含速度平方，势能涉及粒子间距离。一般有 \((\mathbb E[V\mid x_t])^2\ne\mathbb E[V^2\mid x_t]\)，直接惩罚预测状态的总能量可能与正确的去噪目标冲突。</p></div>
+  </div>
+  <div class="retro-callout"><strong>难点不只是给训练加一个物理损失</strong><p>还需要判断：这个物理损失是否适合施加在模型当前预测的统计量上。</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-constraints" data-chapter-label="约束">
+  <p class="retro-kicker">Physical feasibility priors</p>
+  <h2><span class="retro-chapter__number">05</span> 按约束结构，选择合适的监督方式</h2>
+  <p class="retro-lede">保留扩散学习目标，再加入与物理结构对应的训练项。\(\lambda\) 控制数据拟合与物理监督的相对强度。</p>
+  <div class="retro-equation">\[\mathcal L(\theta)=\mathcal L_{\mathrm{diffusion}}(\theta)+\lambda\,\mathcal L_{\mathrm{physics}}(\theta).\]</div>
+  <h3><span class="physical-case-label">01 / 线性与仿射</span> 直接约束去噪输出</h3>
+  <p>若 \(\mathcal R(x)=Ax+b\)，期望与约束交换，Jensen gap 为零。可以采用：</p>
+  <div class="retro-equation">\[\mathcal L_{\mathrm{physics}}=\mathbb E\!\left[w(t)\|\mathcal R(\hat x_0(x_t,t))\|^2\right].\]</div>
+  <p>总动量，以及固定系数、有限差分离散后的线性 PDE 残差，都属于这一思路。它消除了目标形式上的冲突；有限数据与有限模型下，残差仍然可能非零。</p>
+  <h3><span class="physical-case-label">02 / 多线性</span> 固定其他变量，监督一个线性部分</h3>
+  <p>将样本拆成 \(x_0=(u_0,v_0)\)。若固定 \(v_0\) 后，约束对 \(u_0\) 为线性，可以在训练时用真实样本给出的系数构造：</p>
+  <div class="retro-equation">\[\mathcal R(x_0)=W(v_0)u_0+b(v_0),\qquad \mathcal L_{\mathrm{physics}}=\mathbb E\!\left[w(t)\|W(v_0)u_\theta(x_t,t)+b(v_0)\|^2\right].\]</div>
+  <p>当真实样本满足残差为零时，上式等于用 \(W^\top W\) 加权的重建误差。关键是训练时固定其他真值变量，而不是把所有变量都换成预测均值。权重依赖样本时，它也不能简单视为与普通均方误差具有完全相同的最优解。</p>
+  <h3><span class="physical-case-label">03 / 凸约束</span> 把近似误差纳入考虑</h3>
+  <p>对于满足条件的标量凸函数，Jensen 不等式给出：</p>
+  <div class="retro-equation">\[\mathcal R\!\left(\mathbb E[x_0\mid x_t]\right)\leq\mathbb E[\mathcal R(x_0)\mid x_t].\]</div>
+  <p>这个不等式不意味着约束等式在均值上成立。方法利用凸情形进行近似处理；在相应正则性与后验集中条件下，条件分布越集中，Jensen gap 越小。它提供训练设计的依据，并不带来对任意非线性约束的精确保证。</p>
+  <h3><span class="physical-case-label">04 / 一般非线性</span> 改变需要预测的量</h3>
+  <p>若约束能写成 \(\mathcal R(x)=g(h(x))\)，可拆解为较简单的部分；也可以增加共享主干表示的辅助输出头，专门预测 \(h(x_0)\)：</p>
+  <div class="retro-equation">\[\mathcal L_h=\mathbb E\!\left[w(t)\|\tilde h_\theta(x_t,t)-h(x_0)\|^2\right].\]</div>
+  <p>例如，让辅助头学习速度平方或距离相关量，使共享表示接收能量相关监督。这与先预测平均速度、再把它平方是不同的任务。辅助监督帮助主模型学习物理结构，效果仍需在最终生成样本上验证。</p>
+</section>
+
+<section class="retro-chapter" id="physical-particles" data-chapter-label="粒子">
+  <p class="retro-kicker">从守恒律到训练项</p>
+  <h2><span class="retro-chapter__number">06</span> 动量与能量，为什么需要不同处理？</h2>
+  <p class="retro-lede">粒子样本同时包含位置 \(C\) 和速度 \(V\)。用 \(\ell\) 表示轨迹中的物理时间，用 \(t\) 表示扩散噪声时间。</p>
+  <h3>动量：惩罚同一条轨迹中的时间变化</h3>
+  <div class="retro-equation">\[P_\ell=\sum_{k=1}^{K}m_kV_{\ell,k},\qquad \bar P=\frac1L\sum_{\ell=1}^{L}P_\ell.\]</div>
+  <div class="retro-equation">\[\mathcal L_P=\mathbb E\!\left[w(t)\sum_{\ell=1}^{L}\|\hat P_\ell-\bar{\hat P}\|^2\right].\]</div>
+  <p>约束要求一条轨迹的总动量保持恒定，不要求所有样本都具有同一个动量值。该残差对速度是线性的，因此适合直接用于去噪输出；五弹簧主实验采用这一类训练项。</p>
+  <h3>能量：监督构成能量的关键量</h3>
+  <p>三体的引力势能依赖粒子间距离的倒数，动能依赖速度平方。五弹簧的弹性势能依赖已连接粒子间距离的平方。可以把这些依赖概括为：</p>
+  <div class="retro-equation">\[h_{\mathrm{three\mbox{-}body}}(C,V)=\left(\{1/r_{ij}\},\{V_{k,d}^{\,2}\}\right),\qquad r_{ij}=\|C_i-C_j\|.\]</div>
+  <p>三体主实验采用可约的非线性处理，对去噪坐标计算出的距离倒数、以及去噪速度的平方施加真值监督。一般非线性变体则增加辅助头预测这些能量相关量；两种做法不能混成同一个实现。</p>
+  <div class="retro-equation">\[\mathcal L_E=\mathbb E\!\left[
+    w_1(t)\sum_{\ell,i\ne j}\left|\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right|^2
+    +w_2(t)\sum_{\ell,k,d}\left|\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right|^2
+  \right].\]</div>
+  <p>这些项使用样本中可计算的距离与速度监督，无须先指定每条轨迹的总能量常数。它们是与守恒相关的训练正则，而不是把生成结果精确投影到等能量面上。</p>
+  <div class="retro-support">
+    <h3>具体网络承载什么？</h3>
+    <p>三体使用 GRU 处理时间序列；五弹簧使用 EGNN 提取粒子和连边特征，并结合 GRU 处理时间变化；PDE 按任务采用 GRU 或 U-Net，Darcy、Burgers 与浅水使用 U-Net 系列。框架的重点是输出目标与物理损失如何匹配，而不是为所有物理系统指定同一个网络。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-results" data-chapter-label="实验">
+  <p class="retro-kicker">Sample quality &amp; physical feasibility</p>
+  <h2><span class="retro-chapter__number">07</span> 生成样本的误差，实际改善了多少？</h2>
+  <p class="retro-lede">主要对照是在相应扩散建模方案中，比较加入与不加入物理可行性训练项的结果。双方分别进行超参数搜索，因此结论针对训练方案，而不是固定参数配置下的单一网络。</p>
+  <div class="retro-results-grid" aria-label="主要守恒误差的相对改善">
+    <div><strong>87.4%</strong><span class="retro-result__label">三体 · 能量误差下降</span><p>按同一主实验的均值，从 4.3292 降至 0.5465。</p></div>
+    <div><strong>92.7%</strong><span class="retro-result__label">五弹簧 · 动量误差下降</span><p>按同一主实验的均值，从 5.3699 降至 0.3898。</p></div>
+    <div><strong>2.0%</strong><span class="retro-result__label">五弹簧 · 动态误差下降</span><p>相对改善较小；守恒收益并不等于所有指标都大幅改善。</p></div>
+  </div>
+  <h3>粒子运动：同时看动力学误差与守恒误差</h3>
+  <p>轨迹、速度与动态误差通过物理模拟评估：以生成状态为起点，模拟后续运动，再计算它与生成运动的 MSE。能量与动量误差则衡量相应物理量随时间变化的偏差。下表各项均为越低越好。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="三体和五弹簧主实验误差">
+    <table class="retro-comparison physical-metric-table">
+      <thead><tr><th scope="col">系统</th><th scope="col">指标 ↓</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="3">三体 · 能量相关监督</th><td>轨迹 MSE</td><td>2.4132 ± 0.1208</td><td>1.9880 ± 0.3418</td></tr>
+        <tr><td>速度 MSE</td><td>2.5745 ± 0.0790</td><td>0.8328 ± 0.1042</td></tr>
+        <tr><td>能量误差</td><td>4.3292 ± 0.7235</td><td>0.5465 ± 0.0705</td></tr>
+        <tr><th scope="row" rowspan="3">五弹簧 · 动量约束</th><td>动态 MSE（×10<sup>−2</sup>）</td><td>5.1754 ± 0.0286</td><td>5.0731 ± 0.0406</td></tr>
+        <tr><td>动量误差</td><td>5.3699 ± 0.0462</td><td>0.3898 ± 0.0118</td></tr>
+        <tr><td>能量误差</td><td>1.0618 ± 0.0243</td><td>0.7418 ± 0.0129</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>三体案例：观察总能量是否漂移</h3>
+  <div class="physical-evidence" aria-label="三体生成案例及能量变化">
+    <figure class="retro-figure"><h3>无可行性训练项</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp" alt="未加入能量相关监督的三体生成轨迹，三种颜色区分三颗粒子" width="2500" height="2385" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>加入能量相关监督</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp" alt="加入能量相关监督后的三体生成轨迹" width="2500" height="2371" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>总能量随物理时间变化</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp" alt="三体案例的总能量曲线，对比无先验与有先验的生成结果，加入监督的曲线更稳定" width="2500" height="1410" loading="lazy"></a></figure>
+  </div>
+  <p class="retro-caption">图 3 · 蓝色曲线为无可行性训练项的结果，橙色为加入监督的结果；方块表示引力势能，圆点表示动能，深色线表示总能量。总能量曲线更稳定，但仍有变化。三体生成包含 10 帧，轨迹连线使用三次样条展示，误差评估未使用平滑。两条生成轨迹无需重合；要检验的是各自的物理可行性。</p>
+  <h3>五弹簧案例：观察总动量是否保持稳定</h3>
+  <div class="physical-evidence" aria-label="五弹簧生成案例及动量变化">
+    <figure class="retro-figure"><h3>无可行性训练项</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp" alt="未加入动量约束的五弹簧系统生成轨迹，五种颜色区分五颗粒子" width="2500" height="1887" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>加入动量约束</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp" alt="加入动量约束后的五弹簧系统生成轨迹" width="2500" height="1887" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>动量分量随物理时间变化</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp" alt="五弹簧案例中不同方向的总动量曲线，对比加入与未加入动量约束的时间变化" width="2500" height="1410" loading="lazy"></a></figure>
+  </div>
+  <p class="retro-caption">图 4 · 蓝色为无可行性训练项的结果，橙色为加入动量约束的结果，深浅两条曲线对应两个坐标轴的总动量。约束针对总动量的时间变化，而不是让它趋近于零。案例用于展示行为，整体效果由上方多次实验的误差表衡量。</p>
+  <h3>PDE：预测准确度与生成可行性是两种评估</h3>
+  <p>已知系数的平流、Darcy 与线性化浅水方程离散后可形成线性约束；Burgers 方程含有 \(u\,\partial_xu\) 这样的多线性结构。实验分别评估有条件预测的场值误差，以及生成场的 PDE 残差。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="PDE预测和生成评估">
+    <table class="retro-comparison physical-metric-table">
+      <thead><tr><th scope="col">任务与指标 ↓</th><th scope="col">数据集</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="2">预测 RMSE（×10<sup>−2</sup>）</th><td>Advection · 平流</td><td>1.7263 ± 0.0491</td><td>1.6536 ± 0.0677</td></tr>
+        <tr><td>Darcy flow</td><td>2.0648 ± 0.0600</td><td>1.9678 ± 0.0651</td></tr>
+        <tr><th scope="row" rowspan="3">生成场的 PDE 残差 RMSE</th><td>Advection · 平流</td><td>2.398 ± 0.024</td><td>2.305 ± 0.001</td></tr>
+        <tr><td>Burgers</td><td>6.862 ± 0.060</td><td>6.610 ± 0.012</td></tr>
+        <tr><td>Shallow water · 浅水</td><td>8.0153 ± 0.0960</td><td>7.7618 ± 0.0645</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>PDE 残差整体有所降低，但幅度小于粒子主实验中的部分守恒收益。浅水生成以波速参数为条件；这些结果也不等同于对所有初值、边界与长期预测都准确的保证。</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/burgers-comparison.webp"><img src="{{ base_path }}/images/research/physical-dynamics/burgers-comparison.webp" alt="Burgers生成案例，上行为仅数据匹配，下行为加入PDE约束；左列是生成场，右列是PDE残差分布" width="2500" height="2751" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 5 · 上行仅采用 data matching，下行加入 PDE 约束。左列展示生成的场值，横向为空间、纵向为物理时间；右列展示 PDE 残差分布。两列使用各自的色标，颜色数值不能直接互比。</figcaption>
+  </figure>
+  <div class="retro-support">
+    <h3>实验口径与范围</h3>
+    <p>表格保留报告的均值与波动，不同指标的数值尺度不作横向比较。三体重复实验中，一个表现异常的随机种子从所有对照方法中一并排除；Darcy 的重复评估改变采样随机种子。生成示例和误差表共同提供证据，不能据此声称严格守恒或统计显著性。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-ablation" data-chapter-label="消融">
+  <p class="retro-kicker">Why the design matters</p>
+  <h2><span class="retro-chapter__number">08</span> 改善来自哪里？</h2>
+  <h3>直接加入非线性能量约束，未必有效</h3>
+  <p>三体消融比较了三种训练设置：不加约束、直接惩罚去噪输出的总能量变化，以及按能量相关量进行分解处理。该组消融与主实验是独立的一组比较。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="三体非线性约束处理方式消融">
+    <table class="retro-comparison physical-metric-table">
+      <thead><tr><th scope="col">训练设置</th><th scope="col">轨迹误差 ↓</th><th scope="col">速度误差 ↓</th><th scope="col">能量误差 ↓</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">不加可行性训练项</th><td>2.5613</td><td>2.6555</td><td>3.8941</td></tr>
+        <tr><th scope="row">直接惩罚总能量变化</th><td>2.6048</td><td>2.6437</td><td>4.2219</td></tr>
+        <tr class="retro-highlight"><th scope="row">分解后的能量相关监督</th><td>1.6072</td><td>0.7307</td><td>0.5062</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>直接惩罚能量变化时，轨迹误差与能量误差反而升高。这个结果支持对 Jensen gap 的关注：将预测任务中常见的物理惩罚直接搬到扩散的条件均值上，并不总是合适。它不构成对 PINN 方法整体能力的比较。</p>
+  <h3>预测噪声，还是预测数据？要看样本结构</h3>
+  <p>下面的消融均未加入物理可行性训练项，单独比较匹配目标：粒子采用 noise matching，PDE 采用 data matching；“替代目标”将两者互换。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="扩散匹配目标消融">
+    <table class="retro-comparison physical-metric-table">
+      <thead><tr><th scope="col">数据与评估指标 ↓</th><th scope="col">采用的目标</th><th scope="col">对应误差</th><th scope="col">替代目标的误差</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">三体 · 轨迹与速度误差的均值</th><td>Noise matching</td><td>2.6084</td><td>4.7241</td></tr>
+        <tr><th scope="row">五弹簧 · 动态误差</th><td>Noise matching</td><td>5.1929</td><td>5.3120</td></tr>
+        <tr><th scope="row">Darcy · 预测 RMSE</th><td>Data matching</td><td>2.016</td><td>7.268</td></tr>
+        <tr><th scope="row">浅水 · PDE 残差 RMSE</th><td>Data matching</td><td>8.150</td><td>27.40</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="retro-caption">本表采用该组消融的报告数值；原表未注明缩放单位，不同系统的数值不作横向比较。</p>
+  <p>在这些设置下，匹配目标的选择会明显影响表现，尤其是物理场任务。但它不是“noise matching 总优于 data matching”或反过来的通用结论。</p>
+  <div class="retro-support">
+    <h3>对称性增强与表示能力也影响结果</h3>
+    <p>置换增强需要同时重排粒子及连接关系，多项误差得到改善，但并非所有指标都下降。五弹簧的非线性能量变体还依赖足够的信息来预测粒子间距离：单独的 GRU 表示不足时，可约处理并不适用；引入 EGNN 连边特征的辅助预测才更有效。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-takeaways" data-chapter-label="总结">
+  <p class="retro-kicker">物理知识如何进入生成模型</p>
+  <h2><span class="retro-chapter__number">09</span> 约束之前，先理解模型的预测对象</h2>
+  <p class="retro-lede physical-summary">这个项目的关键，是把物理先验与扩散模型的统计目标对齐。</p>
+  <ol class="retro-pipeline" aria-label="项目的三项核心认识">
+    <li><strong>用对称性组织分布</strong><span>让模型以一致的方式处理旋转、平移与粒子置换，并选择适合数据结构的匹配目标。</span></li>
+    <li><strong>用条件均值理解约束</strong><span>线性残差可直接作用；非线性残差需要考虑 Jensen gap，或改变监督的量。</span></li>
+    <li><strong>在生成样本上检验物理</strong><span>同时评估动力学误差与守恒／方程残差，区分视觉案例和整体指标。</span></li>
+  </ol>
+  <h3>这些结果能支持到哪里？</h3>
+  <p>实验表明，合适的物理训练项能够降低多种系统的可行性误差，也可能改善动力学质量。收益大小依赖系统、约束形式、表示能力与训练设置；五弹簧动态误差和 PDE 残差的改善相对有限。</p>
+  <p>训练中的软约束与能量相关监督不保证每个生成样本精确满足守恒律。有限差分残差还依赖离散网格；物理场仍可能包含噪声与高频细节误差。模型也需要可利用的先验或可计算的相关量，不能把这套方法理解为无需物理知识就能求解任意未知方程。</p>
+  <div class="retro-callout"><strong>最值得带走的一点</strong><p>在生成模型中，正确的物理约束不仅要描述真实世界，还要匹配模型正在估计的对象。</p></div>
+  <p><a href="https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors" target="_blank" rel="noopener noreferrer">项目代码 ↗</a></p>
+</section>

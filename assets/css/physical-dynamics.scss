@@ -1,0 +1,39 @@
+---
+---
+
+.physical-project .retro-hero__title {
+  max-width: 1060px;
+  font-size: clamp(2rem, 4.6vw, 3.65rem);
+  line-height: 1.3;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.physical-project .physical-figure img { width: 100%; max-height: none; }
+.physical-project .physical-figure > a { padding: 0; overflow: hidden; }
+.physical-project .physical-evidence {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.45fr;
+  gap: 1rem;
+  align-items: start;
+  margin: 1.65rem 0 0.75rem;
+}
+.physical-project .physical-evidence > figure { min-width: 0; margin: 0; }
+.physical-project .physical-evidence img { width: 100%; max-height: none; }
+.physical-project .physical-evidence figcaption { margin-top: 0.5rem !important; text-align: center; }
+.physical-project .physical-evidence h3 {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 550;
+  text-align: center;
+}
+.physical-project .physical-metric-table td { font-variant-numeric: tabular-nums; }
+.physical-project .physical-metric-table td:nth-last-child(-n+2) { white-space: nowrap; }
+.physical-project .physical-metric-table th[scope="row"] { white-space: normal; }
+.physical-project .physical-case-label { color: var(--retro-accent); font-size: 0.73rem; }
+.physical-project .physical-summary { font-size: 1.05rem; }
+@media (max-width: 740px) {
+  .physical-project .physical-evidence { grid-template-columns: 1fr; gap: 1.4rem; }
+  .physical-project .physical-evidence figure { max-width: 620px; width: 100%; margin: 0 auto; }
+  .physical-project .physical-evidence h3 { font-size: 0.86rem; }
+}

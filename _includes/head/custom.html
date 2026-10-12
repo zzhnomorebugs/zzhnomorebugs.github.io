@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="{{ base_path }}/assets/css/academicons.css"/>
 {% if page.research_project %}
 <link rel="stylesheet" href="{{ base_path }}/assets/css/retro-project.css?v={{ site.time | date: '%s' }}"/>
+{% if page.project_stylesheet %}<link rel="stylesheet" href="{{ base_path }}/assets/css/{{ page.project_stylesheet }}?v={{ site.time | date: '%s' }}"/>{% endif %}
 {% endif %}
 
 {% assign needs_mathjax = false %}
