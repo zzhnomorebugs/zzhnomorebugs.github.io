@@ -1,10 +1,10 @@
 ---
 title: "从不完整观测中学习物理场"
-subtitle: "让碎片成为监督，让观测决定划分，让局部结构接受全局修正"
 layout: research-project
 collection: research
 permalink: /zh/research/incomplete-learning/
 lang: zh-CN
+lang_switch_url: /research/incomplete-learning/
 research_project: true
 mathjax: true
 project_class: incomplete-project
@@ -22,7 +22,7 @@ index_title_en: "Learning from incomplete data: Supervision, mask priors, and lo
 excerpt: "从上下文—查询训练与集成采样出发，逐步理解观测对齐掩码与可识别性边界，再走向局部估计和全局残差修正。结合方法直觉、重建案例与实验对照，讲清楚如何从始终不完整的观测中学习物理场。"
 excerpt_en: "A Chinese walkthrough connecting context–query training and ensemble sampling, observation-aligned mask priors, identifiability limits, and the intuition, method, and results of globally corrected local field estimates."
 project_image: /images/research/incomplete-learning/local-global-architecture.webp
-paperurl: https://arxiv.org/pdf/2610.05375
+papers: [incomplet-data, ocean-imputation-mask, global-local-field-reconstruction]
 project_chapters:
   - id: incomplete-problem
     label: 不完整观测
@@ -57,7 +57,7 @@ project_chapters:
     <figure class="retro-figure"><h4>Baltic Sea NANO · 浮游植物</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/demo-nano.webp"><img src="{{ base_path }}/images/research/incomplete-learning/demo-nano.webp" width="1202" height="1202" loading="lazy" alt="波罗的海NANO原始不完整记录：彩色已有观测之间分布着白色源缺失区域"></a></figure>
     <figure class="retro-figure"><h4>Global Ocean SSS · 海表盐度</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/demo-sss.webp"><img src="{{ base_path }}/images/research/incomplete-learning/demo-sss.webp" width="1202" height="1202" loading="lazy" alt="全球海洋海表盐度原始不完整记录：狭长彩色观测带之间存在大片白色源缺失"></a></figure>
   </div>
-  <p class="retro-caption">三个海洋数据集的原始观测示例，每个数据集各取一个样本。<strong>有颜色的位置有测量，白色位置没有源数据，灰色是固定的非观测域。</strong>这些空白在训练数据里就已存在；不是为了演示补全而额外遮掉的答案。颜色表示各产品的场值，三个样本不共用物理单位。</p>
+  <p class="retro-caption">图 1 · 三个海洋数据集的原始观测示例，每个数据集各取一个样本。<strong>有颜色的位置有测量，白色位置没有源数据，灰色是固定的非观测域。</strong>这些空白在训练数据里就已存在；不是为了演示补全而额外遮掉的答案。颜色表示各产品的场值，三个样本不共用物理单位。</p>
   <ol class="retro-pipeline" aria-label="不完整观测学习任务">
     <li><strong>输入：不完整训练集</strong><span>每个样本只有已观测数值及其位置。</span></li>
     <li><strong>学习：碎片之间的关系</strong><span>从共同出现的观测构造监督，学习空间与时空结构。</span></li>
@@ -71,7 +71,7 @@ project_chapters:
   <p>\(\boldsymbol{x}_0\) 是概念上的完整场，\(\boldsymbol{M}\) 标记实际观测，\(\boldsymbol{V}\) 指定有效物理域；域外位置不属于重建目标。零填充只是存储约定，因此模型需要同时看到数值与掩码，才能区分“测到零”和“没有测到”。</p>
   <div class="retro-callout"><strong>整条研究路线的核心问题</strong><p>如何从不完整观测中构造有效监督，避免缺失模式造成学习死区，并在证据有限时形成更好的重建规则？这依次要求理解监督目标、设计观测划分，以及组织模型学习局部与全局结构的方式。</p></div>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="主要符号">
-    <table class="retro-comparison incomplete-notation">
+    <table class="retro-comparison incomplete-notation"><caption>表 1 · 主要符号与训练角色</caption>
       <thead><tr><th scope="col">符号</th><th scope="col">含义</th><th scope="col">在训练中扮演的角色</th></tr></thead>
       <tbody>
         <tr><th scope="row">\(\boldsymbol M\)</th><td>样本原始观测支持</td><td>固定不变，限定哪些值能够成为输入或目标</td></tr>
@@ -91,7 +91,7 @@ project_chapters:
   <p>先看一个直观例子：蓝色观测送入模型，橙色观测暂时隐藏、作为查询答案。上排按像素划分，下排按整块划分；如何划分，会影响其他样本能否为当前缺失区域提供监督。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/context-query.webp"><img src="{{ base_path }}/images/research/incomplete-learning/context-query.webp" width="2400" height="1548" loading="lazy" alt="块状缺失示例：像素上下文可能唯一暴露原始观测掩码，而整块上下文允许多个原始掩码解释相同输入"></a>
-    <figcaption class="retro-figure__caption">图 1 · 九块网格中有两块缺失。上排的像素划分可能在每个已观测块留下痕迹，使上下文唯一指向原始掩码，原本缺失的块便成为零查询区域。下排按完整块取上下文，同一上下文可来自多种原始观测掩码，其他样本仍能为当前空白位置提供监督。蓝色为上下文，橙色为查询；结论依赖可行掩码的支撑与覆盖。</figcaption>
+    <figcaption class="retro-figure__caption">图 2 · 九块网格中有两块缺失。上排的像素划分可能在每个已观测块留下痕迹，使上下文唯一指向原始掩码，原本缺失的块便成为零查询区域。下排按完整块取上下文，同一上下文可来自多种原始观测掩码，其他样本仍能为当前空白位置提供监督。蓝色为上下文，橙色为查询；结论依赖可行掩码的支撑与覆盖。</figcaption>
   </figure>
   <ol class="retro-pipeline" aria-label="IDCD 的训练和采样框架">
     <li><strong>训练：从已有观测构造监督</strong><span>上下文作为输入，查询位置的真实测量作为答案。</span></li>
@@ -288,7 +288,7 @@ project_chapters:
   <p class="retro-lede">掩码模型只看二值观测形状。它学习云层或轨道采样所形成的空间分布，随后帮助重建模型构造训练任务；它不接触需要补出的场真值。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp"><img src="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp" width="2400" height="1002" loading="lazy" alt="真实二值掩码预训练、随机锚点引导掩码生成、与当前观测求交集并训练场重建模型的完整流程"></a>
-    <figcaption class="retro-figure__caption">图 2 · 真实掩码用于预训练生成先验；当前样本的随机观测锚点引导生成；生成掩码与原始观测求交得到上下文，剩余观测成为查询。图中损失统一按正文公式理解：全局交叉熵带负号并最小化，查询掩码同时作用于预测与目标，误差只在真实查询位置计算。</figcaption>
+    <figcaption class="retro-figure__caption">图 3 · 真实掩码用于预训练生成先验；当前样本的随机观测锚点引导生成；生成掩码与原始观测求交得到上下文，剩余观测成为查询。图中损失统一按正文公式理解：全局交叉熵带负号并最小化，查询掩码同时作用于预测与目标，误差只在真实查询位置计算。</figcaption>
   </figure>
   <h3>二值掩码，在连续潜变量中建模</h3>
   <p>实现采用受 Bayesian Flow Network（BFN）启发的连续潜变量参数化。每个像素有 \(C=2\) 个类别：缺失与观测。令 \(c\) 为类别、\(\boldsymbol e_c\) 为 one-hot 向量，使用缩放 \(\kappa&gt;0\) 嵌入后加高斯噪声：</p>
@@ -447,7 +447,7 @@ project_chapters:
     <figure class="retro-figure"><h4>均匀随机划分</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-random.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-random.webp" width="2400" height="2081" loading="lazy" alt="Black Sea 数据在随机上下文策略下的经验查询概率热图，部分海域接近零"></a></figure>
     <figure class="retro-figure"><h4>观测对齐划分</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp" width="2400" height="2081" loading="lazy" alt="Black Sea 数据在 BFN 观测对齐策略下的经验查询概率热图，空间覆盖更均衡"></a></figure>
   </div>
-  <p class="retro-caption">图 3 · Black Sea 上重复 200 次划分得到的经验查询概率，色标为 0–1。这里比较的是实际监督机会的空间分布；有限次采样热图不能证明概率严格大于零。灰色为固定的非观测域掩码。</p>
+  <p class="retro-caption">图 4 · Black Sea 上重复 200 次划分得到的经验查询概率，色标为 0–1。这里比较的是实际监督机会的空间分布；有限次采样热图不能证明概率严格大于零。灰色为固定的非观测域掩码。</p>
   <p>即使一个位置在跨轮次采样中能被查询，也仍要区分查询选择偏差、有限数据误差与完整分布的可识别性。掩码学习改善监督组织方式，但不会凭空补充缺失真值。</p>
 </section>
 
@@ -476,7 +476,7 @@ project_chapters:
   <h3>一个两维例子：边际完全一样，关联恰好相反</h3>
   <p>若每次最多看到两个坐标中的一个，下面两个分布会产生相同的观测：单个坐标都以一半概率取 \(+1\) 或 \(-1\)。但一个分布让两坐标同号，另一个让它们异号；只看碎片无法分辨这种完整关联。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="非可识别性的两维奇偶例子">
-    <table class="retro-comparison incomplete-parity"><thead><tr><th scope="col">完整场分布</th><th scope="col">概率 1/2</th><th scope="col">概率 1/2</th><th scope="col">任一单坐标边际</th></tr></thead><tbody>
+    <table class="retro-comparison incomplete-parity"><caption>表 2 · 非可识别性的两维奇偶例子</caption><thead><tr><th scope="col">完整场分布</th><th scope="col">概率 1/2</th><th scope="col">概率 1/2</th><th scope="col">任一单坐标边际</th></tr></thead><tbody>
       <tr><th scope="row">\(P_+\)：同号</th><td>\((+1,+1)\)</td><td>\((-1,-1)\)</td><td>\(\{-1,+1\}\) 上均匀</td></tr>
       <tr><th scope="row">\(P_-\)：异号</th><td>\((+1,-1)\)</td><td>\((-1,+1)\)</td><td>\(\{-1,+1\}\) 上均匀</td></tr>
     </tbody></table>
@@ -491,7 +491,7 @@ project_chapters:
   <p class="retro-lede">一幅场整体很稀疏，仍可能包含观测相对丰富的局部片段。共享的局部模型把这些片段变成较小的学习任务；重叠预测形成参考场，全局模型再学习如何修正它。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp"><img src="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp" width="2400" height="1352" loading="lazy" alt="观测对齐划分、共享局部模型、重叠平均构建局部先验、结合全部上下文的全局残差修正，以及两阶段查询损失"></a>
-    <figcaption class="retro-figure__caption">图 4 · 相同的上下文—查询接口贯穿两个学习阶段。局部模型用位置坐标和局部带噪观测预测片段；冻结后把所有重叠预测汇成参考场。全局修正器接收原始上下文、参考场与差异特征，预测残差并加回参考场。查询真值只进入训练损失。</figcaption>
+    <figcaption class="retro-figure__caption">图 5 · 相同的上下文—查询接口贯穿两个学习阶段。局部模型用位置坐标和局部带噪观测预测片段；冻结后把所有重叠预测汇成参考场。全局修正器接收原始上下文、参考场与差异特征，预测残差并加回参考场。查询真值只进入训练损失。</figcaption>
   </figure>
   <h3>共享局部预测器：位置有别，参数共享</h3>
   <p>局部模型每次只处理一个片段：输入片内的带噪观测、观测掩码，以及这块片段在完整场中的绝对坐标，预测其中的场值。所有片段共享一套参数，让不同样本、不同邻域中学到的局部关系可以共同帮助重建；坐标则告诉模型当前位于哪里，使它能够适应不同海域的统计差异。</p>
@@ -540,13 +540,13 @@ project_chapters:
   <p>在 Navier–Stokes 的九块中观测八块（8/9 观测比例）设置下，相同 IDCD 框架从像素划分改为块划分，MSE 从 \(1.4925\pm0.2609\) 降为 \(0.7592\pm0.0386\)，约降低 <strong>49.1%</strong>。这直接检验了“划分应匹配观测结构”的设计，而不是仅比较模型名称。</p>
   <figure class="retro-figure incomplete-compact-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp"><img src="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp" width="2400" height="1350" loading="lazy" alt="Navier–Stokes 块缺失条件下，Ground Truth、IDCD 和 MissDiff 的场重建示例"></a>
-    <figcaption class="retro-figure__caption">图 5 · 块缺失下的 Navier–Stokes 重建，按 Ground Truth、IDCD（Ours）、MissDiff 排列。局部纹理与跨缺失区域的连续性说明，模型不能只在原始已观测位置拟合数值。该图是定性案例，整体改善以上述同设置消融为准。</figcaption>
+    <figcaption class="retro-figure__caption">图 6 · 块缺失下的 Navier–Stokes 重建，按 Ground Truth、IDCD（Ours）、MissDiff 排列。局部纹理与跨缺失区域的连续性说明，模型不能只在原始已观测位置拟合数值。该图是定性案例，整体改善以上述同设置消融为准。</figcaption>
   </figure>
   <h3>稀疏点观测：沿时间检查补全的场结构</h3>
   <p>块状缺失之外，也可以检查只有少量空间点被观测的情形。下面沿同一条 Navier–Stokes 轨迹展开原始场与重建场，观察模型是否保留主要涡旋及其随时间的变化。</p>
   <figure class="retro-figure" id="incomplete-idcd-timeseries">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp"><img src="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp" width="2400" height="670" loading="lazy" alt="20%空间点观测下Navier–Stokes的原始场与IDCD重建，上下两排、七个时间点"></a>
-    <figcaption class="retro-figure__caption">图 6 · 20% 空间点观测设置下的 Navier–Stokes 重建案例。上排为原始场，下排为 IDCD 补全；七列为同一序列的 T=0、16、33、49、66、82、99，表示物理时间而非去噪迭代。主要涡旋得到恢复，细节仍可见平滑与局部偏差。</figcaption>
+    <figcaption class="retro-figure__caption">图 7 · 20% 空间点观测设置下的 Navier–Stokes 重建案例。上排为原始场，下排为 IDCD 补全；七列为同一序列的 T=0、16、33、49、66、82、99，表示物理时间而非去噪迭代。主要涡旋得到恢复，细节仍可见平滑与局部偏差。</figcaption>
   </figure>
   <h3>真实海洋遮挡：只在存在参考测量的位置评分</h3>
   <p>真实海洋场本来就没有完整真值。评测把另一幅真实掩码叠加到当前样本支持上，输入与评分位置在方法间共享；只在“原始已观测、现在暂时隐藏”的位置计算 MSE 与 PSNR。</p>
@@ -557,7 +557,7 @@ project_chapters:
     <div><strong>34.5%</strong><span class="retro-result__label">Global Ocean SSS</span><p>相对该数据集最低 MSE 外部基线 MSM 的降幅</p></div>
   </div>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="64乘64海洋重建完整对照">
-    <table class="retro-comparison">
+    <table class="retro-comparison"><caption>表 3 · 64×64 海洋重建对照</caption>
       <thead><tr><th scope="col" rowspan="2">方法</th><th scope="col" colspan="2">Black Sea CHL</th><th scope="col" colspan="2">Baltic Sea NANO</th><th scope="col" colspan="2">Global Ocean SSS</th></tr><tr><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th></tr></thead>
       <tbody>
         <tr><th scope="row">DINEOF</th><td>21.457</td><td>16.89</td><td>37.398</td><td>14.37</td><td>44.451</td><td>13.68</td></tr>
@@ -570,7 +570,7 @@ project_chapters:
       </tbody>
     </table>
   </div>
-  <p class="retro-caption">表 1 · 64×64、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
+  <p class="retro-caption">64×64、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
   <h3>观测对齐掩码：三类海洋场的定性对照</h3>
   <p>在相同样本与相同给定观测下，比较 MissDiff 与 OAMP 的重建。每行先展示原始不完整参考，再看两种模型如何补出有效域中的场；重点观察隐藏测量所在区域的空间变化。</p>
   <div class="incomplete-oamp-examples" id="incomplete-oamp-visuals">
@@ -593,17 +593,17 @@ project_chapters:
     <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp" width="1202" height="1202" loading="lazy" alt="Global Ocean SSS同一样本的OAMP，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
     </div>
   </div>
-  <p class="retro-caption">图 7 · 64×64 海洋重建案例。预测图的黑色轮廓标记给定观测，红色轮廓标记原有观测中暂时隐藏的评分位置；参考图中的白色仍是没有源真值的位置。灰色为固定非观测域。不同产品分别展示，颜色仅在同一行内比较；源缺失位置没有参考值，不能从这组图判定其真实误差。</p>
+  <p class="retro-caption">图 8 · 64×64 海洋重建案例。预测图的黑色轮廓标记给定观测，红色轮廓标记原有观测中暂时隐藏的评分位置；参考图中的白色仍是没有源真值的位置。灰色为固定非观测域。不同产品分别展示，颜色仅在同一行内比较；源缺失位置没有参考值，不能从这组图判定其真实误差。</p>
   <h3>局部先验的价值，来自它能被全局模型利用和修正</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="参数匹配的估计器组织对照">
-    <table class="retro-comparison"><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE ×10⁻³</th><th scope="col">NANO MSE ×10⁻³</th><th scope="col">SSS MSE ×10⁻³</th></tr></thead><tbody>
+    <table class="retro-comparison"><caption>表 4 · 参数匹配的估计器组织对照</caption><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE ×10⁻³</th><th scope="col">NANO MSE ×10⁻³</th><th scope="col">SSS MSE ×10⁻³</th></tr></thead><tbody>
       <tr><th scope="row">Local Prior · 仅局部估计</th><td>15.227 ± 0.103</td><td>30.576 ± 0.479</td><td>32.053 ± 0.276</td></tr>
       <tr><th scope="row">Full Direct · 全域直接预测</th><td>9.350 ± 0.306</td><td>23.559 ± 0.834</td><td>32.895 ± 0.967</td></tr>
       <tr><th scope="row">Prior Direct · 先验作为输入</th><td>8.546 ± 0.062</td><td>21.445 ± 0.417</td><td>30.151 ± 0.197</td></tr>
       <tr class="retro-highlight"><th scope="row">Prior Residual · 先验 + 残差</th><td>7.164 ± 0.060</td><td>19.345 ± 0.741</td><td>26.798 ± 0.533</td></tr>
     </tbody></table>
   </div>
-  <p class="retro-caption">表 2 · 相同不完整训练对与查询监督下的参数匹配对照。Full Direct 匹配总参数量；Prior Direct 与 Prior Residual 共享冻结局部预测器和全局骨干。两者的零输出头分别使初始场预测为零与局部先验，所以比较包含残差参数化及其诱导的初始化。</p>
+  <p class="retro-caption">相同不完整训练对与查询监督下的参数匹配对照。Full Direct 匹配总参数量；Prior Direct 与 Prior Residual 共享冻结局部预测器和全局骨干。两者的零输出头分别使初始场预测为零与局部先验，所以比较包含残差参数化及其诱导的初始化。</p>
   <p>局部模型单独在 CHL、NANO 上弱于全域直接预测，但把它作为输入后，MSE 仍下降 8.3%–9.0%；进一步采用残差输出，相对 Prior Direct 再下降 9.8%–16.2%。中间估计不必独立胜过主模型，仍可能成为有用的可修订表示。</p>
   <div class="incomplete-figure-grid incomplete-field-panels">
     <figure class="retro-figure"><h4>参考观测</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-reference.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-reference.webp" width="590" height="590" loading="lazy" alt="Baltic Sea NANO 原始参考观测，白色位置没有源真值"></a></figure>
@@ -613,13 +613,13 @@ project_chapters:
     <figure class="retro-figure"><h4>学习到的残差</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp" width="590" height="590" loading="lazy" alt="全域模型对 NANO 局部先验作出的有正负号的残差修正"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>前四幅：归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/field-colorbar.svg" width="276" height="36" loading="lazy" alt="归一化场值色标从负1到1"></div><div class="incomplete-colorbar"><span>残差值</span><img src="{{ base_path }}/images/research/incomplete-learning/residual-colorbar.svg" width="276" height="36" loading="lazy" alt="残差色标从负0.344到0.344，端点之外截断"></div></div>
-  <p class="retro-caption">图 8 · 64×64 NANO 完整输入掩码下的预测分解。黑色与红色轮廓分别标记给定观测和隐藏的可评分位置；灰色为有效域外，参考图中的白色为源数据缺失。预测均在写回给定观测之前展示，因此“全局修正后 = 局部先验 + 学习到的残差”；实际重建输出随后恢复给定观测。</p>
+  <p class="retro-caption">图 9 · 64×64 NANO 完整输入掩码下的预测分解。黑色与红色轮廓分别标记给定观测和隐藏的可评分位置；灰色为有效域外，参考图中的白色为源数据缺失。预测均在写回给定观测之前展示，因此“全局修正后 = 局部先验 + 学习到的残差”；实际重建输出随后恢复给定观测。</p>
   <div class="incomplete-figure-grid">
     <figure class="retro-figure"><h4>OAMP 参数匹配对照 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp" width="545" height="545" loading="lazy" alt="NANO 橙色框区域中参数匹配全域直接模型的预测放大图"></a></figure>
     <figure class="retro-figure"><h4>参考观测 · 橙色框标记放大区域</h4><a class="image-popup incomplete-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp" width="545" height="545" loading="lazy" alt="NANO 原始参考全图，橙色矩形标出两侧的局部放大区域"></a></figure>
     <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp" width="545" height="545" loading="lazy" alt="相同 NANO 橙色框区域经局部到全局方法重建后的细节放大图"></a></figure>
   </div>
-  <p class="retro-caption">图 9 · 参数匹配的 NANO 细节对照，左右为中间参考图橙色区域的放大，场值色标与前一组 NANO 分解图一致。局部到全局预测在这个案例中保留了更明显的细尺度变化；总体结论由表 1、表 2 的评分支持。</p>
+  <p class="retro-caption">图 10 · 参数匹配的 NANO 细节对照，左右为中间参考图橙色区域的放大，场值色标与前一组 NANO 分解图一致。局部到全局预测在这个案例中保留了更明显的细尺度变化；总体结论由表 3、表 4 的评分支持。</p>
   <h3>从海洋场到流体场：缺失块内的细节修正</h3>
   <p>局部到全局的组织方式也可以用于模拟物理场。下面在 Navier–Stokes 的九块中观测八块设置下，将参数匹配的 IDCD 全域直接预测与局部到全局预测放大比较。</p>
   <div class="incomplete-figure-grid" id="incomplete-ns-detail">
@@ -628,7 +628,7 @@ project_chapters:
     <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp" width="600" height="600" loading="lazy" alt="相同Navier–Stokes区域的局部到全局重建，缺失块内保留更明显的涡量结构"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/ns-colorbar.svg" width="276" height="36" loading="lazy" alt="Navier–Stokes共同场值色标从负1经白色零到正1"></div></div>
-  <p class="retro-caption">图 10 · 64×64、Block 8/9 的重建细节。左右为中间参考场橙色区域的放大；黑色线为观测块网格，红色虚线标出缺失块。两种预测均恢复给定观测，局部到全局方法使用 K=8 上下文集成。在这个案例中，残差修正保留了更明显的细长涡量结构；图中场值使用 −1 到 1 的共同色标。</p>
+  <p class="retro-caption">图 11 · 64×64、Block 8/9 的重建细节。左右为中间参考场橙色区域的放大；黑色线为观测块网格，红色虚线标出缺失块。两种预测均恢复给定观测，局部到全局方法使用 K=8 上下文集成。在这个案例中，残差修正保留了更明显的细长涡量结构；图中场值使用 −1 到 1 的共同色标。</p>
   <h3>全局修正是否真的会看邻域外的观测？</h3>
   <p>固定一个目标块，只删除所有相关局部片段之外的远端观测。局部模型接收的输入保持相同，所以目标块上的参考场不变；实际全局输出在三个产品上都产生了非零平均平方位移，说明修正器会响应局部构建不可见的证据。</p>
   <p>响应不等于总是获益。进一步按相同删除数量比较距离分组：CHL、NANO 的 Remote Mid 与 Remote Far 删除使平均误差增加，95% 置信区间高于零；SSS 的 Remote Near 删除使误差增加，Remote Far 删除反而降低误差，Remote Mid 的区间跨零。远端证据的作用依赖数据产品与距离范围。</p>
@@ -646,9 +646,4 @@ project_chapters:
   </ol>
   <p>上下文—查询框架解决监督和采样的组织，掩码先验进一步匹配真实观测形状。面对完整分布的可识别性边界，局部到全局方法转而把重建任务拆成“先形成参考，再学习修正”。实验表明，局部估计即使不是最强的独立预测器，也能成为有用的中间表示，并接受全域证据的修订。</p>
   <p>仍需保留实际边界：查询覆盖不能替代缺失机制假设，集成不能自动消除偏差，确定性先验不会增加新观测。部分块缺失重建仍有边界接缝；海洋真实缺失区域没有可评分真值，当前结果主要验证隐藏测量上的点重建质量。</p>
-  <nav class="incomplete-paper-links" aria-label="相关论文原文">
-    <a href="https://arxiv.org/pdf/2509.20098" target="_blank" rel="noopener noreferrer">Incomplete Data, Complete Dynamics: A Diffusion Approach ↗<small>条件监督与观测结构匹配</small></a>
-    <a href="https://arxiv.org/pdf/2605.16818" target="_blank" rel="noopener noreferrer">Observation-Aligned Mask Priors ↗<small>真实掩码分布与样本特定划分</small></a>
-    <a href="https://arxiv.org/pdf/2610.05375" target="_blank" rel="noopener noreferrer">Learning Field Reconstruction from Incomplete Data by Globally Correcting Local Estimates ↗<small>可修订的局部场先验与全局修正</small></a>
-  </nav>
 </section>

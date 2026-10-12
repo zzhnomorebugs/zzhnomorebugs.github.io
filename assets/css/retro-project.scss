@@ -57,6 +57,7 @@
 .retro-hero { padding: 0 0 2.75rem; }
 .retro-eyebrow {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.8em;
   margin: 2.75rem 0 0.6rem;
   color: var(--retro-accent);
@@ -141,10 +142,9 @@
 }
 .retro-hero__summary { max-width: 830px; color: var(--retro-muted); }
 .retro-hero__summary p { margin: 0 0 1rem; }
-.retro-hero__authors { margin: 0 0 1.35rem; color: var(--retro-muted); font-size: 0.74rem; }
-.retro-hero__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; }
-.retro-paper-link { font-size: 0.78rem; text-decoration: none; border-bottom: 1px solid var(--retro-line); }
-.retro-paper-link:hover { border-color: var(--retro-accent); }
+.retro-hero__subtitles { margin-bottom: 1.25rem; }
+.retro-hero__subtitles[role="list"] .retro-hero__subtitle { font-size: clamp(1rem, 2vw, 1.3rem); }
+.retro-hero__subtitle { overflow-wrap: anywhere; }
 
 .retro-outline {
   position: sticky;
@@ -245,6 +245,7 @@
 .retro-comparison td:first-child { min-width: 145px; font-weight: 550; }
 .retro-comparison .retro-highlight,
 .retro-comparison tr.retro-highlight td { color: var(--retro-accent); font-weight: 650; }
+.retro-content table caption { caption-side: top; padding: 0 0 0.7rem; color: var(--retro-muted); font-size: 0.74rem; font-weight: 500; line-height: 1.7; text-align: left; white-space: normal; }
 
 .retro-results-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; margin: 1.75rem 0 2rem; width: 100%; text-align: center; }
 .retro-results-grid > div { min-width: 0; padding-top: 1rem; border-top: 2px solid var(--retro-accent); }
@@ -260,14 +261,23 @@
 .retro-support { margin: 1.75rem 0 0; padding: 1.25rem 0 0; border-top: 1px solid var(--retro-line); font-size: 0.82rem; }
 .retro-support > h3:first-child { margin: 0 0 0.9rem; font-size: 0.94rem; font-weight: 600; }
 .retro-support > :last-child { margin-bottom: 0; }
-.retro-project__footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--retro-line); font-size: 0.76rem; }
+.retro-project__footer { padding-top: 1.5rem; border-top: 1px solid var(--retro-line); font-size: 0.76rem; }
+.retro-resources { margin-bottom: 2rem; }
+.retro-resources > h2 { margin: 0 0 1.25rem; font-size: 1.15rem; }
+.retro-resource + .retro-resource { margin-top: 1.4rem; padding-top: 1.4rem; border-top: 1px solid var(--retro-line); }
+.retro-resource[id] { scroll-margin-top: 130px; }
+.retro-resource h3 { margin: 0 0 0.5rem; font-size: 0.9rem; font-weight: 600; line-height: 1.6; overflow-wrap: anywhere; }
+.retro-resource__authors { margin: 0 0 0.6rem; color: var(--retro-muted); line-height: 1.8; }
+.retro-resource__links { display: flex; flex-wrap: wrap; gap: 0.6rem 1.5rem; }
+.retro-resource__links a { text-decoration: none; border-bottom: 1px solid var(--retro-line); }
+.retro-resource__links a:hover { border-color: var(--retro-accent); }
+.retro-resources__legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; margin: 1.1rem 0 0; color: var(--retro-muted); font-size: 0.7rem; }
 
 @media (max-width: 740px) {
   #main.retro-project { padding: 0 1.15rem; margin-top: 1.5rem; }
   .retro-project { font-size: 0.86rem; }
   .retro-eyebrow { margin-top: 2.1rem; }
   .retro-hero { padding-bottom: 2rem; }
-  .retro-hero__authors { line-height: 1.8; }
   .retro-outline { margin-right: -1.15rem; margin-left: -1.15rem; padding: 0 0.65rem; }
   .retro-outline ol { justify-content: flex-start; gap: 0.1rem; }
   .retro-outline a { padding: 0.8rem 0.68rem; }
@@ -289,7 +299,6 @@
   .masthead,
   .page__footer,
   .retro-outline,
-  .retro-hero__actions,
   .retro-back { display: none !important; }
   #main.retro-project { max-width: none; margin: 0; padding: 0; color: #20242b; }
   .retro-project { --retro-accent: #25766c; --retro-muted: #555; --retro-line: #ccc; --retro-paper: #fff; font-size: 10pt; }
@@ -302,5 +311,5 @@
   .retro-callout,
   .retro-results-grid { break-inside: avoid; }
   .retro-figure img { max-height: none; }
-  .retro-project__footer { display: flex; }
+  .retro-resource { break-inside: avoid; }
 }

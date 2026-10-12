@@ -1,0 +1,217 @@
+---
+title: "RETRO"
+layout: research-project
+collection: research
+permalink: /research/retro/
+lang: en
+lang_switch_url: /zh/research/retro/
+research_project: true
+mathjax: true
+order: 3
+published: true
+read_time: false
+date: 2026-10-11
+index_title: "RETRO: Reaction-center-guided retrosynthesis"
+index_title_en: "RETRO: Reaction-center-guided retrosynthesis"
+excerpt: "Order molecular graphs from the reaction center, then generate reactants with RetroDiT and discrete flow matching. Structural priors, model design, and experiments explain why atom ordering matters."
+excerpt_en: "Order molecular graphs from the reaction center, then generate reactants with RetroDiT and discrete flow matching. Structural priors, model design, and experiments explain why atom ordering matters."
+project_image: /images/research/retro/framework.webp
+project_area: "Molecular generation · Retrosynthesis"
+project_area_en: "Molecular generation · Retrosynthesis"
+project_eyebrow_area: "Structure-aware molecular generation"
+papers: [retro-order]
+project_chapters:
+  - id: retro-problem
+    label: Problem
+  - id: retro-insight
+    label: Motivation
+  - id: retro-order
+    label: Ordering
+  - id: retro-model
+    label: Architecture
+  - id: retro-flow
+    label: Generation
+  - id: retro-results
+    label: Experiments
+  - id: retro-takeaways
+    label: Takeaways
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="retro-problem">
+  <p class="retro-kicker">Single-step retrosynthesis</p>
+  <h2><span class="retro-chapter__number">01</span> Given a target molecule, how can its reactants be found?</h2>
+  <p class="retro-lede">Single-step retrosynthesis predicts possible sets of reactants from a target product. It is a fundamental component of multistep synthesis planning.</p>
+  <ol class="retro-pipeline" aria-label="Single-step retrosynthesis task">
+    <li><strong>Input: product molecular graph</strong><span>Atoms are nodes, and chemical bonds are edges.</span></li>
+    <li><strong>Prediction: where changes occur</strong><span>Identify possible reaction centers and structural transformations.</span></li>
+    <li><strong>Output: reactant candidates</strong><span>Allow multiple possible routes to synthesize the product.</span></li>
+  </ol>
+  <p>This task involves more than breaking a bond. The model must also change atom attributes, recover atoms absent from the product, and connect them into plausible reactants. Meanwhile, much of the molecular scaffold often remains unchanged.</p>
+  <div class="retro-callout"><strong>The question this project addresses</strong><p>Can a generative model use the structural prior of “where the reaction occurs” to learn more efficiently “what the reactants should look like”?</p></div>
+  <div class="retro-support">
+    <h3>Task definition and evaluation</h3>
+    <p>Given the product graph \(G_P\), learn the conditional distribution \(p(G_R\mid G_P)\). Here, \(G_R\) is the graph representing the reactant set and need not have only one connected component.</p>
+    <p>The primary metric is Top-k Exact Match: whether the reactant set recorded in the dataset appears among the top k predictions. It measures agreement with the recorded answer; a mismatch does not necessarily mean that another synthesis route is chemically infeasible. This page focuses on single-step prediction and does not directly address full multistep route search.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-insight">
+  <p class="retro-kicker">Motivation</p>
+  <h2><span class="retro-chapter__number">02</span> Preserve both structural priors and generative flexibility</h2>
+  <p class="retro-lede">Retrosynthesis naturally admits a useful task decomposition: first locate the reaction center, then generate the corresponding reactant structures.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Comparison of retrosynthesis approaches">
+    <table class="retro-comparison">
+      <caption>Table 1 · Comparison of retrosynthesis approaches</caption>
+      <thead><tr><th scope="col">Approach</th><th scope="col">How it works</th><th scope="col">Main trade-off</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Template-based</th><td>Match transformations from a reaction template library</td><td>Explicit rules, but limited by template coverage</td></tr>
+        <tr><th scope="row">Semi-template-based</th><td>Locate the reaction center, then complete intermediate fragments</td><td>Uses task decomposition, but some methods still rely on completion rules</td></tr>
+        <tr><th scope="row">Template-free</th><td>Directly generate reactant sequences or graphs</td><td>Flexible generation, but reaction sites and structural changes must be learned from data</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>RETRO draws on reaction-center localization and supplies it as conditioning information to a template-free generator. The key is to <strong>express reaction sites through the atom ordering of a molecular graph</strong>, allowing general-purpose positional encoding to carry reaction-center information.</p>
+  <div class="retro-callout"><strong>Key insight: the same molecule can have different atom orderings</strong><p>The graph has the same chemical connectivity, yet its nodes can enter the model in different orders. If the sequence always begins at a reaction center, the model gains a stable reference position.</p></div>
+  <p class="retro-caption">The prior here is a reaction-center-related positional pattern; the generative model still predicts the specific atoms, bonds, and attributes of the reactants.</p>
+</section>
+
+<section class="retro-chapter" id="retro-order">
+  <p class="retro-kicker">Reaction sites → atom ordering</p>
+  <h2><span class="retro-chapter__number">03</span> Let the beginning of the sequence point to the reaction center</h2>
+  <p class="retro-lede">Choose a reaction-center atom as the root, order the product atoms deterministically, and append placeholder nodes for generating additional atoms.</p>
+  <ol class="retro-pipeline" aria-label="Structure of the atom sequence">
+    <li><strong>Head · Reaction-center root</strong><span>Specify the current candidate reaction site.</span></li>
+    <li><strong>Body · Product scaffold</strong><span>Retain an atom ordering consistent with that root.</span></li>
+    <li><strong>Tail · Dummy nodes</strong><span>Reserve space for additional atoms in the reactants.</span></li>
+  </ol>
+  <p>During training, atom mapping between products and reactants identifies the ground-truth reaction centers, and training examples are constructed with different center atoms as roots. At inference, only the product is available, so a separate graph neural network first predicts candidate centers. The atoms are then ordered from each candidate root to generate reactants.</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/framework.webp"><img src="{{ base_path }}/images/research/retro/framework.webp" alt="RETRO workflow: atom mapping extracts ground-truth reaction centers during training, while an R-GCN predicts candidate centers at inference; RetroDiT and discrete flow matching generate reactants from the ordered graph" width="2407" height="1239" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 1 · Left: center extraction, atom ordering, and target prediction during training. Right: center prediction, ordering, and iterative generation at inference.</figcaption>
+  </figure>
+  <div class="retro-support">
+    <h3>How ordering is implemented and reaction centers are defined</h3>
+    <p>The implementation uses RDKit's rooted canonical SMILES to determine node order: after setting <code>rootedAtAtom</code>, it reads the atom output order and consistently reorders nodes and edges. SMILES determines the permutation here; the object being generated remains a molecular graph.</p>
+    <p>The reaction center includes atoms involved in bond formation, bond breaking, or bond-order changes, as well as atoms with changes in attributes such as charge, hydrogen count, or chirality. For multiple center atoms in one example, a separate ordering can be constructed with each as the root.</p>
+    <p>Sequence order relates to the structural environment of the reaction center, but sequence distance is not the same as shortest-path distance on the graph. Rooting at one center also does not imply that all center atoms must appear consecutively at the beginning.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-model">
+  <p class="retro-kicker">RetroDiT</p>
+  <h2><span class="retro-chapter__number">04</span> Use positional encoding to make the ordering readable</h2>
+  <p class="retro-lede">Atom ordering carries the reaction prior. RetroDiT introduces relative sequence positions into attention through RoPE and jointly updates nodes and edges.</p>
+  <div class="retro-two-column">
+    <div>
+      <h3>Model atoms and bonds together</h3>
+      <p>The node branch handles atom attributes, while the edge branch handles bond information. Edge features modulate attention between nodes, and interaction information from attention also contributes to edge updates.</p>
+      <h3>RoPE provides a relative positional reference</h3>
+      <p>With the reaction center fixed at the beginning of the sequence, positional encoding helps the model distinguish the root, scaffold, and trailing placeholder region, and learn relationships among them.</p>
+      <h3>Time conditioning specifies the generation stage</h3>
+      <p>The model receives both the current time and the intermediate molecular graph, then predicts the final reactants' node and edge category distributions.</p>
+    </div>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/retrodit.webp"><img src="{{ base_path }}/images/research/retro/retrodit.webp" alt="RetroDiT block: edge embeddings modulate multihead attention, rotary positional encoding is applied to node attention, and nodes and edges are updated through separate feed-forward networks" width="1419" height="1270" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">Figure 2 · The node–edge interaction block in RetroDiT.</figcaption>
+    </figure>
+  </div>
+  <div class="retro-support">
+    <h3>How does RoPE enter attention?</h3>
+    <div class="retro-equation">\[(R_iq_i)^\top(R_jk_j)=q_i^\top R_{j-i}k_j.\]</div>
+    <p>Position-dependent rotations act on queries and keys, making attention scores depend on the relative index \(j-i\). Ordering supplies a semantic reference, and RoPE lets the model use it. Changing the permutation alone, without letting the model perceive positions, cannot fully realize this design's benefit.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-flow">
+  <p class="retro-kicker">Discrete flow matching</p>
+  <h2><span class="retro-chapter__number">05</span> Generate reactants step by step from the product graph</h2>
+  <p class="retro-lede">Discrete flow matching directly connects two structured states: the product and the reactants. Training learns to predict the endpoint; inference uses the predicted distributions to construct transitions between discrete states.</p>
+  <ol class="retro-pipeline" aria-label="Training and generation with discrete flow matching">
+    <li><strong>Construct an intermediate state</strong><span>Sample between product and reactant node and edge categories.</span></li>
+    <li><strong>Learn to predict the endpoint</strong><span>RetroDiT predicts reactants from the intermediate graph and time.</span></li>
+    <li><strong>Sample along the trajectory</strong><span>Start from the product and progressively update atoms and bonds.</span></li>
+  </ol>
+  <p><strong>Training need not simulate the full generation trajectory.</strong> Each iteration directly samples a time and an intermediate state, supervising endpoint prediction with cross-entropy over node and edge categories. At inference, graph transformation is completed by discretized sampling of a continuous-time Markov chain.</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/generation-trajectory.png"><img src="{{ base_path }}/images/research/retro/generation-trajectory.png" alt="Five states of the same molecular graph during generation: bonds are progressively adjusted, and placeholder nodes gradually form additional reactant structures" width="2936" height="679" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 3 · An example molecular graph generation trajectory, showing progressive node and bond updates from left to right.</figcaption>
+  </figure>
+  <div class="retro-results-grid">
+    <div><span class="retro-result__value">20–50</span><span class="retro-result__label">Sampling steps</span><p class="retro-result__note">These achieve good generation performance in the reported experiments; the main experiments use 50 steps.</p></div>
+    <div><span class="retro-result__value">500</span><span class="retro-result__label">Baseline sampling steps</span><p class="retro-result__note">The RetroBridge setting. A 10–25-fold reduction in steps does not imply the same reduction in end-to-end runtime.</p></div>
+    <div><span class="retro-result__value">72 → 12</span><span class="retro-result__label">Training GPU-hours</span><p class="retro-result__note">The reported cost to convergence on USPTO-50k is about one-sixth that of RetroBridge.</p></div>
+  </div>
+  <div class="retro-support">
+    <h3>Training objective, sampling curves, and efficiency measures</h3>
+    <p>During training, atom mapping keeps product and reactant node indices aligned, with additional atoms assigned to the trailing placeholder nodes.</p>
+    <p>For a discrete node or edge variable \(z\), the product state \(z_0\) and reactant state \(z_1\) define the interpolation:</p>
+    <div class="retro-equation">\[p_t(z\mid z_0,z_1)=(1-t)\delta_{z_0}(z)+t\delta_{z_1}(z).\]</div>
+    <p>Nodes and edges are sampled in this way, so an intermediate graph can contain local states from both the product and reactants. The training objective can be summarized as:</p>
+    <div class="retro-equation">\[\mathcal L=\mathbb E_{t,G_0,G_1,G_t}\!\left[\operatorname{CE}\!\left(G_1,p^\theta_{1\mid t}(\cdot\mid G_t)\right)\right].\]</div>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/sampling-steps.webp"><img src="{{ base_path }}/images/research/retro/sampling-steps.webp" alt="Top-1 accuracy curves on USPTO-50k for different model sizes at 10, 20, 50, and 100 sampling steps, leveling off after relatively few steps" width="2088" height="546" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">Figure 4 · Sampling steps and accuracy.</figcaption>
+    </figure>
+    <p>The training cost comparison is: RetroBridge, about 72 hours on one GPU, totaling 72 GPU-hours; this method, about 1.5 hours on 8 GPUs, totaling 12 GPU-hours.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-results">
+  <p class="retro-kicker">Evidence</p>
+  <h2><span class="retro-chapter__number">06</span> What does atom ordering improve?</h2>
+  <p class="retro-lede">First examine predictions under actual inference conditions, then use ordering ablations and an Oracle comparison to understand where the gains come from.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Main-experiment Top-1 results on USPTO-50k and USPTO-Full">
+    <table class="retro-comparison">
+      <caption>Table 2 · Main-experiment Top-1 results on USPTO-50k and USPTO-Full</caption>
+      <thead><tr><th scope="col">Method / condition</th><th scope="col">USPTO-50k</th><th scope="col">USPTO-Full</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">NAG2G</th><td>55.1%</td><td>49.7%</td></tr>
+        <tr><th scope="row">R-SMILES</th><td>56.3%</td><td>48.9%</td></tr>
+        <tr><th scope="row">RSGPT (large-scale pretraining)</th><td>63.4%</td><td>59.2%</td></tr>
+        <tr><th scope="row">RETRO · Predicted reaction centers</th><td><strong>61.2%</strong></td><td><strong>51.3%</strong></td></tr>
+        <tr><th scope="row">RETRO · Ground-truth reaction centers (Oracle)</th><td>71.1%</td><td>63.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="retro-caption">Top-1 Exact Match with unknown reaction classes. The listed methods are representative baselines. Oracle uses additional ground-truth center information for internal diagnosis only. The main 50k model has 8M parameters; the high-performing Full result uses a 65M model.</p>
+  <p>On USPTO-50k, the predicted-center result improves over RetroBridge (50.8%) by <strong>10.4 percentage points</strong> and over EditRetro (60.8%) by <strong>0.4 percentage points</strong>. A gap to RSGPT remains; the value of this work lies in using structural priors to improve generation and learning efficiency.</p>
+  <h3>To what extent can structural guidance substitute for model scale?</h3>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/scaling.webp"><img src="{{ base_path }}/images/research/retro/scaling.webp" alt="Scaling experiments on USPTO-Full from 280K to 65M parameters, comparing Top-1, Top-3, and Top-5 with canonical ordering, predicted-center ordering, and Oracle-center ordering" width="1779" height="530" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 5 · Ordering and scale ablations on USPTO-Full. Blue: Canonical; green: predicted centers; purple: ground-truth centers.</figcaption>
+  </figure>
+  <p>The most striking comparison is that <strong>a 280K-parameter model with Oracle-center guidance reaches about 51% Top-1, comparable to the 65M model with Canonical ordering (50.4%).</strong> This shows that an accurate structural prior can substantially reduce the learning burden; the conclusion depends on access to ground-truth reaction centers.</p>
+  <div class="retro-support">
+    <h3>A candidate-generation case and evaluation details</h3>
+    <figure class="retro-figure">
+      <a class="image-popup" href="{{ base_path }}/images/research/retro/ordering-cases.webp"><img src="{{ base_path }}/images/research/retro/ordering-cases.webp" alt="Candidate distributions for the same product under reaction-center-rooted and canonical ordering, with the dataset's recorded reactants highlighted in yellow" width="2658" height="1825" loading="lazy"></a>
+      <figcaption class="retro-figure__caption">Figure 6 · Candidate-generation distributions for one specific product. The 95% and 83% in the figure are sampling frequencies for this case, not overall accuracies.</figcaption>
+    </figure>
+    <p>This case shows that the same chemical structure can produce different candidate distributions under different input permutations. It illustrates how ordering works; overall gains should be assessed through dataset experiments and ablations.</p>
+    <p>Evaluation draws 100 samples for each product, standardizes and deduplicates the generated structures, ranks them by frequency, and then computes Top-k. Values in the main table and scaling ablations differ slightly; this page cites each from its corresponding experiment.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="retro-takeaways">
+  <p class="retro-kicker">What remains</p>
+  <h2><span class="retro-chapter__number">07</span> The current bottleneck: prior quality determines its benefit</h2>
+  <p class="retro-lede">A substantial gap separates Oracle and predicted centers. Reaction centers provide useful guidance, but incorrect predictions can also mislead generation.</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/retro/rc-accuracy.webp"><img src="{{ base_path }}/images/research/retro/rc-accuracy.webp" alt="Sensitivity to reaction-center prediction accuracy: generation Top-1 rises on both USPTO datasets as center accuracy improves, but can fall below the canonical baseline when center quality is too low" width="1383" height="822" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 7 · Sensitivity experiment with controlled reaction-center accuracy. The horizontal axis is the experimentally specified center accuracy; it analyzes a trend and is not directly equivalent to the main experiment's center predictor performance.</figcaption>
+  </figure>
+  <p>This result suggests that future improvements should address both the accuracy and uncertainty of center prediction: improve candidate-center coverage, retain multiple hypotheses when uncertain, and study how the generator can reduce its dependence on incorrect centers.</p>
+  <div class="retro-callout"><strong>The central lesson of this project</strong><p>The representation order of a molecular graph can carry a prior about reaction sites. Reaction-center-rooted ordering connects positional encoding to the chemistry task. Combined with graph generation and discrete flow matching, it forms a retrosynthesis system whose components can be improved separately.</p></div>
+  <div class="retro-support">
+    <h3>Limitations and further questions</h3>
+    <ul>
+      <li><strong>Center errors propagate.</strong> Experiments with ground-truth centers provide a diagnostic reference; they do not guarantee that an improved predictor will reach the same result.</li>
+      <li><strong>Capacity for additional atoms is limited.</strong> The number of Dummy nodes bounds the number of extra reactant atoms that can be accommodated. Structures exceeding the reserved capacity require an extended representation.</li>
+      <li><strong>Benchmark scores are not experimental success rates.</strong> Exact Match depends on dataset records; real synthesis also requires reaction conditions, availability, and experimental validation.</li>
+      <li><strong>A gap remains between single-step prediction and multistep planning.</strong> Integrating candidate diversity and confidence with route search remains a future question.</li>
+    </ul>
+    <p>These directions are discussions based on the experimental results, not outcomes already validated by this work.</p>
+  </div>
+</section>

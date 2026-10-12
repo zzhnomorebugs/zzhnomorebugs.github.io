@@ -7,6 +7,9 @@ layout: default
 {% assign project_title = page.project_title | default: page.title %}
 {% if page.lang == "zh-CN" %}{% assign project_research_url = "/zh/research/" %}{% else %}{% assign project_research_url = "/research/" %}{% endif %}
 {% assign project_research_url = page.project_research_url | default: project_research_url %}
+{% capture project_venues %}{% for slug in page.papers %}{% assign publication = site.publications | where_exp: "p", "p.slug == slug" | first %}{% if publication.venue %}{% include research-project-venue.html venue=publication.venue %}|{% endif %}{% endfor %}{% endcapture %}
+{% assign project_venues = project_venues | strip | split: "|" | uniq %}
+{% capture project_authors %}{% for slug in page.papers %}{% assign publication = site.publications | where_exp: "p", "p.slug == slug" | first %}{{ publication.authors }}{% endfor %}{{ page.authors }}{% endcapture %}
 
 <main id="main" class="retro-project{% if page.project_class %} {{ page.project_class | escape }}{% endif %}" data-retro-project>
   <article class="retro-project__article" itemscope itemtype="https://schema.org/ScholarlyArticle">
@@ -14,16 +17,21 @@ layout: default
     {% if page.excerpt %}<meta itemprop="description" content="{{ page.excerpt | strip_html | escape }}">{% endif %}
 
     <header class="retro-hero">
-      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← Research · 研究项目</a>
-      <p class="retro-eyebrow">{{ page.project_eyebrow | default: "项目解读" }} <span aria-hidden="true">/</span> {{ page.project_eyebrow_area | default: page.project_area | default: "结构感知的分子生成" }}</p>
+      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← {% if page.lang == "zh-CN" %}项目讲解{% else %}Project Walkthroughs{% endif %}</a>
+      <p class="retro-eyebrow">{% if project_venues.size > 0 %}{{ project_venues | join: " · " }}{% else %}{{ page.project_eyebrow_area | default: page.project_area | escape }}{% endif %}</p>
       <h1 class="retro-hero__title">{{ project_title | escape }}</h1>
-      <p class="retro-hero__subtitle">{{ page.subtitle | default: page.title }}</p>
+      {% if page.papers.size > 0 %}
+      <div class="retro-hero__subtitles"{% if page.papers.size > 1 %} role="list" aria-label="{% if page.lang == 'zh-CN' %}正式论文名{% else %}Paper titles{% endif %}"{% endif %}>
+        {% for slug in page.papers %}
+        {% assign publication = site.publications | where_exp: "p", "p.slug == slug" | first %}
+        {% if publication %}<p class="retro-hero__subtitle"{% if page.papers.size > 1 %} role="listitem"{% endif %}>{{ publication.title | escape }}</p>{% endif %}
+        {% endfor %}
+      </div>
+      {% elsif page.subtitle %}<p class="retro-hero__subtitle">{{ page.subtitle | escape }}</p>{% endif %}
       {% if page.excerpt %}<div class="retro-hero__summary">{{ page.excerpt | markdownify }}</div>{% endif %}
-      {% if page.authors %}<p class="retro-hero__authors">{{ page.authors }}</p>{% endif %}
-      {% if page.paperurl %}<div class="retro-hero__actions"><a class="retro-paper-link" href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">阅读论文 <span aria-hidden="true">↗</span></a></div>{% endif %}
     </header>
 
-    <nav class="retro-outline" aria-label="项目章节">
+    <nav class="retro-outline" aria-label="{% if page.lang == 'zh-CN' %}项目章节{% else %}Project chapters{% endif %}">
       <ol>
         {% if page.project_chapters %}
         {% for chapter in page.project_chapters %}
@@ -46,11 +54,35 @@ layout: default
     </div>
 
     <footer class="retro-project__footer">
-      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← 返回 Research</a>
-      {% if page.paperurl %}<a href="{{ page.paperurl }}" target="_blank" rel="noopener noreferrer">论文原文 ↗</a>{% endif %}
+      {% if page.papers.size > 0 or page.paperurl or page.githuburl or page.project_references.size > 0 %}
+      <section class="retro-resources" id="project-resources" aria-labelledby="project-resources-title">
+        <h2 id="project-resources-title">{% if page.papers.size > 0 or page.paperurl or page.githuburl %}{% if page.lang == "zh-CN" %}论文与代码{% else %}Papers and code{% endif %}{% else %}{% if page.lang == "zh-CN" %}相关方法论文{% else %}Method references{% endif %}{% endif %}</h2>
+        {% if page.papers.size > 0 %}
+          {% for slug in page.papers %}
+          {% assign publication = site.publications | where_exp: "p", "p.slug == slug" | first %}
+          {% if publication %}{% include research-project-resource.html publication=publication %}{% endif %}
+          {% endfor %}
+        {% elsif page.paperurl or page.githuburl %}
+          {% include research-project-resource.html publication=page %}
+        {% endif %}
+        {% for reference_key in page.project_references %}
+        {% assign reference = site.data.research_references[reference_key] %}
+        {% assign reference_id = reference_key | prepend: "reference-" %}
+        {% if reference %}{% include research-project-resource.html publication=reference resource_id=reference_id %}{% endif %}
+        {% endfor %}
+        {% if project_authors contains '<sup>#</sup>' or project_authors contains '*' or project_authors contains '<sup>+</sup>' %}
+        <p class="retro-resources__legend">
+          {% if project_authors contains '<sup>#</sup>' %}<span><sup>#</sup> {% if page.lang == "zh-CN" %}通讯作者{% else %}corresponding author{% endif %}</span>{% endif %}
+          {% if project_authors contains '*' %}<span>* {% if page.lang == "zh-CN" %}共同贡献{% else %}equal contribution{% endif %}</span>{% endif %}
+          {% if project_authors contains '<sup>+</sup>' %}<span><sup>+</sup> {% if page.lang == "zh-CN" %}项目负责人 / 指导{% else %}project lead / mentorship{% endif %}</span>{% endif %}
+        </p>
+        {% endif %}
+      </section>
+      {% endif %}
+      <a class="retro-back" href="{{ base_path }}{{ project_research_url }}">← {% if page.lang == "zh-CN" %}返回项目讲解{% else %}Back to Project Walkthroughs{% endif %}</a>
     </footer>
   </article>
 
 </main>
 
-<script src="{{ base_path }}/assets/js/retro-project.js" defer></script>
+<script src="{{ base_path }}/assets/js/retro-project.js?v={{ site.time | date: '%s' }}" defer></script>

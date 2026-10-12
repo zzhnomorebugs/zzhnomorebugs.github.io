@@ -40,7 +40,7 @@ layout: default
     <section class="home-section" aria-labelledby="research-interests">
       <div class="home-section__heading">
         <h2 id="research-interests">{% if home_lang == "zh" %}研究方向{% else %}Research interests{% endif %}</h2>
-        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/research/">{% if home_lang == "zh" %}研究笔记{% else %}Research notes{% endif %} <span aria-hidden="true">↗</span></a>
+        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/research/">{% if home_lang == "zh" %}项目讲解{% else %}Project walkthroughs{% endif %} <span aria-hidden="true">↗</span></a>
       </div>
       {% include research-interest-cards.html %}
     </section>

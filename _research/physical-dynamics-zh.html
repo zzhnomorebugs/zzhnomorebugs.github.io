@@ -1,16 +1,15 @@
 ---
 title: "物理先验下的动力学生成"
-subtitle: "让扩散模型学会对称性，也学会遵循物理规律"
 layout: research-project
 collection: research
 permalink: /zh/research/physical-dynamics/
 lang: zh-CN
+lang_switch_url: /research/physical-dynamics/
 research_project: true
 mathjax: true
 project_class: physical-project
 project_stylesheet: physical-dynamics.css
 project_title: "物理先验下的动力学生成"
-project_eyebrow: "ICLR 2025 · 项目解读"
 project_area: "AI4Physics · 扩散生成"
 project_area_en: "AI4Physics · Diffusion models"
 project_eyebrow_area: "对称性与物理可行性"
@@ -23,9 +22,7 @@ index_title_en: "Generating Physical Dynamics under Priors"
 excerpt: "生成的轨迹看起来合理，并不意味着它遵循物理规律。从分布对称性与守恒约束出发，解释扩散模型的条件均值为何带来 Jensen gap，以及如何设计训练目标，改善粒子轨迹与物理场的生成。"
 excerpt_en: "A Chinese walkthrough of distributional symmetries, the Jensen gap in physical constraints, and training objectives for diffusion-based generation of particle trajectories and PDE fields."
 project_image: /images/publications/generating_under_prior.png
-authors: "Zihan Zhou · Xiaoxue Wang · Tianshu Yu（通讯作者）"
-paperurl: https://arxiv.org/pdf/2409.00730v3
-githuburl: https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors
+papers: [generating-under-prior]
 project_chapters:
   - id: physical-task
     label: 问题
@@ -67,7 +64,7 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="physical-diffusion">
-  <p class="retro-kicker">从整段样本到去噪预测</p>
+  <p class="retro-kicker">From whole samples to denoising predictions</p>
   <h2><span class="retro-chapter__number">02</span> 扩散模型预测的，究竟是什么？</h2>
   <p class="retro-lede">用 \(x_0\) 表示一整段干净轨迹或物理场。扩散时间 \(t\) 控制噪声强度，它与轨迹内部的物理时间是两个不同的维度。</p>
   <div class="retro-equation">\[x_t=\alpha_t x_0+\sigma_t\epsilon,\qquad \epsilon\sim\mathcal N(0,I).\]</div>
@@ -105,7 +102,7 @@ project_chapters:
   </div>
   <h3>理论要求，如何落实为训练设计？</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="两类数据的扩散建模选择">
-    <table class="retro-comparison">
+    <table class="retro-comparison"><caption>表 1 · 两类数据的扩散建模选择</caption>
       <thead><tr><th scope="col">数据</th><th scope="col">采用的匹配目标</th><th scope="col">设计理由与实现</th></tr></thead>
       <tbody>
         <tr><th scope="row">粒子运动</th><td>Noise matching</td><td>噪声预测直接对应 score 的变换性质；训练中使用旋转、平移与置换增强，促使模型学习这些规律。</td></tr>
@@ -159,7 +156,7 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="physical-particles">
-  <p class="retro-kicker">从守恒律到训练项</p>
+  <p class="retro-kicker">From conservation laws to training terms</p>
   <h2><span class="retro-chapter__number">06</span> 动量与能量，为什么需要不同处理？</h2>
   <p class="retro-lede">粒子样本同时包含位置 \(C\) 和速度 \(V\)。用 \(\ell\) 表示轨迹中的物理时间，用 \(t\) 表示扩散噪声时间。</p>
   <h3>动量：惩罚同一条轨迹中的时间变化</h3>
@@ -193,7 +190,7 @@ project_chapters:
   <h3>粒子运动：同时看动力学误差与守恒误差</h3>
   <p>轨迹、速度与动态误差通过物理模拟评估：以生成状态为起点，模拟后续运动，再计算它与生成运动的 MSE。能量与动量误差则衡量相应物理量随时间变化的偏差。下表各项均为越低越好。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="三体和五弹簧主实验误差">
-    <table class="retro-comparison physical-metric-table">
+    <table class="retro-comparison physical-metric-table"><caption>表 2 · 三体和五弹簧主实验误差</caption>
       <thead><tr><th scope="col">系统</th><th scope="col">指标 ↓</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
       <tbody>
         <tr><th scope="row" rowspan="3">三体 · 能量相关监督</th><td>轨迹 MSE</td><td>2.4132 ± 0.1208</td><td>1.9880 ± 0.3418</td></tr>
@@ -222,7 +219,7 @@ project_chapters:
   <h3>PDE：预测准确度与生成可行性是两种评估</h3>
   <p>已知系数的平流、Darcy 与线性化浅水方程离散后可形成线性约束；Burgers 方程含有 \(u\,\partial_xu\) 这样的多线性结构。实验分别评估有条件预测的场值误差，以及生成场的 PDE 残差。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="PDE预测和生成评估">
-    <table class="retro-comparison physical-metric-table">
+    <table class="retro-comparison physical-metric-table"><caption>表 3 · PDE 预测与生成评测</caption>
       <thead><tr><th scope="col">任务与指标 ↓</th><th scope="col">数据集</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
       <tbody>
         <tr><th scope="row" rowspan="2">预测 RMSE（×10<sup>−2</sup>）</th><td>Advection · 平流</td><td>1.7263 ± 0.0491</td><td>1.6536 ± 0.0677</td></tr>
@@ -250,7 +247,7 @@ project_chapters:
   <h3>直接加入非线性能量约束，未必有效</h3>
   <p>三体消融比较了三种训练设置：不加约束、直接惩罚去噪输出的总能量变化，以及按能量相关量进行分解处理。该组消融与主实验是独立的一组比较。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="三体非线性约束处理方式消融">
-    <table class="retro-comparison physical-metric-table">
+    <table class="retro-comparison physical-metric-table"><caption>表 4 · 三体非线性约束处理消融</caption>
       <thead><tr><th scope="col">训练设置</th><th scope="col">轨迹误差 ↓</th><th scope="col">速度误差 ↓</th><th scope="col">能量误差 ↓</th></tr></thead>
       <tbody>
         <tr><th scope="row">不加可行性训练项</th><td>2.5613</td><td>2.6555</td><td>3.8941</td></tr>
@@ -263,7 +260,7 @@ project_chapters:
   <h3>预测噪声，还是预测数据？要看样本结构</h3>
   <p>下面的消融均未加入物理可行性训练项，单独比较匹配目标：粒子采用 noise matching，PDE 采用 data matching；“替代目标”将两者互换。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="扩散匹配目标消融">
-    <table class="retro-comparison physical-metric-table">
+    <table class="retro-comparison physical-metric-table"><caption>表 5 · 扩散匹配目标消融</caption>
       <thead><tr><th scope="col">数据与评估指标 ↓</th><th scope="col">采用的目标</th><th scope="col">对应误差</th><th scope="col">替代目标的误差</th></tr></thead>
       <tbody>
         <tr><th scope="row">三体 · 轨迹与速度误差的均值</th><td>Noise matching</td><td>2.6084</td><td>4.7241</td></tr>
@@ -282,7 +279,7 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="physical-takeaways">
-  <p class="retro-kicker">物理知识如何进入生成模型</p>
+  <p class="retro-kicker">How physical knowledge enters a generative model</p>
   <h2><span class="retro-chapter__number">09</span> 约束之前，先理解模型的预测对象</h2>
   <p class="retro-lede physical-summary">这个项目的关键，是把物理先验与扩散模型的统计目标对齐。</p>
   <ol class="retro-pipeline" aria-label="项目的三项核心认识">
@@ -294,5 +291,4 @@ project_chapters:
   <p>实验表明，合适的物理训练项能够降低多种系统的可行性误差，也可能改善动力学质量。收益大小依赖系统、约束形式、表示能力与训练设置；五弹簧动态误差和 PDE 残差的改善相对有限。</p>
   <p>训练中的软约束与能量相关监督不保证每个生成样本精确满足守恒律。有限差分残差还依赖离散网格；物理场仍可能包含噪声与高频细节误差。模型也需要可利用的先验或可计算的相关量，不能把这套方法理解为无需物理知识就能求解任意未知方程。</p>
   <div class="retro-callout"><strong>最值得带走的一点</strong><p>在生成模型中，正确的物理约束不仅要描述真实世界，还要匹配模型正在估计的对象。</p></div>
-  <p><a href="https://github.com/LOGO-CUHKSZ/generating-physical-dynamics-under-priors" target="_blank" rel="noopener noreferrer">项目代码 ↗</a></p>
 </section>

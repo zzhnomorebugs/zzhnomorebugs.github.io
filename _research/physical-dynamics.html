@@ -1,0 +1,294 @@
+---
+title: "Generating Physical Dynamics under Priors"
+layout: research-project
+collection: research
+permalink: /research/physical-dynamics/
+lang: en
+lang_switch_url: /zh/research/physical-dynamics/
+research_project: true
+mathjax: true
+project_class: physical-project
+project_stylesheet: physical-dynamics.css
+project_title: "Generating Physical Dynamics under Priors"
+project_area: "AI4Physics · Diffusion models"
+project_area_en: "AI4Physics · Diffusion models"
+project_eyebrow_area: "Symmetry and physical feasibility"
+order: 6
+published: true
+read_time: false
+date: 2026-10-12
+index_title: "Generating Physical Dynamics: Bringing Symmetries and Conservation Laws into Diffusion Models"
+index_title_en: "Generating Physical Dynamics under Priors"
+excerpt: "A plausible-looking trajectory need not obey physical laws. Starting from distributional symmetries and conservation constraints, this project explains why the conditional mean in diffusion models creates a Jensen gap, and how training objectives can improve the generation of particle trajectories and physical fields."
+excerpt_en: "A plausible-looking trajectory need not obey physical laws. Starting from distributional symmetries and conservation constraints, this project explains why the conditional mean in diffusion models creates a Jensen gap, and how training objectives can improve the generation of particle trajectories and physical fields."
+project_image: /images/publications/generating_under_prior.png
+papers: [generating-under-prior]
+project_chapters:
+  - id: physical-task
+    label: Problem
+  - id: physical-diffusion
+    label: Diffusion
+  - id: physical-symmetry
+    label: Symmetry
+  - id: physical-jensen
+    label: Challenge
+  - id: physical-constraints
+    label: Constraints
+  - id: physical-particles
+    label: Particles
+  - id: physical-results
+    label: Experiments
+  - id: physical-ablation
+    label: Ablations
+  - id: physical-takeaways
+    label: Takeaways
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="physical-task">
+  <p class="retro-kicker">Generating Physical Dynamics under Priors</p>
+  <h2><span class="retro-chapter__number">01</span> How can we tell whether generated motion obeys physics?</h2>
+  <p class="retro-lede">Particle trajectories can be continuous and smooth, and flow fields can display familiar textures. Yet these visual features do not guarantee conservation of energy or momentum, or compliance with the equations governing a system's evolution.</p>
+  <ol class="retro-pipeline" aria-label="The task of generating physical dynamics">
+    <li><strong>Input: data and known priors</strong><span>Training trajectories or physical fields, together with symmetries, conservation laws, or known equations.</span></li>
+    <li><strong>Learning: a distribution of dynamics</strong><span>Diffusion training learns the joint variation across an entire trajectory or field.</span></li>
+    <li><strong>Output: new physical samples</strong><span>Generate particle positions and velocities, or physical fields that vary over space and time.</span></li>
+  </ol>
+  <p>The goal here is to learn a sample distribution, rather than simply fit a particular future value. The three-body system generates three-dimensional motion of three particles unconditionally; the five-spring system generates two-dimensional motion conditioned on the graph of spring connections between particles; the PDE tasks include conditional prediction and physical-field generation.</p>
+  <div class="retro-two-column">
+    <div><h3>Distributional priors: which changes preserve the physics?</h3><p>Rotating an entire system, changing the coordinate origin, or relabeling interchangeable particles changes the representation of a sample. The model should respond consistently to these transformations, making use of the data's inherent symmetries.</p></div>
+    <div><h3>Feasibility priors: which samples violate physics?</h3><p>A trajectory's total momentum and total energy should remain constant as specified by the system; a physical field should satisfy its governing equation. These requirements can be measured through residuals and incorporated into training.</p></div>
+  </div>
+  <div class="retro-callout"><strong>The central question</strong><p>How can we give a diffusion model both the symmetries of a distribution and the equations its samples must satisfy, while applying constraints to the right prediction target?</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-diffusion">
+  <p class="retro-kicker">From whole samples to denoising predictions</p>
+  <h2><span class="retro-chapter__number">02</span> What exactly does a diffusion model predict?</h2>
+  <p class="retro-lede">Let \(x_0\) denote an entire clean trajectory or physical field. Diffusion time \(t\) controls the noise level; it is a different dimension from the physical time within a trajectory.</p>
+  <div class="retro-equation">\[x_t=\alpha_t x_0+\sigma_t\epsilon,\qquad \epsilon\sim\mathcal N(0,I).\]</div>
+  <p>During training, noise is added to an entire sample, and the model learns to recover the clean data or predict the added noise. During generation, it starts from Gaussian noise and follows the reverse diffusion process to produce a new trajectory or field step by step; each step does not merely predict the next physical time step.</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/framework-en.svg">
+      <picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/physical-dynamics/framework-mobile-en.svg" width="640" height="1080"><img src="{{ base_path }}/images/research/physical-dynamics/framework-en.svg" alt="During training, an entire sample is noised and passed to the diffusion predictor; distributional priors guide the model and matching objective, while physical feasibility priors enter the training loss. During generation, reverse diffusion turns Gaussian noise into a trajectory or field." width="1440" height="660" loading="lazy"></picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 1 · The roles of the two types of priors in training. Physical constraints enter through the training objective; generation still follows the reverse diffusion process.</figcaption>
+  </figure>
+  <h3>Two training objectives connected to the same score</h3>
+  <div class="retro-equation">\[\begin{aligned}
+    \mathcal L_{\mathrm{noise}}&=\mathbb E\!\left[w(t)\|\epsilon_\theta(x_t,t)-\epsilon\|^2\right],\\
+    \mathcal L_{\mathrm{data}}&=\mathbb E\!\left[w(t)\|x_\theta(x_t,t)-x_0\|^2\right].
+  \end{aligned}\]</div>
+  <p>At the ideal squared-error optima, noise prediction and data prediction correspond to:</p>
+  <div class="retro-equation">\[\epsilon_\theta^*(x_t,t)=-\sigma_t\nabla_{x_t}\log q_t(x_t),\qquad x_\theta^*(x_t,t)=\mathbb E[x_0\mid x_t].\]</div>
+  <p>The score \(\nabla_{x_t}\log q_t(x_t)\) describes the local direction of change in the current noisy distribution. A noise prediction can also be converted into a clean-data estimate:</p>
+  <div class="retro-equation">\[\hat x_0(x_t,t)=\frac{x_t-\sigma_t\epsilon_\theta(x_t,t)}{\alpha_t}.\]</div>
+  <div class="retro-callout"><strong>The starting point for constraint design</strong><p>Ideally, the denoising prediction is the conditional mean \(\mathbb E[x_0\mid x_t]\). It is not the same as any particular true clean sample.</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-symmetry">
+  <p class="retro-kicker">Distributional priors</p>
+  <h2><span class="retro-chapter__number">03</span> Keep coordinate transformations and model predictions consistent</h2>
+  <p class="retro-lede">Physical content can be separated from its representation: observing the same particle motion from a different direction still describes the same system.</p>
+  <p>If a distribution is invariant under a group transformation \(G\), satisfying \(q_t(Gx)=q_t(x)\), the score must transform according to the corresponding rule. For a rigid transformation with rotation matrix \(Q\) and global translation \(b\):</p>
+  <div class="retro-equation">\[s(Qx+b,t)=Q\,s(x,t).\]</div>
+  <p>When the input rotates, the score vectors rotate with it; a global translation should not add a translation to this vector field. In a joint position–velocity representation, translation acts only on positions, while rotation acts on both positions and velocities. Relabeling particles should reorder the outputs accordingly; the conditioning connection graph in the five-spring system must be reordered as well.</p>
+  <div class="retro-support">
+    <h3>Understanding the equivalence class manifold (ECM) through group orbits</h3>
+    <p>Samples related by these symmetry transformations form an equivalence class:</p>
+    <div class="retro-equation">\[[x]=\{Gx:G\in\mathcal G\}.\]</div>
+    <p>After choosing a representative, the model can focus on a trajectory's intrinsic structure; predictions that follow the corresponding equivariance rules can extend to other representations on the same orbit. ECM provides a theoretical perspective here. The experimental pipeline does not add a generation module that progressively projects onto ECM.</p>
+  </div>
+  <h3>How do theoretical requirements become training choices?</h3>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Diffusion modeling choices for the two data types">
+    <table class="retro-comparison"><caption>Table 1 · Diffusion modeling choices for the two types of data</caption>
+      <thead><tr><th scope="col">Data</th><th scope="col">Matching objective used</th><th scope="col">Rationale and implementation</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Particle motion</th><td>Noise matching</td><td>Noise prediction directly corresponds to the score's transformation properties; rotation, translation, and permutation augmentation encourage the model to learn these rules.</td></tr>
+        <tr><th scope="row">PDE fields</th><td>Data matching</td><td>Directly learn the smoother fields, avoiding pixelwise noise prediction as the main output task; use a GRU or U-Net variant according to the task.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>These design choices reflect the structure of the data. Data augmentation helps a model learn symmetries, but it does not provide a strict architectural guarantee of equivariance for every input.</p>
+</section>
+
+<section class="retro-chapter" id="physical-jensen">
+  <p class="retro-kicker">The Jensen gap</p>
+  <h2><span class="retro-chapter__number">04</span> If every sample is feasible, why can their mean violate physics?</h2>
+  <p class="retro-lede">Suppose clean samples satisfy a physical residual \(\mathcal R(x_0)=0\). Can we directly require the denoising prediction to satisfy the same equation? The answer depends on the form of the constraint.</p>
+  <div class="retro-equation">\[\mathcal R\!\left(\mathbb E[x_0\mid x_t]\right)\ne\mathbb E[\mathcal R(x_0)\mid x_t]=0.\]</div>
+  <p>Nonlinear transformations generally do not commute with expectation: this is the Jensen gap discussed here. At high noise levels, the same \(x_t\) can correspond to multiple plausible clean samples; averaging these possibilities can produce a state outside the feasible set.</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/jensen-gap-en.svg">
+      <picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/physical-dynamics/jensen-gap-mobile-en.svg" width="640" height="900"><img src="{{ base_path }}/images/research/physical-dynamics/jensen-gap-en.svg" alt="Two feasible points on the unit circle are (−1, 0) and (1, 0), with their equal-probability mean at the origin. Both points have squared norm one, but the mean has squared norm zero and no longer satisfies the same constraint." width="1200" height="500" loading="lazy"></picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 2 · A geometric example: both samples lie on the unit circle, while their mean lies at its center. A constraint satisfied by every sample does not automatically hold for the conditional mean.</figcaption>
+  </figure>
+  <div class="retro-two-column">
+    <div><h3>Linear momentum constraints commute with expectation</h3><p>Total momentum is a linear combination of velocities. For fixed masses, the weighted sum commutes with conditional expectation, so a linear residual can act directly on the denoised estimate.</p></div>
+    <div><h3>Nonlinear energy constraints need special treatment</h3><p>Kinetic energy contains squared velocities, and potential energy involves distances between particles. In general, \((\mathbb E[V\mid x_t])^2\ne\mathbb E[V^2\mid x_t]\), so directly penalizing the total energy of a predicted state may conflict with the correct denoising target.</p></div>
+  </div>
+  <div class="retro-callout"><strong>The challenge goes beyond adding a physics loss</strong><p>We must also ask whether that physics loss is suitable for the statistic the model currently predicts.</p></div>
+</section>
+
+<section class="retro-chapter" id="physical-constraints">
+  <p class="retro-kicker">Physical feasibility priors</p>
+  <h2><span class="retro-chapter__number">05</span> Choose supervision to match the constraint's structure</h2>
+  <p class="retro-lede">Retain the diffusion objective and add training terms that reflect the physical structure. \(\lambda\) controls the relative strength of data fitting and physical supervision.</p>
+  <div class="retro-equation">\[\mathcal L(\theta)=\mathcal L_{\mathrm{diffusion}}(\theta)+\lambda\,\mathcal L_{\mathrm{physics}}(\theta).\]</div>
+  <h3><span class="physical-case-label">01 / Linear and affine</span> Constrain the denoised output directly</h3>
+  <p>If \(\mathcal R(x)=Ax+b\), expectation commutes with the constraint and the Jensen gap is zero. We can use:</p>
+  <div class="retro-equation">\[\mathcal L_{\mathrm{physics}}=\mathbb E\!\left[w(t)\|\mathcal R(\hat x_0(x_t,t))\|^2\right].\]</div>
+  <p>Total momentum and linear PDE residuals with fixed coefficients after finite-difference discretization follow this idea. It removes the conflict in the form of the objectives; with finite data and model capacity, the residual may still be nonzero.</p>
+  <h3><span class="physical-case-label">02 / Multilinear</span> Fix other variables and supervise a linear component</h3>
+  <p>Split a sample into \(x_0=(u_0,v_0)\). If fixing \(v_0\) makes the constraint linear in \(u_0\), we can use coefficients from the true sample during training:</p>
+  <div class="retro-equation">\[\mathcal R(x_0)=W(v_0)u_0+b(v_0),\qquad \mathcal L_{\mathrm{physics}}=\mathbb E\!\left[w(t)\|W(v_0)u_\theta(x_t,t)+b(v_0)\|^2\right].\]</div>
+  <p>When the true sample has zero residual, this expression is a reconstruction error weighted by \(W^\top W\). The key is to fix the other ground-truth variables during training, rather than replace every variable with a predicted mean. When the weights depend on the sample, it also cannot simply be assumed to have exactly the same optimum as ordinary mean squared error.</p>
+  <h3><span class="physical-case-label">03 / Convex constraints</span> Account for approximation error</h3>
+  <p>For a scalar convex function satisfying the required conditions, Jensen's inequality gives:</p>
+  <div class="retro-equation">\[\mathcal R\!\left(\mathbb E[x_0\mid x_t]\right)\leq\mathbb E[\mathcal R(x_0)\mid x_t].\]</div>
+  <p>This inequality does not imply that the constraint equality holds at the mean. The method uses the convex case for an approximate treatment; under the relevant regularity and posterior concentration conditions, a more concentrated conditional distribution gives a smaller Jensen gap. This informs training design but provides no exact guarantee for arbitrary nonlinear constraints.</p>
+  <h3><span class="physical-case-label">04 / General nonlinear constraints</span> Change the quantity being predicted</h3>
+  <p>If the constraint can be written as \(\mathcal R(x)=g(h(x))\), it can be decomposed into simpler components; alternatively, an auxiliary output head sharing the backbone representation can specifically predict \(h(x_0)\):</p>
+  <div class="retro-equation">\[\mathcal L_h=\mathbb E\!\left[w(t)\|\tilde h_\theta(x_t,t)-h(x_0)\|^2\right].\]</div>
+  <p>For example, an auxiliary head can learn squared velocities or distance-related quantities, giving the shared representation energy-related supervision. This is a different task from predicting a mean velocity and then squaring it. Auxiliary supervision helps the main model learn physical structure, but its effect must still be verified on the final generated samples.</p>
+</section>
+
+<section class="retro-chapter" id="physical-particles">
+  <p class="retro-kicker">From conservation laws to training terms</p>
+  <h2><span class="retro-chapter__number">06</span> Why do momentum and energy need different treatments?</h2>
+  <p class="retro-lede">Particle samples contain both positions \(C\) and velocities \(V\). Let \(\ell\) denote physical time within a trajectory and \(t\) denote diffusion noise time.</p>
+  <h3>Momentum: penalize variation over time within a trajectory</h3>
+  <div class="retro-equation">\[P_\ell=\sum_{k=1}^{K}m_kV_{\ell,k},\qquad \bar P=\frac1L\sum_{\ell=1}^{L}P_\ell.\]</div>
+  <div class="retro-equation">\[\mathcal L_P=\mathbb E\!\left[w(t)\sum_{\ell=1}^{L}\|\hat P_\ell-\bar{\hat P}\|^2\right].\]</div>
+  <p>The constraint requires total momentum to remain constant within a trajectory, without requiring all samples to share the same momentum value. This residual is linear in velocity, making it suitable for the denoised output directly; the main five-spring experiment uses this type of training term.</p>
+  <h3>Energy: supervise the key quantities that compose it</h3>
+  <p>In the three-body system, gravitational potential energy depends on inverse inter-particle distances, while kinetic energy depends on squared velocities. In the five-spring system, elastic potential energy depends on squared distances between connected particles. These dependencies can be summarized as:</p>
+  <div class="retro-equation">\[h_{\mathrm{three\mbox{-}body}}(C,V)=\left(\{1/r_{ij}\},\{V_{k,d}^{\,2}\}\right),\qquad r_{ij}=\|C_i-C_j\|.\]</div>
+  <p>The main three-body experiment uses a reducible nonlinear treatment, applying ground-truth supervision to inverse distances computed from denoised coordinates and to squared denoised velocities. The general nonlinear variant instead adds auxiliary heads to predict these energy-related quantities; the two approaches must not be conflated into a single implementation.</p>
+  <div class="retro-equation">\[\mathcal L_E=\mathbb E\!\left[
+    w_1(t)\sum_{\ell,i\ne j}\left|\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right|^2
+    +w_2(t)\sum_{\ell,k,d}\left|\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right|^2
+  \right].\]</div>
+  <p>These terms use distances and velocities computable from the samples for supervision, without first specifying a total-energy constant for each trajectory. They are conservation-related training regularizers, rather than exact projections of generated outputs onto a constant-energy surface.</p>
+  <div class="retro-support">
+    <h3>What do the specific networks handle?</h3>
+    <p>The three-body model uses a GRU for time series; the five-spring model uses an EGNN to extract particle and edge features, combined with a GRU for temporal variation; the PDE models use a GRU or U-Net according to the task, with U-Net variants for Darcy, Burgers, and shallow water. The framework focuses on matching output targets with physical losses, rather than prescribing a single network for every physical system.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-results">
+  <p class="retro-kicker">Sample quality &amp; physical feasibility</p>
+  <h2><span class="retro-chapter__number">07</span> How much do generated-sample errors actually improve?</h2>
+  <p class="retro-lede">The main comparisons evaluate the corresponding diffusion modeling schemes with and without physical feasibility training terms. Hyperparameters are searched separately for both sides, so the conclusions concern training schemes rather than a single network under a fixed parameter configuration.</p>
+  <div class="retro-results-grid" aria-label="Relative improvements in the main conservation errors">
+    <div><strong>87.4%</strong><span class="retro-result__label">Three-body · lower energy error</span><p>Based on means from the same main experiment: 4.3292 down to 0.5465.</p></div>
+    <div><strong>92.7%</strong><span class="retro-result__label">Five-spring · lower momentum error</span><p>Based on means from the same main experiment: 5.3699 down to 0.3898.</p></div>
+    <div><strong>2.0%</strong><span class="retro-result__label">Five-spring · lower dynamic error</span><p>The relative improvement is small; conservation gains do not imply large improvements in every metric.</p></div>
+  </div>
+  <h3>Particle motion: evaluate dynamics and conservation errors together</h3>
+  <p>Trajectory, velocity, and dynamic errors are evaluated through physical simulation: start from a generated state, simulate the subsequent motion, and compute its MSE against the generated motion. Energy and momentum errors measure deviations in the respective physical quantities over time. Lower is better for every metric below.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Main experimental errors for the three-body and five-spring systems">
+    <table class="retro-comparison physical-metric-table"><caption>Table 2 · Main experimental errors for the three-body and five-spring systems</caption>
+      <thead><tr><th scope="col">System</th><th scope="col">Metric ↓</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="3">Three-body · energy-related supervision</th><td>Trajectory MSE</td><td>2.4132 ± 0.1208</td><td>1.9880 ± 0.3418</td></tr>
+        <tr><td>Velocity MSE</td><td>2.5745 ± 0.0790</td><td>0.8328 ± 0.1042</td></tr>
+        <tr><td>Energy error</td><td>4.3292 ± 0.7235</td><td>0.5465 ± 0.0705</td></tr>
+        <tr><th scope="row" rowspan="3">Five-spring · momentum constraint</th><td>Dynamic MSE (×10<sup>−2</sup>)</td><td>5.1754 ± 0.0286</td><td>5.0731 ± 0.0406</td></tr>
+        <tr><td>Momentum error</td><td>5.3699 ± 0.0462</td><td>0.3898 ± 0.0118</td></tr>
+        <tr><td>Energy error</td><td>1.0618 ± 0.0243</td><td>0.7418 ± 0.0129</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>A three-body example: does total energy drift?</h3>
+  <div class="physical-evidence" aria-label="Generated three-body examples and energy variation">
+    <figure class="retro-figure"><h3>Without feasibility terms</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp" alt="A generated three-body trajectory without energy-related supervision, with three colors distinguishing the particles" width="2500" height="2385" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>With energy-related supervision</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp" alt="A generated three-body trajectory with energy-related supervision" width="2500" height="2371" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>Total energy over physical time</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp" alt="Total-energy curves for a three-body example, comparing generation without and with priors; the supervised curve is more stable" width="2500" height="1410" loading="lazy"></a></figure>
+  </div>
+  <p class="retro-caption">Figure 3 · Blue curves show results without feasibility terms; orange curves show results with supervision. Squares denote gravitational potential energy, circles denote kinetic energy, and darker lines denote total energy. The total-energy curve is more stable, but still varies. Three-body generation contains 10 frames; cubic splines connect the trajectory points for display, while error evaluation uses no smoothing. The two generated trajectories need not coincide; what matters is their individual physical feasibility.</p>
+  <h3>A five-spring example: does total momentum remain stable?</h3>
+  <div class="physical-evidence" aria-label="Generated five-spring examples and momentum variation">
+    <figure class="retro-figure"><h3>Without feasibility terms</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp" alt="A generated five-spring trajectory without a momentum constraint, with five colors distinguishing the particles" width="2500" height="1887" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>With a momentum constraint</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp" alt="A generated five-spring trajectory with a momentum constraint" width="2500" height="1887" loading="lazy"></a></figure>
+    <figure class="retro-figure"><h3>Momentum components over physical time</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp" alt="Total-momentum curves along different directions for a five-spring example, comparing temporal variation with and without a momentum constraint" width="2500" height="1410" loading="lazy"></a></figure>
+  </div>
+  <p class="retro-caption">Figure 4 · Blue shows results without feasibility terms; orange shows results with the momentum constraint. The darker and lighter curves correspond to total momentum along the two coordinate axes. The constraint targets temporal variation in total momentum, rather than pushing it toward zero. These examples illustrate behavior; the error table from repeated experiments above measures the overall effect.</p>
+  <h3>PDEs: prediction accuracy and generation feasibility are different evaluations</h3>
+  <p>Advection, Darcy, and linearized shallow-water equations with known coefficients can yield linear constraints after discretization; the Burgers equation contains multilinear structure such as \(u\,\partial_xu\). The experiments separately evaluate field-value errors in conditional prediction and PDE residuals of generated fields.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="PDE prediction and generation evaluation">
+    <table class="retro-comparison physical-metric-table"><caption>Table 3 · PDE prediction and generation evaluation</caption>
+      <thead><tr><th scope="col">Task and metric ↓</th><th scope="col">Dataset</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
+      <tbody>
+        <tr><th scope="row" rowspan="2">Prediction RMSE (×10<sup>−2</sup>)</th><td>Advection</td><td>1.7263 ± 0.0491</td><td>1.6536 ± 0.0677</td></tr>
+        <tr><td>Darcy flow</td><td>2.0648 ± 0.0600</td><td>1.9678 ± 0.0651</td></tr>
+        <tr><th scope="row" rowspan="3">PDE residual RMSE of generated fields</th><td>Advection</td><td>2.398 ± 0.024</td><td>2.305 ± 0.001</td></tr>
+        <tr><td>Burgers</td><td>6.862 ± 0.060</td><td>6.610 ± 0.012</td></tr>
+        <tr><td>Shallow water</td><td>8.0153 ± 0.0960</td><td>7.7618 ± 0.0645</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>PDE residuals decrease overall, but by less than some of the conservation gains in the main particle experiments. Shallow-water generation is conditioned on wave-speed parameters; these results also do not guarantee accurate predictions for every initial condition, boundary condition, or long-term horizon.</p>
+  <figure class="retro-figure physical-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/burgers-comparison.webp"><img src="{{ base_path }}/images/research/physical-dynamics/burgers-comparison.webp" alt="A Burgers generation example: the top row uses only data matching, and the bottom row adds a PDE constraint; the left column shows generated fields and the right column shows PDE residual distributions" width="2500" height="2751" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 5 · The top row uses only data matching; the bottom row adds a PDE constraint. The left column shows generated field values, with space on the horizontal axis and physical time on the vertical axis; the right column shows PDE residual distributions. Each column uses its own color scale, so color values cannot be compared directly across columns.</figcaption>
+  </figure>
+  <div class="retro-support">
+    <h3>Evaluation conventions and scope</h3>
+    <p>The tables preserve the reported means and variability; numerical scales are not compared across different metrics. In repeated three-body experiments, one anomalous random seed was excluded consistently from all comparison methods; repeated Darcy evaluation varied the sampling random seed. Generated examples and error tables jointly provide evidence, but do not establish strict conservation or statistical significance.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-ablation">
+  <p class="retro-kicker">Why the design matters</p>
+  <h2><span class="retro-chapter__number">08</span> Where do the improvements come from?</h2>
+  <h3>Directly adding a nonlinear energy constraint may not help</h3>
+  <p>The three-body ablation compares three training settings: no constraint, directly penalizing variation in the denoised output's total energy, and decomposing the constraint into energy-related quantities. This ablation is a separate comparison from the main experiment.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Ablation of nonlinear constraint treatments for the three-body system">
+    <table class="retro-comparison physical-metric-table"><caption>Table 4 · Ablation of nonlinear constraint treatments for the three-body system</caption>
+      <thead><tr><th scope="col">Training setting</th><th scope="col">Trajectory error ↓</th><th scope="col">Velocity error ↓</th><th scope="col">Energy error ↓</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Without feasibility terms</th><td>2.5613</td><td>2.6555</td><td>3.8941</td></tr>
+        <tr><th scope="row">Direct penalty on total-energy variation</th><td>2.6048</td><td>2.6437</td><td>4.2219</td></tr>
+        <tr class="retro-highlight"><th scope="row">Decomposed energy-related supervision</th><td>1.6072</td><td>0.7307</td><td>0.5062</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Directly penalizing energy variation increases both trajectory and energy errors. This result supports paying attention to the Jensen gap: transferring physics penalties commonly used in prediction tasks directly to a diffusion model's conditional mean is not always appropriate. It is not a comparison of the overall capabilities of PINN methods.</p>
+  <h3>Predict noise or data? The sample structure matters</h3>
+  <p>The following ablations exclude physical feasibility terms and compare matching objectives alone: noise matching for particles and data matching for PDEs; the “alternative objective” swaps these choices.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Ablation of diffusion matching objectives">
+    <table class="retro-comparison physical-metric-table"><caption>Table 5 · Ablation of diffusion matching objectives</caption>
+      <thead><tr><th scope="col">Data and evaluation metric ↓</th><th scope="col">Objective used</th><th scope="col">Corresponding error</th><th scope="col">Error with the alternative objective</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Three-body · mean trajectory and velocity error</th><td>Noise matching</td><td>2.6084</td><td>4.7241</td></tr>
+        <tr><th scope="row">Five-spring · dynamic error</th><td>Noise matching</td><td>5.1929</td><td>5.3120</td></tr>
+        <tr><th scope="row">Darcy · prediction RMSE</th><td>Data matching</td><td>2.016</td><td>7.268</td></tr>
+        <tr><th scope="row">Shallow water · PDE residual RMSE</th><td>Data matching</td><td>8.150</td><td>27.40</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="retro-caption">This table uses the reported values from this ablation; the original table does not specify scaling units, so numerical values are not compared across systems.</p>
+  <p>Under these settings, the choice of matching objective substantially affects performance, particularly for physical-field tasks. This is not a universal conclusion that noise matching always outperforms data matching, or vice versa.</p>
+  <div class="retro-support">
+    <h3>Symmetry augmentation and representation capacity also affect results</h3>
+    <p>Permutation augmentation must reorder both particles and connections. It improves several errors, but not every metric decreases. The nonlinear energy variant for the five-spring system also requires enough information to predict inter-particle distances: when a GRU alone provides an insufficient representation, the reducible treatment is not applicable; auxiliary prediction using EGNN edge features is more effective.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="physical-takeaways">
+  <p class="retro-kicker">How physical knowledge enters a generative model</p>
+  <h2><span class="retro-chapter__number">09</span> Understand the prediction target before imposing constraints</h2>
+  <p class="retro-lede physical-summary">The key to this project is aligning physical priors with the statistical targets of diffusion models.</p>
+  <ol class="retro-pipeline" aria-label="Three central takeaways from the project">
+    <li><strong>Organize distributions through symmetry</strong><span>Handle rotations, translations, and particle permutations consistently, and choose a matching objective suited to the data structure.</span></li>
+    <li><strong>Understand constraints through the conditional mean</strong><span>Linear residuals can act directly; nonlinear residuals require accounting for the Jensen gap or changing the supervised quantity.</span></li>
+    <li><strong>Test physics on generated samples</strong><span>Evaluate dynamics errors together with conservation or equation residuals, distinguishing visual examples from aggregate metrics.</span></li>
+  </ol>
+  <h3>What do these results support?</h3>
+  <p>The experiments show that appropriate physical training terms can reduce feasibility errors across several systems and may also improve dynamics quality. The gains depend on the system, constraint form, representation capacity, and training settings; improvements in five-spring dynamic error and PDE residuals are relatively limited.</p>
+  <p>Soft constraints and energy-related supervision during training do not guarantee that every generated sample exactly satisfies conservation laws. Finite-difference residuals also depend on the discretization grid; physical fields may still contain noise and errors in high-frequency details. The model also requires usable priors or computable related quantities, so this method should not be understood as solving arbitrary unknown equations without physical knowledge.</p>
+  <div class="retro-callout"><strong>The main point to take away</strong><p>In a generative model, an appropriate physical constraint must describe the real world and match the object the model is estimating.</p></div>
+</section>

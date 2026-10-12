@@ -1,8 +1,11 @@
-{% assign projects = site.research | where: "research_project", true | where_exp: "item", "item.published != false" | sort: "order" %}
+{% assign projects = site.research | where: "research_project", true | where_exp: "item", "item.published != false" %}
+{% if page.lang == "zh-CN" %}
+  {% assign projects = projects | where: "lang", "zh-CN" | sort: "order" %}
+{% else %}
+  {% assign projects = projects | where_exp: "item", "item.lang != 'zh-CN'" | sort: "order" %}
+{% endif %}
 {% if projects.size > 0 %}
-<section class="research-project-index" aria-labelledby="research-projects-title">
-  <h2 id="research-projects-title" class="research-index-section-title">{% if page.lang == "zh-CN" %}项目讲解{% else %}Project Walkthroughs{% endif %}</h2>
-  <p class="research-project-index__intro">{% if page.lang == "zh-CN" %}从研究问题到方法与实验，沿着一条完整的叙事理解项目。{% else %}Research stories from motivation to methods and evidence.{% endif %}</p>
+<section class="research-project-index" aria-label="{% if page.lang == 'zh-CN' %}项目列表{% else %}Project list{% endif %}">
   {% for project in projects %}
   <article class="research-project-entry">
     {% if project.project_image %}
@@ -11,10 +14,10 @@
     </a>
     {% endif %}
     <div class="research-project-entry__body">
-      <p class="research-project-entry__eyebrow">{% if page.lang == "zh-CN" %}{{ project.project_area }}{% else %}{{ project.project_area_en | default: project.project_area }}{% endif %}{% if project.lang == 'zh-CN' %}<span lang="zh-CN">中文</span>{% endif %}</p>
-      <h3><a href="{{ base_path }}{{ project.url }}">{% if page.lang == "zh-CN" %}{{ project.index_title | default: project.title }}{% else %}{{ project.index_title_en | default: project.title }}{% endif %}</a></h3>
-      <p>{% if page.lang == "zh-CN" %}{{ project.excerpt }}{% else %}{{ project.excerpt_en | default: project.excerpt }}{% endif %}</p>
-      <a class="publication-link-btn" href="{{ base_path }}{{ project.url }}">{% if page.lang == "zh-CN" %}查看项目讲解{% else %}Explore project · 中文{% endif %} <span aria-hidden="true">→</span></a>
+      <p class="research-project-entry__eyebrow">{{ project.project_area }}</p>
+      <h2><a href="{{ base_path }}{{ project.url }}">{{ project.index_title | default: project.title }}</a></h2>
+      <p>{{ project.excerpt }}</p>
+      <a class="publication-link-btn" href="{{ base_path }}{{ project.url }}" hreflang="{{ project.lang | default: 'en' }}">{% if page.lang == "zh-CN" %}查看项目讲解{% else %}Explore project{% endif %} <span aria-hidden="true">→</span></a>
     </div>
   </article>
   {% endfor %}

@@ -1,11 +1,10 @@
 ---
 title: "RETRO"
-subtitle: "把反应位点写入原子的顺序"
 layout: research-project
 collection: research
 permalink: /zh/research/retro/
 lang: zh-CN
-lang_switch_url: /research/
+lang_switch_url: /research/retro/
 research_project: true
 mathjax: true
 order: 3
@@ -20,8 +19,7 @@ project_image: /images/research/retro/framework.webp
 project_area: "分子生成 · 逆合成"
 project_area_en: "Molecular generation · Retrosynthesis"
 project_eyebrow_area: "结构感知的分子生成"
-authors: "Chenguang Wang* · Zihan Zhou* · Lei Bai · Tianshu Yu"
-paperurl: https://arxiv.org/pdf/2602.13136
+papers: [retro-order]
 ---
 
 {% include base_path %}
@@ -50,6 +48,7 @@ paperurl: https://arxiv.org/pdf/2602.13136
   <p class="retro-lede">逆合成天然带有一个有用的任务分解：先找到反应中心，再生成相应的反应物结构。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="逆合成方法比较">
     <table class="retro-comparison">
+      <caption>表 1 · 逆合成方法比较</caption>
       <thead><tr><th scope="col">路线</th><th scope="col">如何求解</th><th scope="col">主要取舍</th></tr></thead>
       <tbody>
         <tr><th scope="row">模板方法</th><td>从反应模板库中匹配变换</td><td>规则明确，但受模板覆盖范围约束</td></tr>
@@ -150,6 +149,7 @@ paperurl: https://arxiv.org/pdf/2602.13136
   <p class="retro-lede">先看真实推理条件下的预测结果，再用排序消融和 Oracle 对照，理解性能提升来自哪里。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="USPTO-50k 与 USPTO-Full 主实验 Top-1 结果">
     <table class="retro-comparison">
+      <caption>表 2 · USPTO-50k 与 USPTO-Full 主实验 Top-1 结果</caption>
       <thead><tr><th scope="col">方法 / 条件</th><th scope="col">USPTO-50k</th><th scope="col">USPTO-Full</th></tr></thead>
       <tbody>
         <tr><th scope="row">NAG2G</th><td>55.1%</td><td>49.7%</td></tr>

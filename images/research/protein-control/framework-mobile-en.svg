@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1300" viewBox="0 0 640 1300" role="img" aria-labelledby="title desc">
+  <title id="title">Controllable protein sequence generation: Vertical method overview</title>
+  <desc id="desc">A general sequence prior, reference protein context, and target properties jointly support conditional sequence generation. Generated candidates undergo independent checks of condition adherence, editing behavior, and structural plausibility. No real protein sequences, model specifications, or experimental metrics are shown.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto" markerUnits="strokeWidth"><path d="M1 1 L8 4.5 L1 8" fill="none" stroke="#25766c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></marker>
+    <style>
+      text{font-family:Arial,Helvetica,sans-serif;fill:#213b36} .title{font-size:34px;font-weight:700} .sub{font-size:24px;fill:#60756f} .label{font-size:23px;font-weight:600;fill:#25766c} .heading{font-size:30px;font-weight:700} .body{font-size:25px;fill:#536d65} .small{font-size:24px;fill:#536d65} .center{text-anchor:middle} .card{fill:#fff;stroke:#d3e2dd;stroke-width:2} .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+    </style>
+  </defs>
+  <rect width="640" height="1300" fill="#fff" />
+  <text x="40" y="58" class="title">Start from a protein prior</text>
+  <text x="40" y="104" class="title">Generate candidates for a target</text>
+
+  <rect x="40" y="147" width="560" height="371" rx="16" class="card" />
+  <rect x="40" y="147" width="8" height="371" rx="4" fill="#25766c" />
+  <text x="72" y="193" class="label">GENERAL KNOWLEDGE</text>
+  <text x="72" y="234" class="heading">Protein sequence prior</text>
+  <text x="72" y="269" class="body">Learn sequence statistics</text>
+  <path d="M72 290 H568" stroke="#e0e9e4" stroke-width="2" />
+  <text x="72" y="330" class="heading">Reference / wild-type protein</text>
+  <text x="72" y="367" class="body">Conditions for relative editing</text>
+  <path d="M72 389 H568" stroke="#e0e9e4" stroke-width="2" />
+  <text x="72" y="432" class="heading">Function / property condition</text>
+  <text x="72" y="471" class="body">Specify the desired change</text>
+  <path d="M320 518 V560" class="line" marker-end="url(#arrow)" />
+
+  <rect x="40" y="577" width="560" height="175" rx="18" fill="#f2f8f5" stroke="#9ebdb3" stroke-width="2" />
+  <text x="320" y="623" class="label center">DISCRETE SEQUENCE GENERATION</text>
+  <text x="320" y="670" class="heading center">Conditional generator</text>
+  <text x="320" y="713" class="body center">Combine prior, context, and condition</text>
+  <path d="M320 752 V795" class="line" marker-end="url(#arrow)" />
+
+  <rect x="40" y="812" width="560" height="162" rx="16" class="card" />
+  <text x="320" y="861" class="heading center">Candidate protein sequences</text>
+  <text x="320" y="902" class="body center">Explore reference-based variants</text>
+  <g transform="translate(167 926)">
+    <rect x="0" width="306" height="18" rx="6" fill="#edf3ef" />
+    <g fill="#a4cabb"><rect x="12" y="4" width="42" height="10" rx="3" /><rect x="67" y="4" width="42" height="10" rx="3" /><rect x="122" y="4" width="42" height="10" rx="3" /><rect x="177" y="4" width="42" height="10" rx="3" /><rect x="232" y="4" width="61" height="10" rx="3" /></g>
+    <rect x="122" y="4" width="42" height="10" rx="3" fill="#25766c" />
+  </g>
+  <path d="M320 974 V1017" class="line" marker-end="url(#arrow)" />
+
+  <rect x="40" y="1034" width="560" height="149" rx="16" fill="#eff7f4" stroke="#b8d1c7" stroke-width="2" />
+  <text x="320" y="1082" class="heading center">Independent evaluation</text>
+  <text x="320" y="1125" class="body center">Condition adherence · Edits</text>
+  <text x="320" y="1160" class="body center">Sequence and structure plausibility</text>
+
+  <text x="40" y="1232" class="sub">Generation proposes candidates;</text>
+  <text x="40" y="1269" class="sub">independent evaluation checks adherence.</text>
+</svg>

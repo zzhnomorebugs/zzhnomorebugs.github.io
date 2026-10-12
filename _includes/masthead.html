@@ -32,6 +32,7 @@
               <a href="{{ domain }}{{ link.url }}"{% if current_path == link_path %} aria-current="page"{% endif %}>{{ link.title }}</a>
             </li>
           {% endfor %}
+          {% if page.research_project != true or page.lang_switch_url %}
           <li class="masthead__menu-item masthead__menu-item--lang">
             {% if page.lang == "zh-CN" %}
               <a href="{{ base_path }}{{ page.lang_switch_url | default: '/' }}" hreflang="en">English</a>
@@ -39,6 +40,7 @@
               <a href="{{ base_path }}{{ page.lang_switch_url | default: '/zh/' }}" hreflang="zh-CN">中文</a>
             {% endif %}
           </li>
+          {% endif %}
         </ul>
         <ul class="hidden-links hidden"></ul>
       </nav>

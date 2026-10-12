@@ -1,0 +1,9 @@
+{% assign resource = include.publication %}
+<article class="retro-resource"{% if include.resource_id %} id="{{ include.resource_id | escape }}"{% endif %}>
+  <h3>{{ resource.title | escape }}</h3>
+  {% if resource.authors %}<p class="retro-resource__authors">{% if page.lang == "zh-CN" %}作者：{% else %}Authors: {% endif %}{{ resource.authors }}</p>{% endif %}
+  <div class="retro-resource__links">
+    {% if resource.paperurl %}<a href="{{ resource.paperurl }}" target="_blank" rel="noopener noreferrer">{% if page.lang == "zh-CN" %}论文原文{% else %}Paper{% endif %} <span aria-hidden="true">↗</span></a>{% endif %}
+    {% if resource.githuburl %}<a href="{{ resource.githuburl }}" target="_blank" rel="noopener noreferrer">{% if page.lang == "zh-CN" %}项目代码{% else %}Code{% endif %} <span aria-hidden="true">↗</span></a>{% endif %}
+  </div>
+</article>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="900" viewBox="0 0 640 900" role="img" aria-labelledby="title desc">
+  <title id="title">The mean of feasible samples need not remain feasible, mobile layout</title>
+  <desc id="desc">On the unit circle, a = (−1, 0) and b = (1, 0) both have squared norm one. Their equally weighted conditional mean is the origin, with squared norm zero. For R(x) = squared norm minus one, R(a) and R(b) are zero, while R((a+b)/2) is minus one.</desc>
+  <defs>
+    <style>
+      text{font-family:Arial,sans-serif;fill:#263833}.title{font-size:29px;font-weight:700}
+      .label{font-size:22px;font-weight:700}.body{font-size:23px}.note{font-size:20px;fill:#60716b}.accent{fill:#25766c}.formula{font-size:28px;font-weight:700}
+    </style>
+  </defs>
+  <rect width="640" height="900" fill="#fafbf8"/>
+  <text x="40" y="49" class="title">The mean of feasible samples</text>
+  <text x="40" y="89" class="title">need not remain feasible</text>
+  <text x="40" y="126" class="note">A 2D example of a nonlinear constraint</text>
+
+  <circle cx="320" cy="328" r="150" fill="#edf5ef" stroke="#25766c" stroke-width="3"/>
+  <path d="M127 328 H513 M320 156 V497" fill="none" stroke="#ccd9d1" stroke-width="2"/>
+  <path d="M170 328 H470" fill="none" stroke="#8eaaa0" stroke-width="3" stroke-dasharray="7 7"/>
+  <circle cx="170" cy="328" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
+  <circle cx="470" cy="328" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
+  <circle cx="320" cy="328" r="9" fill="#b77545" stroke="#fff" stroke-width="3"/>
+  <text x="40" y="278" class="label">a = (−1, 0)</text>
+  <text x="40" y="307" class="note">‖a‖² = 1</text>
+  <text x="466" y="278" class="label">b = (1, 0)</text>
+  <text x="466" y="307" class="note">‖b‖² = 1</text>
+  <text x="320" y="368" text-anchor="middle" class="label">Mean = (0, 0)</text>
+  <text x="320" y="400" text-anchor="middle" class="note">‖(a + b) / 2‖² = 0</text>
+  <text x="320" y="516" text-anchor="middle" class="note">Circle: the set of feasible samples</text>
+
+  <rect x="40" y="551" width="560" height="310" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
+  <text x="66" y="590" class="label accent">Constraint function</text>
+  <text x="66" y="634" class="formula">R(x) = ‖x‖² − 1</text>
+  <path d="M66 655 H574" stroke="#d5dfd9" stroke-width="2"/>
+  <text x="66" y="693" class="body">Both samples are feasible:</text>
+  <text x="66" y="730" class="formula accent">R(a) = R(b) = 0</text>
+  <text x="66" y="783" class="body">The equal-weight mean violates it:</text>
+  <text x="66" y="824" class="formula">R((a + b) / 2) = −1</text>
+</svg>

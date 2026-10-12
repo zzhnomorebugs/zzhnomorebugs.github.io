@@ -6,6 +6,7 @@
 
   var chapters = Array.prototype.slice.call(project.querySelectorAll(".retro-chapter"));
   var outline = Array.prototype.slice.call(project.querySelectorAll(".retro-outline a"));
+  var references = Array.prototype.slice.call(project.querySelectorAll('.retro-content a[href^="#reference-"]'));
   if (!chapters.length) return;
 
   var scheduled = false;
@@ -38,20 +39,19 @@
     });
   }, { passive: true });
 
-  outline.forEach(function (link) {
+  outline.concat(references).forEach(function (link) {
     link.addEventListener("click", function (event) {
       if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-      var chapter = document.getElementById(link.getAttribute("href").slice(1));
-      if (!chapter) return;
+      var target = document.getElementById(link.getAttribute("href").slice(1));
+      if (!target) return;
       event.preventDefault();
-      // This page owns its outline; avoid the theme's separate smooth-scroll handler.
+      // Respect the project header offset instead of the theme's separate handler.
       event.stopImmediatePropagation();
-      var index = chapters.indexOf(chapter);
-      if (index < 0) return;
-      chapter.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
+      var index = chapters.indexOf(target);
+      target.scrollIntoView({ behavior: reducedMotion ? "instant" : "smooth", block: "start" });
       // Preserve shareable chapter links without adding an entry for every click.
-      if (window.history && window.history.replaceState) window.history.replaceState(null, "", "#" + chapter.id);
-      setOutline(index);
+      if (window.history && window.history.replaceState) window.history.replaceState(null, "", "#" + target.id);
+      if (index >= 0) setOutline(index);
     }, { capture: true });
   });
 

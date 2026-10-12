@@ -1,0 +1,211 @@
+---
+title: "Controllable Protein Sequence Generation"
+layout: research-project
+collection: research
+permalink: /research/protein-control/
+lang: en
+lang_switch_url: /zh/research/protein-control/
+research_project: true
+mathjax: true
+project_class: protein-project
+project_title: "Controllable Protein Sequence Generation"
+project_area: "Protein design · Conditional generation"
+project_area_en: "Protein design · Conditional generation"
+order: 4
+published: true
+read_time: false
+date: 2026-10-12
+index_title: "Controllable protein sequence generation: From a general prior to property guidance"
+index_title_en: "Controllable protein sequence generation: From a general prior to property guidance"
+excerpt: "Starting from classifier-free guidance in diffusion, explore how a general sequence prior and a conditional residual divide the work. Residual prediction for BFN and DFM connects model training, pretraining trends, and initial results on property control."
+project_image: /images/research/protein-control/framework-en.svg
+project_references: [cfg, bfn, dfm]
+project_chapters:
+  - id: protein-task
+    label: Task
+  - id: protein-prior
+    label: Design
+  - id: protein-flow
+    label: Method
+  - id: protein-dynamics
+    label: BFN / DFM
+  - id: protein-pretraining
+    label: Pretraining
+  - id: protein-evaluation
+    label: Experiments
+  - id: protein-outlook
+    label: Takeaways
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="protein-task">
+  <p class="retro-kicker">Property-driven protein design</p>
+  <h2><span class="retro-chapter__number">01</span> Given a target property, generate sequences worth testing</h2>
+  <p class="retro-lede">Protein engineering seeks amino acid sequences with a desired function. Controllable generation gives the target property directly to the generative model, providing a clear direction for proposing candidates.</p>
+  <ol class="retro-pipeline" aria-label="Controllable protein sequence generation task">
+    <li><strong>Input: Reference sequence and target property</strong><span>The reference sequence provides sequence context; the target condition describes the desired property.</span></li>
+    <li><strong>Generation: Stepwise conditional updates</strong><span>Gradually adjust amino acid class predictions under the constraints of a sequence prior.</span></li>
+    <li><strong>Output: Candidate variants</strong><span>Screen candidates through independent evaluation for subsequent experimental validation.</span></li>
+  </ol>
+  <p>A generative model must meet two requirements: the sequence itself should be plausible, and the generated result should respond to the target condition. When editing a reference sequence, the extent of the edits also needs to be controlled, so that pursuing the target property does not disrupt the original sequence and structure.</p>
+  <div class="retro-callout"><strong>The project's central question</strong><p>Can a general protein sequence prior provide a reusable foundation for different property tasks, with conditional adaptation producing candidates that move toward the desired target?</p></div>
+  <div class="retro-two-column">
+    <div><h3>What does the target condition express?</h3><p>A condition can describe a variant effect, a change in stability, or a binding property. The model learns the relationship between the target condition and sequence changes, while each task retains its own label definitions and evaluation methods.</p></div>
+    <div><h3>What does the output mean?</h3><p>The output consists of candidate sequences that require further validation. Predicted properties, confidence in predicted structures, and actual experimental effects provide distinct levels of evidence.</p></div>
+  </div>
+</section>
+
+<section class="retro-chapter" id="protein-prior">
+  <p class="retro-kicker">Dividing the work between a general prior and task conditions</p>
+  <h2><span class="retro-chapter__number">02</span> Learn sequence patterns first, then learn target conditions</h2>
+  <p class="retro-lede">Natural protein sequences provide broad statistical patterns, a reference sequence supplies conditions for relative editing, and property labels specify the task's direction. These sources of information work together to generate candidates.</p>
+  <figure class="retro-figure protein-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/framework-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/framework-mobile-en.svg" width="640" height="1300">
+        <img src="{{ base_path }}/images/research/protein-control/framework-en.svg" alt="A general protein prior and target properties jointly guide generation. The reference sequence provides conditions for relative editing, and candidate sequences undergo independent checks of condition adherence, editing behavior, and structural plausibility." width="1440" height="840" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 1 · The overall division of work in controllable generation. A general prior supplies sequence patterns, target conditions influence generation updates, and independent evaluation checks the generated results.</figcaption>
+  </figure>
+  <p>Unconditional pretraining first learns the relationship between noisy states and real protein sequences. In a downstream task, the model additionally receives property conditions and learns how to adjust its predictions within the same generative framework.</p>
+  <p>For editing tasks that start from a reference sequence, the objective can be expressed as learning a conditional distribution:</p>
+  <div class="retro-equation">\[p_\theta(x\mid x_{\mathrm{ref}},y).\]</div>
+  <p>Here, \(x_{\mathrm{ref}}\) is the reference sequence, \(y\) is the target property, and \(x\) is a candidate sequence. This notation expresses the task objective; it does not imply that the model guarantees every candidate will satisfy the condition.</p>
+</section>
+
+<section class="retro-chapter" id="protein-flow">
+  <span id="protein-transfer" aria-hidden="true"></span>
+  <p class="retro-kicker">From conditional score decomposition to residual prediction</p>
+  <h2><span class="retro-chapter__number">03</span> One model learns the sequence language; another learns to follow conditions</h2>
+  <p class="retro-lede">In conditional control for continuous diffusion, the conditional score can be decomposed into an unconditional score and a conditional correction. The former describes the sequence's own patterns; the latter gives the direction introduced by the target condition.</p>
+  <div class="retro-equation">\[\underbrace{s_{\mathrm{c}}}_{\text{conditional score}}
+    =\underbrace{s_{\mathrm{u}}}_{\text{unconditional score}}
+    +\underbrace{\nabla_{x_t}\log p_t(y\mid x_t)}_{\text{conditional correction}}.\]</div>
+  <p>This decomposition offers a way to understand conditional control in <a href="#reference-cfg">CFG</a> and motivates the division of work between the project's two models:</p>
+  <div class="retro-two-column protein-methods">
+    <div><h3>General model: Learn the language of protein sequences</h3><p>Unconditional pretraining first learns amino acid combinations and sequence patterns. Its weights remain fixed in downstream tasks, continually supplying a general generative prior.</p></div>
+    <div><h3>Residual model: Learn to follow the target condition</h3><p>It reads the current state, reference sequence, and target property, then learns the additional conditional correction that guides candidates toward the target.</p></div>
+  </div>
+  <p>For discrete protein sequences, the two components are combined at the level of token logits:</p>
+  <div class="retro-equation">\[\ell_{\mathrm{cond}}
+    =\operatorname{stopgrad}(\ell_{\mathrm{prior}})+r_\phi.\]</div>
+  <p>The training loss applies to the combined prediction and updates only the residual model. The continuous score decomposition is a design motivation; the implemented residual does not directly compute a classifier gradient.</p>
+  <p>The combined prediction then follows the update rule of its generative framework: <a href="#reference-bfn">BFN</a> updates probability beliefs over amino acid classes, while <a href="#reference-dfm">DFM</a> updates a discrete token sequence. Both reuse a fixed sequence prior, with the residual handling conditional adaptation.</p>
+</section>
+
+<section class="retro-chapter protein-dynamics" id="protein-dynamics">
+  <p class="retro-kicker">From diffusion to discrete sequence generation</p>
+  <h2><span class="retro-chapter__number">04</span> Understand probability beliefs and discrete jumps through gradual denoising</h2>
+  <figure class="retro-figure protein-figure protein-noise-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/noise-settings-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/noise-settings-mobile-en.svg" width="640" height="1780">
+        <img src="{{ base_path }}/images/research/protein-control/noise-settings-en.svg" alt="Inputs under three noising settings: BFN converts noisy messages into a probability vector at each position; DFM-abs replaces some tokens with MASK; DFM-uni replaces some tokens with uniformly sampled random classes. Both DFM inputs consist of discrete tokens." width="1400" height="890" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 2 · Noisy inputs under three settings. The arrows show how clean sequences become training inputs; generation gradually recovers sequences from low-information states. BFN reads probability vectors, while both DFM variants read discrete tokens.</figcaption>
+  </figure>
+  <div class="retro-two-column protein-methods">
+    <div>
+      <h3>BFN: Accumulate class information through Bayesian updates</h3>
+      <p>The state \(\boldsymbol\theta\) is a probability belief over \(K\) amino acid classes, initialized to a uniform distribution. The network reads these probabilities and predicts a clean-token distribution \(q\).</p>
+      <div class="retro-equation">\[m\sim\mathcal{N}\!\left(a(K e_x-\mathbf{1}),\,aK I\right).\]</div>
+      <div class="retro-equation">\[\theta'_k=\frac{\theta_k\exp(m_k)}{\sum_j\theta_j\exp(m_j)}.\]</div>
+      <p>\(e_x\) is the token's one-hot encoding, and \(a&gt;0\) controls the information added in this step. Training constructs a noisy message \(m\) from the true token. During generation, a predicted token is sampled from \(q\), a message is constructed, and the belief is updated. The update follows Bayes' rule, and the network continues to use the full sequence context at the next step.</p>
+      <p class="retro-caption">Rather than directly updating a noisy token, <a href="#reference-bfn">BFN</a> updates continuously valued class probabilities.</p>
+    </div>
+    <div>
+      <h3>DFM: Update discrete tokens using transition rates</h3>
+      <p>DFM-abs starts from an entirely masked sequence; DFM-uni starts from uniformly random tokens. Taking the linear masking path of DFM-abs as an example, \(t\) runs from 0 to 1, and an individual position gradually changes from mask \(M\) to clean token \(x\):</p>
+      <div class="retro-equation">\[p_t(z\mid x)=(1-t)\delta_M(z)+t\delta_x(z).\]</div>
+      <div class="retro-equation">\[R_t(M\!\to\!k)=\frac{q(k\mid\boldsymbol{x}_t,t)}{1-t},\qquad t&lt;1.\]</div>
+      <p>\(\delta\) denotes a distribution concentrated on the specified token, \(k\) is an amino acid class, and \(q\) predicts the clean token. Over a small interval \(\Delta t\), a masked position jumps to \(k\) with probability approximately \(R_t\Delta t\). In the base generation process without a corrector, positions that have been revealed remain unchanged.</p>
+      <p class="retro-caption"><a href="#reference-dfm">DFM</a> constructs discrete transitions from the clean-token posterior, moving the probability distribution along the chosen path from noise toward a sequence.</p>
+    </div>
+  </div>
+  <div class="retro-callout"><strong>The residual changes the prediction; the generative framework determines the update</strong><p>Both can use \(q=\operatorname{softmax}(\ell_{\mathrm{prior}}+r_\phi)\) as the clean-token prediction. BFN uses it to generate messages and update beliefs; DFM uses it to construct transition rates. The conditional residual in the preceding section therefore retains the same division of work.</p></div>
+</section>
+
+<section class="retro-chapter" id="protein-pretraining">
+  <p class="retro-kicker">A general prior for sequence generation</p>
+  <h2><span class="retro-chapter__number">05</span> Check that the base model is learning before training the conditional residual</h2>
+  <p class="retro-lede">The residual approach depends on the base generator supplying a usable prior. Pretraining first learns generative patterns in natural protein sequences; the downstream stage then freezes the prior and trains a correction for the property condition.</p>
+  <div class="protein-evidence-grid" aria-label="Observed pretraining validation curves">
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h3>BFN · Pretraining</h3>
+      <p class="protein-plot-axis">Vertical axis: Validation loss</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/pretraining-bfn.png">
+        <img src="{{ base_path }}/images/research/protein-control/pretraining-bfn.png" alt="BFN pretraining validation loss curves from different runs: an overall early decline, with fluctuations still present in the later part of the longer run." width="1929" height="1094" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 3(a) · BFN validation histories. Different lines correspond to different pretraining runs.</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h3>DFM · Masking-path pretraining</h3>
+      <p class="protein-plot-axis">Vertical axis: Validation loss</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/pretraining-dfm.png">
+        <img src="{{ base_path }}/images/research/protein-control/pretraining-dfm.png" alt="Masking-path DFM pretraining validation loss curves from different runs, showing an overall decline and continued gradual improvement." width="1459" height="791" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 3(b) · DFM validation histories.</figcaption>
+    </figure>
+  </div>
+  <p>Both approaches show periods of declining loss: BFN still fluctuates later in training, while masking-path DFM continues to improve more gradually. These histories support exploring downstream methods, but do not establish that the base models are fully trained.</p>
+  <p>Using such a prior for residual prediction lets the task network draw on learned sequence patterns, while also exposing it to limits in the prior's coverage. Further analysis needs to distinguish whether weaknesses in conditional control arise from the base generation capability, residual capacity, or the training data and evaluation protocol.</p>
+  <div class="retro-callout"><strong>Evaluate loss reduction and property control separately</strong><p>Pretraining loss assesses how well the base model learns the generative objective; downstream experiments assess whether candidates approach the target property. Improvement in the former cannot substitute for the latter, nor establish that new sequences have the desired function in real experiments.</p></div>
+</section>
+
+<section class="retro-chapter" id="protein-evaluation">
+  <p class="retro-kicker">Residual prediction · Performance relative to the baseline</p>
+  <h2><span class="retro-chapter__number">06</span> Which property tasks benefit from the residual approach?</h2>
+  <p class="retro-lede">The experiments compare residual approaches for BFN and masking-path DFM against their respective single-network baselines for direct conditional prediction. The magnitude of the changes varies across tasks, and improvements must be read alongside evaluation coverage and editing behavior.</p>
+  <p>The baseline already uses protein language model initialization, but does not load this project's generative pretraining weights. The residual approach loads and freezes the generative prior, then trains the conditional residual. This comparison measures the full approach; it does not isolate the individual contributions of generative pretraining, model capacity, and residual parameterization.</p>
+  <h3>Validation curves during conditional training</h3>
+  <div class="protein-evidence-grid" aria-label="Observed training diagnostics for the variant-effect task">
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h3>BFN · Downstream validation loss</h3>
+      <p class="protein-plot-axis">Vertical axis: Validation loss</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="BFN validation loss for the variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="641" height="412" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 4(a) · BFN validation histories for the generative objective on the variant-effect task.</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h3>DFM · Downstream validation loss</h3>
+      <p class="protein-plot-axis">Vertical axis: Validation loss</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="Masking-path DFM validation loss for the variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="617" height="412" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 4(b) · Masking-path DFM validation histories for the generative objective on the same task.</figcaption>
+    </figure>
+  </div>
+  <div class="protein-plot-legend" aria-label="Legend shared by both plots">
+    <span><i class="protein-line-baseline" aria-hidden="true"></i>baseline</span>
+    <span><i class="protein-line-pretrain" aria-hidden="true"></i>pretrain</span>
+    <span><i class="protein-line-finetune" aria-hidden="true"></i>finetune</span>
+    <span><i class="protein-line-residual" aria-hidden="true"></i>residual</span>
+  </div>
+  <p class="retro-caption">The four approaches are direct conditional training (baseline), training all parameters after loading generative pretraining weights (pretrain), training only condition injection with the backbone frozen (finetune), and residual training with a frozen prior (residual). The gray bands show the fluctuation ranges in the logs, not confidence intervals across random seeds. Validation loss measures fit to the generative objective, rather than property-control error.</p>
+  <h3>Approximate comparative results for property control</h3>
+  <div class="retro-results-grid" aria-label="Representative approximate relative changes">
+    <div><strong>About 3%–4%</strong><span class="retro-result__label">BFN · Variant effect</span><p>Relative increase in Spearman rank correlation, with mean absolute error essentially unchanged.</p></div>
+    <div><strong>About 6%</strong><span class="retro-result__label">DFM · Variant effect</span><p>Relative reduction in RMSE within a comparison using the same masking path.</p></div>
+    <div><strong>36.1%</strong><span class="retro-result__label">DFM · Binding property</span><p>Relative reduction in MSE on evaluable edits, with essentially comparable coverage.</p></div>
+  </div>
+</section>
+
+<section class="retro-chapter" id="protein-outlook">
+  <p class="retro-kicker">Method recap</p>
+  <h2><span class="retro-chapter__number">07</span> Explicitly separate the sequence prior and conditional correction to improve property control</h2>
+  <p class="retro-lede">The residual approach explicitly separates the sequence prior from the conditional correction and improves variant-effect control over the corresponding baselines. DFM’s improvement is more pronounced on the binding-property task.</p>
+  <h3>Understand the division of work through score decomposition</h3>
+  <div class="retro-equation">\[s_{\mathrm{c}}=s_{\mathrm{u}}+\nabla_{x_t}\log p_t(y\mid x_t).\]</div>
+  <p>The unconditional term supplies the language of protein sequences, while the conditional term supplies the direction toward the target property. One model learns which sequences are more plausible; the other learns how to follow the target condition.</p>
+  <h3>Implement this intuition with a residual for discrete sequences</h3>
+  <div class="retro-equation">\[\ell_{\mathrm{cond}}=\operatorname{stopgrad}(\ell_{\mathrm{prior}})+r_\phi.\]</div>
+  <p>The base model learns sequence patterns in advance and remains frozen; the residual model focuses on learning the conditional correction. Together, they predict amino acids at each step, letting BFN and DFM reuse the learned sequence language for targeted generation.</p>
+</section>
