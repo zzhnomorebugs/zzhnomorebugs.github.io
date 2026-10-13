@@ -9,18 +9,21 @@ lang_switch_url: /cv/
 {% include base_path %}
 
 <header class="cv-hero">
+<img class="cv-hero-art" src="{{ base_path }}/images/cv/research-network.svg" alt="" width="400" height="250" aria-hidden="true">
 <div class="cv-identity">
 <img class="cv-avatar" src="{{ base_path }}/images/Zhou_Zihan_20260306_thumb.webp" alt="周子涵" width="88" height="88">
 <div><p class="cv-eyebrow">学术与研究履历 / CV</p>
 <h1>周子涵 <span>Zihan Zhou</span></h1></div>
 </div>
-<a class="cv-download" href="{{ base_path }}/files/Zihan-Zhou-AI4Science-ZH.pdf"><span aria-hidden="true">↓</span> 下载简历 <span class="cv-filetype">PDF</span></a>
+<a class="cv-download" href="{{ base_path }}/files/Zihan-Zhou-AI4Science-ZH.pdf">{% include cv-icon.html name="download" %} 下载简历 <span class="cv-filetype">PDF</span></a>
 <div class="cv-tags"><span>AI+化学</span><span>分子生成</span><span>AI4Science 算法研发</span></div>
 <div class="cv-summary" markdown="1">
 数据科学博士研究生，专注生成模型及其在科学问题中的应用，研究涵盖单步逆合成、蛋白质序列生成与物理先验建模。在 TPAMI、ICML、NeurIPS、ICLR 等发表论文。
 </div>
-<div class="cv-contact" markdown="1">
-13098696800 · [zihanzhou1@link.cuhk.edu.cn](mailto:zihanzhou1@link.cuhk.edu.cn) · [zzhnomorebugs.github.io](https://zzhnomorebugs.github.io/)
+<div class="cv-contact">
+<a href="tel:+8613098696800">{% include cv-icon.html name="phone" %} 13098696800</a>
+<a href="mailto:zihanzhou1@link.cuhk.edu.cn">{% include cv-icon.html name="mail" %} zihanzhou1@link.cuhk.edu.cn</a>
+<a href="https://zzhnomorebugs.github.io/">{% include cv-icon.html name="web" %} zzhnomorebugs.github.io</a>
 </div>
 </header>
 
@@ -47,7 +50,8 @@ lang_switch_url: /cv/
 <section id="education" class="cv-section cv-section--education">
 <h2><span>01</span>教育背景</h2>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution cv-institution--education">{% include cv-icon.html name="education" %}</span>
 <div class="cv-entry-head"><h3>香港中文大学（深圳）</h3><span class="cv-date">2023.09 - 2027.06（预计）</span></div>
 <p class="cv-role">数据科学 · 博士在读</p>
 
@@ -56,7 +60,8 @@ lang_switch_url: /cv/
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution cv-institution--education">{% include cv-icon.html name="education" %}</span>
 <div class="cv-entry-head"><h3>香港中文大学（深圳）</h3><span class="cv-date">2019.09 - 2023.06</span></div>
 <p class="cv-role">数学与应用数学 · 理学学士</p>
 
@@ -70,7 +75,8 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 <section id="internships" class="cv-section cv-section--internships">
 <h2><span>02</span>研究实习</h2>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/bytedance-seed.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>字节跳动</h3><span class="cv-date">2026.08 - 至今</span></div>
 <p class="cv-role">AI for Science实习生-Seed</p>
 
@@ -79,7 +85,8 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/tencent.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>腾讯生命科学实验室</h3><span class="cv-date">2026.06 - 2026.08</span></div>
 <p class="cv-role">应用研究实习生</p>
 
@@ -90,7 +97,8 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/shanghai-ai-lab.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>上海人工智能实验室</h3><span class="cv-date">2025.08 - 2026.05</span></div>
 <p class="cv-role">AI4Science 研究实习生（逆合成）</p>
 
@@ -99,7 +107,8 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/shanghai-ai-lab.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>上海人工智能实验室</h3><span class="cv-date">2025.06 - 2025.12</span></div>
 <p class="cv-role">AI4Science 研究实习生（蛋白质）</p>
 
@@ -114,7 +123,10 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 <h2><span>03</span>代表性研究项目</h2>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>反应中心引导的分子逆合成</h3><span class="cv-badge">ICML 2026</span></div>
+{% include cv-project-visual.html image="images/research/retro/framework.webp" url="/zh/research/retro/" alt="反应中心引导逆合成的训练与生成框架" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 上海人工智能实验室 · 2025.08–2026.05
@@ -128,7 +140,10 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>蛋白质序列生成｜MSA 建模与性质可控编辑</h3><span class="cv-badge">上海人工智能实验室 · 腾讯生命科学实验室</span></div>
+{% include cv-project-visual.html image="images/cv/protein-sequence.svg" alt="蛋白质序列建模的抽象示意" caption="序列建模与可控生成" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 MSA 建模：上海人工智能实验室，2025.06–2025.12；可控编辑：腾讯，2026.06–2026.08
@@ -144,7 +159,10 @@ MSA 建模：上海人工智能实验室，2025.06–2025.12；可控编辑：�
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>分子三维构象生成｜几何扩散与高效采样</h3><span class="cv-badge">TPAMI</span></div>
+{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="https://arxiv.org/abs/2403.01430" alt="SE(3) 不变空间中的几何扩散框架" external=true %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 - **距离分布建模（SDDiff）：**针对给定分子图的三维构象生成，刻画原子间距扰动分布从 Gaussian 向 Maxwell–Boltzmann 的过渡，提出 shifting score 扩散模型，兼顾旋转／平移对称性与几何可行性。
@@ -156,7 +174,10 @@ MSA 建模：上海人工智能实验室，2025.06–2025.12；可控编辑：�
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>物理先验约束下的动力学生成</h3><span class="cv-badge">ICLR 2025</span></div>
+{% include cv-project-visual.html image="images/research/physical-dynamics/three-body-prior.webp" url="/zh/research/physical-dynamics/" alt="物理先验约束下生成的三体运动轨迹" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 - **核心方法：**将旋转／平移不变性等分布先验，以及守恒律、PDE 等物理约束融入扩散生成过程，缓解仅拟合数据分布时生成轨迹与物理规律不一致的问题。
@@ -174,35 +195,53 @@ MSA 建模：上海人工智能实验室，2025.06–2025.12；可控编辑：�
 \* 共同第一作者；+ 项目指导；# 通讯作者。本人姓名加粗。
 </div>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/ieee.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [On Diffusion Process in SE(3)-invariant Space.](https://arxiv.org/abs/2403.01430)<br>
 **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. IEEE TPAMI.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/icml.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching.](https://arxiv.org/abs/2602.13136)<br>
 Chenguang Wang<sup>*</sup>, **Zihan Zhou**<sup>*</sup>, Lei Bai, Tianshu Yu<sup>#</sup>. ICML 2026.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/iclr.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Incomplete Data, Complete Dynamics: A Diffusion Approach.](https://arxiv.org/abs/2509.20098)<br>
 **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu<sup>#</sup>. ICLR 2026.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/neurips.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.](https://arxiv.org/abs/2511.05510)<br>
 Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu<sup>#</sup>, Mingchen Chen<sup>#</sup>. NeurIPS 2025.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/iclr.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Generating Physical Dynamics under Priors.](https://arxiv.org/abs/2409.00730)<br>
 **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. ICLR 2025.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/icml.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Learning to Decouple Complex Systems.](https://proceedings.mlr.press/v202/zhou23q.html)<br>
 **Zihan Zhou**, Tianshu Yu<sup>#</sup>. ICML 2023.
 </div>
+</article>
 
 </section>
 

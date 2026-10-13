@@ -1,0 +1,6 @@
+<figure class="cv-project-visual">
+  {% if include.url %}<a class="cv-project-preview" href="{% unless include.external %}{{ base_path }}{% endunless %}{{ include.url }}">{% else %}<div class="cv-project-preview">{% endif %}
+    <img src="{{ base_path }}/{{ include.image }}" alt="{{ include.alt }}" loading="lazy" decoding="async" width="480" height="260">
+    <span>{% if include.url %}{% if page.lang == 'zh-CN' %}{% if include.external %}查看论文{% else %}查看项目讲解{% endif %}{% else %}{% if include.external %}Read paper{% else %}Explore project{% endif %}{% endif %} <span aria-hidden="true">↗</span>{% else %}{{ include.caption }}{% endif %}</span>
+  {% if include.url %}</a>{% else %}</div>{% endif %}
+</figure>

@@ -10,18 +10,21 @@ redirect_from:
 {% include base_path %}
 
 <header class="cv-hero">
+<img class="cv-hero-art" src="{{ base_path }}/images/cv/research-network.svg" alt="" width="400" height="250" aria-hidden="true">
 <div class="cv-identity">
 <img class="cv-avatar" src="{{ base_path }}/images/Zhou_Zihan_20260306_thumb.webp" alt="Zihan Zhou" width="88" height="88">
 <div><p class="cv-eyebrow">ACADEMIC & RESEARCH / CV</p>
 <h1>Zihan Zhou <span>周子涵</span></h1></div>
 </div>
-<a class="cv-download" href="{{ base_path }}/files/Zihan-Zhou-AI4Science-EN.pdf"><span aria-hidden="true">↓</span> Download CV <span class="cv-filetype">PDF</span></a>
+<a class="cv-download" href="{{ base_path }}/files/Zihan-Zhou-AI4Science-EN.pdf">{% include cv-icon.html name="download" %} Download CV <span class="cv-filetype">PDF</span></a>
 <div class="cv-tags"><span>AI for Chemistry</span><span>Molecular Generation</span><span>AI for Science Research</span></div>
 <div class="cv-summary" markdown="1">
 Ph.D. student in Data Science focused on generative models for scientific applications, including single-step retrosynthesis, protein sequence generation, and modeling with physical priors. Publications in TPAMI, ICML, NeurIPS, and ICLR.
 </div>
-<div class="cv-contact" markdown="1">
-+86 13098696800 · [zihanzhou1@link.cuhk.edu.cn](mailto:zihanzhou1@link.cuhk.edu.cn) · [zzhnomorebugs.github.io](https://zzhnomorebugs.github.io/)
+<div class="cv-contact">
+<a href="tel:+8613098696800">{% include cv-icon.html name="phone" %} +86 13098696800</a>
+<a href="mailto:zihanzhou1@link.cuhk.edu.cn">{% include cv-icon.html name="mail" %} zihanzhou1@link.cuhk.edu.cn</a>
+<a href="https://zzhnomorebugs.github.io/">{% include cv-icon.html name="web" %} zzhnomorebugs.github.io</a>
 </div>
 </header>
 
@@ -48,7 +51,8 @@ Ph.D. student in Data Science focused on generative models for scientific applic
 <section id="education" class="cv-section cv-section--education">
 <h2><span>01</span>Education</h2>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution cv-institution--education">{% include cv-icon.html name="education" %}</span>
 <div class="cv-entry-head"><h3>The Chinese University of Hong Kong, Shenzhen</h3><span class="cv-date">Sep. 2023 - Jun. 2027 (expected)</span></div>
 <p class="cv-role">Ph.D. in Data Science</p>
 
@@ -57,7 +61,8 @@ Advisor: Prof. [Tianshu Yu](https://mypage.cuhk.edu.cn/academics/yutianshu/)
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution cv-institution--education">{% include cv-icon.html name="education" %}</span>
 <div class="cv-entry-head"><h3>The Chinese University of Hong Kong, Shenzhen</h3><span class="cv-date">Sep. 2019 - Jun. 2023</span></div>
 <p class="cv-role">B.Sc. Mathematics and Applied Mathematics</p>
 
@@ -71,7 +76,8 @@ GPA: 3.513 / 4.0 · First Class Honors
 <section id="internships" class="cv-section cv-section--internships">
 <h2><span>02</span>Research Internships</h2>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/bytedance-seed.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>ByteDance Seed</h3><span class="cv-date">Aug. 2026 - Present</span></div>
 <p class="cv-role">AI for Science Intern</p>
 
@@ -80,7 +86,8 @@ Conduct research in AI for Science.
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/tencent.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>Tencent Life Sciences Lab</h3><span class="cv-date">Jun. 2026 - Aug. 2026</span></div>
 <p class="cv-role">Applied Research Intern</p>
 
@@ -91,7 +98,8 @@ Conduct research in AI for Science.
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/shanghai-ai-lab.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>Shanghai AI Laboratory</h3><span class="cv-date">Aug. 2025 - May 2026</span></div>
 <p class="cv-role">AI for Science Research Intern (Retrosynthesis)</p>
 
@@ -100,7 +108,8 @@ Conduct research in AI for Science.
 </div>
 </article>
 
-<article class="cv-entry">
+<article class="cv-entry cv-timeline-entry">
+<span class="cv-institution"><img src="{{ base_path }}/images/experience/logos/shanghai-ai-lab.png" alt="" loading="lazy" width="44" height="44"></span>
 <div class="cv-entry-head"><h3>Shanghai AI Laboratory</h3><span class="cv-date">Jun. 2025 - Dec. 2025</span></div>
 <p class="cv-role">AI for Science Research Intern (Proteins)</p>
 
@@ -115,7 +124,10 @@ Conduct research in AI for Science.
 <h2><span>03</span>Selected Research Projects</h2>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>Reaction-Center-Guided Molecular Retrosynthesis</h3><span class="cv-badge">ICML 2026</span></div>
+{% include cv-project-visual.html image="images/research/retro/framework.webp" url="/research/retro/" alt="Training and generation framework for reaction-center-guided retrosynthesis" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 Shanghai AI Laboratory · Aug. 2025 - May 2026
@@ -129,7 +141,10 @@ Shanghai AI Laboratory · Aug. 2025 - May 2026
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>Protein Sequence Generation: MSA Modeling and Property-Controlled Editing</h3></div>
+{% include cv-project-visual.html image="images/cv/protein-sequence.svg" alt="Abstract illustration of protein sequence modeling" caption="Sequence modeling & controlled generation" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 MSA modeling: Shanghai AI Laboratory, Jun. - Dec. 2025; controllable editing: Tencent, Jun. - Aug. 2026
@@ -145,7 +160,10 @@ MSA modeling: Shanghai AI Laboratory, Jun. - Dec. 2025; controllable editing: Te
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>3D Molecular Conformation Generation: Geometric Diffusion and Efficient Sampling</h3><span class="cv-badge">TPAMI</span></div>
+{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="https://arxiv.org/abs/2403.01430" alt="Geometric diffusion in SE(3)-invariant space" external=true %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 - **Distance distribution modeling (SDDiff):** For 3D conformation generation from molecular graphs, characterized the transition of perturbed interatomic distance distributions from Gaussian to Maxwell–Boltzmann. Proposed a shifting-score diffusion model accounting for rotational / translational symmetry and geometric feasibility.
@@ -157,7 +175,10 @@ MSA modeling: Shanghai AI Laboratory, Jun. - Dec. 2025; controllable editing: Te
 </article>
 
 <article class="cv-entry cv-project">
+<div class="cv-project-top">
 <div class="cv-entry-head"><h3>Generating Physical Dynamics under Priors</h3><span class="cv-badge">ICLR 2025</span></div>
+{% include cv-project-visual.html image="images/research/physical-dynamics/three-body-prior.webp" url="/research/physical-dynamics/" alt="Generated three-body trajectories with physical priors" %}
+</div>
 
 <div class="cv-entry-text" markdown="1">
 - **Approach:** Incorporated distributional priors such as rotational / translational invariance, together with physical constraints such as conservation laws and PDEs, into diffusion generation to reduce inconsistencies between generated trajectories and physical laws.
@@ -175,35 +196,53 @@ MSA modeling: Shanghai AI Laboratory, Jun. - Dec. 2025; controllable editing: Te
 \* Equal contribution; + Project supervision; # Corresponding author. Name in bold.
 </div>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/ieee.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [On Diffusion Process in SE(3)-invariant Space.](https://arxiv.org/abs/2403.01430)<br>
 **Zihan Zhou**, Ruiying Liu, Jiachen Zheng, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. IEEE TPAMI.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/icml.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Order Matters in Retrosynthesis: Structure-aware Generation via Reaction-Center-Guided Discrete Flow Matching.](https://arxiv.org/abs/2602.13136)<br>
 Chenguang Wang<sup>*</sup>, **Zihan Zhou**<sup>*</sup>, Lei Bai, Tianshu Yu<sup>#</sup>. ICML 2026.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/iclr.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Incomplete Data, Complete Dynamics: A Diffusion Approach.](https://arxiv.org/abs/2509.20098)<br>
 **Zihan Zhou**, Chenguang Wang, Hongyi Ye, Yongtao Guan, Tianshu Yu<sup>#</sup>. ICLR 2026.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/neurips.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [TEMPO: Temporal Multi-scale Autoregressive Generation of Protein Conformational Ensembles.](https://arxiv.org/abs/2511.05510)<br>
 Yaoyao Xu, Di Wang, **Zihan Zhou**, Tianshu Yu<sup>#</sup>, Mingchen Chen<sup>#</sup>. NeurIPS 2025.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/iclr.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Generating Physical Dynamics under Priors.](https://arxiv.org/abs/2409.00730)<br>
 **Zihan Zhou**, Xiaoxue Wang, Tianshu Yu<sup>#</sup>. ICLR 2025.
 </div>
+</article>
 
-<div class="cv-paper" markdown="1">
+<article class="cv-paper cv-paper--published">
+<span class="cv-paper-mark"><img src="{{ base_path }}/images/venues/icml.svg" alt="" loading="lazy" width="32" height="32"></span>
+<div class="cv-paper-text" markdown="1">
 [Learning to Decouple Complex Systems.](https://proceedings.mlr.press/v202/zhou23q.html)<br>
 **Zihan Zhou**, Tianshu Yu<sup>#</sup>. ICML 2023.
 </div>
+</article>
 
 </section>
 
