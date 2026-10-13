@@ -1,0 +1,24 @@
+{% assign field_labels = include.labels | split: '|' %}
+<div class="incomplete-field-example">
+  <h4>{{ include.heading }}</h4>
+  <div class="incomplete-field-time" aria-hidden="true">
+    <picture>
+      <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}-poster.webp">
+      <img src="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}.webp" width="640" height="352" loading="lazy" decoding="async" alt="">
+    </picture>
+  </div>
+  <div class="incomplete-animated-panels">
+    {% for label in field_labels %}
+    <div class="incomplete-animated-panel">
+      <p class="incomplete-animated-panel__label">{{ label }}</p>
+      <a class="image-popup incomplete-animated-panel__viewport" href="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}.webp" title="{{ include.heading | escape }} · {{ include.labels | replace: '|', ' / ' | escape }}" style="--field-panel: {{ forloop.index0 }}">
+        <picture>
+          <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}-poster.webp">
+          <img src="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}.webp" width="640" height="352" loading="lazy" decoding="async" alt="{{ include.heading | escape }} · {{ label | escape }}">
+        </picture>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+  <img class="incomplete-field-colorbar" src="{{ base_path }}/images/research/incomplete-learning/{{ include.stem }}-colorbar.webp" loading="lazy" alt="{% if page.lang == 'zh-CN' %}两幅场及所有时间帧共用的固定色标{% else %}Fixed color scale shared by both fields and all time frames{% endif %}">
+</div>

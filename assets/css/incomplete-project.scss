@@ -99,6 +99,71 @@
 .incomplete-project .incomplete-algorithm { margin: 1.7rem 0; padding-left: 1.6rem; }
 .incomplete-project .incomplete-algorithm li { padding-left: 0.3rem; margin-top: 0.8rem; }
 
+.incomplete-project .incomplete-animation-group { display: block; width: 100%; margin: 1.8rem 0; }
+.incomplete-project .incomplete-field-example { width: 100%; max-width: 760px; margin-right: auto; margin-left: auto; }
+.incomplete-project .incomplete-field-example + .incomplete-field-example { margin-top: 2rem; }
+.incomplete-project .incomplete-field-example h4 {
+  margin: 0 0 0.9rem;
+  color: var(--retro-accent);
+  font-size: 0.9rem;
+  text-align: center;
+}
+.incomplete-project .incomplete-field-time {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 320px);
+  aspect-ratio: 10 / 1;
+  margin: -0.4rem auto 0.4rem;
+}
+.incomplete-project .incomplete-field-time img {
+  position: absolute;
+  top: -1000%;
+  left: 0;
+  width: 200%;
+  max-width: none;
+  height: 1100%;
+  margin: 0;
+}
+.incomplete-project .incomplete-animated-panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.incomplete-project .incomplete-animated-panel { min-width: 0; }
+.incomplete-project .incomplete-animated-panel__label {
+  margin: 0 0 0.6rem;
+  text-align: center;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.incomplete-project .incomplete-animated-panel__viewport {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  aspect-ratio: 1;
+  border: 1px solid var(--retro-line);
+  border-radius: 3px;
+  background: white;
+}
+/* Both panels use one shared animation, so the displayed time stays aligned. */
+.incomplete-project .incomplete-animated-panel__viewport img {
+  position: absolute;
+  top: 0;
+  left: calc(var(--field-panel) * -100%);
+  width: 200%;
+  max-width: none;
+  height: 110%;
+  margin: 0;
+}
+.incomplete-project .incomplete-field-example > .incomplete-field-colorbar {
+  display: block;
+  width: min(100%, 560px);
+  height: auto;
+  margin: 0.5rem auto 0;
+}
+
 @media (max-width: 740px) {
   .incomplete-project .incomplete-theorem { padding: 0.9rem 0.75rem; }
   .incomplete-project .incomplete-theorem p,
@@ -109,13 +174,12 @@
   .incomplete-project .incomplete-heatmaps,
   .incomplete-project .incomplete-field-panels { grid-template-columns: 1fr; gap: 1.4rem; }
   .incomplete-project .incomplete-field-panels .retro-figure { width: 100%; max-width: 400px; margin: 0 auto; }
+  .incomplete-project .incomplete-animated-panels { grid-template-columns: 1fr; max-width: 400px; gap: 1rem; }
   .incomplete-project .incomplete-colorbar { grid-template-columns: 1fr; gap: 0.3rem; text-align: center; }
-  .incomplete-project #incomplete-idcd-timeseries > a,
   .incomplete-project #incomplete-results .incomplete-compact-figure > a {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  .incomplete-project #incomplete-idcd-timeseries img,
   .incomplete-project #incomplete-results .incomplete-compact-figure img {
     min-width: 760px;
     max-width: none;

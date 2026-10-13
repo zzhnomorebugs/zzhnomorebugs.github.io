@@ -538,15 +538,16 @@ project_chapters:
   <p class="retro-lede">不同阶段回答不同问题。先检查划分是否造成死区，再看真实观测几何下的重建，最后用参数匹配对照区分局部先验与残差修正的作用。</p>
   <h3>结构化缺失：改变划分，就能显著改变学习结果</h3>
   <p>在 Navier–Stokes 的九块中观测八块（8/9 观测比例）设置下，相同 IDCD 框架从像素划分改为块划分，MSE 从 \(1.4925\pm0.2609\) 降为 \(0.7592\pm0.0386\)，约降低 <strong>49.1%</strong>。这直接检验了“划分应匹配观测结构”的设计，而不是仅比较模型名称。</p>
-  <figure class="retro-figure incomplete-compact-figure">
-    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp"><img src="{{ base_path }}/images/research/incomplete-learning/block-reconstruction.webp" width="2400" height="1350" loading="lazy" alt="Navier–Stokes 块缺失条件下，Ground Truth、IDCD 和 MissDiff 的场重建示例"></a>
-    <figcaption class="retro-figure__caption">图 6 · 块缺失下的 Navier–Stokes 重建，按 Ground Truth、IDCD（Ours）、MissDiff 排列。局部纹理与跨缺失区域的连续性说明，模型不能只在原始已观测位置拟合数值。该图是定性案例，整体改善以上述同设置消融为准。</figcaption>
+  <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-blocks">
+    {% include incomplete-field-animation.html stem="idcd-ns-block" heading="(a) Navier–Stokes · 块状缺失" labels="原始场|模型补全" %}
+    {% include incomplete-field-animation.html stem="idcd-advection-four-blocks" heading="(b) 二维平流 · 四块缺失" labels="实际观测|模型补全" %}
+    <figcaption class="retro-figure__caption">图 6 · 块状缺失下的场重建。(a) Navier–Stokes 在九块中缺失一块的设置下，原始场与模型补全同步播放 100 个时间帧（T=0–99）。(b) 二维平流在四块缺失下的实际观测与补全，共 50 帧（T=0–49）；白色为缺失，约 52.7% 的位置有观测。每组共用固定色标，可沿时间观察空间纹理与跨缺失区域的衔接。</figcaption>
   </figure>
-  <h3>稀疏点观测：沿时间检查补全的场结构</h3>
-  <p>块状缺失之外，也可以检查只有少量空间点被观测的情形。下面沿同一条 Navier–Stokes 轨迹展开原始场与重建场，观察模型是否保留主要涡旋及其随时间的变化。</p>
-  <figure class="retro-figure" id="incomplete-idcd-timeseries">
-    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp"><img src="{{ base_path }}/images/research/incomplete-learning/idcd-ns-sparse.webp" width="2400" height="670" loading="lazy" alt="20%空间点观测下Navier–Stokes的原始场与IDCD重建，上下两排、七个时间点"></a>
-    <figcaption class="retro-figure__caption">图 7 · 20% 空间点观测设置下的 Navier–Stokes 重建案例。上排为原始场，下排为 IDCD 补全；七列为同一序列的 T=0、16、33、49、66、82、99，表示物理时间而非去噪迭代。主要涡旋得到恢复，细节仍可见平滑与局部偏差。</figcaption>
+  <h3>浅水方程：沿完整时间序列检查补全</h3>
+  <p>再看浅水方程在四块缺失下的重建。实际观测与模型补全同步播放整段序列，可以检查场结构随时间的变化，以及缺失区域与周围观测的衔接。</p>
+  <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-timeseries">
+    {% include incomplete-field-animation.html stem="idcd-shallow-water-four-blocks" heading="浅水方程 · 四块缺失" labels="实际观测|模型补全" %}
+    <figcaption class="retro-figure__caption">图 7 · 浅水方程在四块缺失下的重建，展示一个样本的第一个场通道。左侧为实际观测，约 55.1% 的位置有观测，白色为缺失；右侧为模型补全，保留给定观测。两侧共用固定色标，同步播放全部 50 个物理时间帧（T=0–49），可观察完整序列中的空间结构与局部偏差。</figcaption>
   </figure>
   <h3>真实海洋遮挡：只在存在参考测量的位置评分</h3>
   <p>真实海洋场本来就没有完整真值。评测把另一幅真实掩码叠加到当前样本支持上，输入与评分位置在方法间共享；只在“原始已观测、现在暂时隐藏”的位置计算 MSE 与 PSNR。</p>
