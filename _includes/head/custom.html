@@ -10,6 +10,9 @@
 <link rel="icon" href="{{ base_path }}/images/favicon.ico"/>
 <meta name="theme-color" content="#fafaf8"/>
 <link rel="stylesheet" href="{{ base_path }}/assets/css/academicons.css"/>
+{% if page.layout == 'cv' %}
+<link rel="stylesheet" href="{{ base_path }}/assets/css/cv.css"/>
+{% endif %}
 {% if page.research_project %}
 <link rel="stylesheet" href="{{ base_path }}/assets/css/retro-project.css?v={{ site.time | date: '%s' }}"/>
 {% if page.project_stylesheet %}<link rel="stylesheet" href="{{ base_path }}/assets/css/{{ page.project_stylesheet }}?v={{ site.time | date: '%s' }}"/>{% endif %}
