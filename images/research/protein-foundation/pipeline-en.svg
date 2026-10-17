@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="650" viewBox="0 0 1440 650" role="img" aria-labelledby="title desc">
+  <title id="title">MSA preprocessing and training data pipeline</title>
+  <desc id="desc">An index maps each target ID to a file position in the raw MSA data, so the program can seek to the entry and read it without repeatedly scanning from the beginning. Data is split across multiple CPU nodes for parallel parsing, tokenization, and column-wise aggregation. HDF5 stores integer counts C and the number N of MSA sequences used in the aggregation. During training, loading computes C divided by N to recover the profile for the model.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M1 1 L8 5 L1 9" fill="none" stroke="#25766c" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:Arial,"Microsoft YaHei","PingFang SC",sans-serif;fill:#243a35}
+      .card{fill:#fff;stroke:#d6e3dc;stroke-width:2}
+      .step{font-size:24px;font-weight:700;fill:#25766c}
+      .heading{font-size:24px;font-weight:700}
+      .body{font-size:22px;fill:#50615b}
+      .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .soft{fill:#e9f3ed}
+      .gold{fill:#e6c67b}
+    </style>
+  </defs>
+  <rect width="1440" height="650" fill="#faf9f4"/>
+  <text x="56" y="53" font-size="24" letter-spacing="2" fill="#25766c">DATA PIPELINE</text>
+  <text x="56" y="101" font-size="36" font-weight="700">From large-scale MSAs to profiles for training</text>
+
+  <rect class="card" x="56" y="145" width="240" height="354" rx="20"/>
+  <text class="step" x="80" y="184">01</text>
+  <text class="heading" x="80" y="225">Raw MSA data</text>
+  <g aria-hidden="true">
+    <rect x="80" y="256" width="192" height="102" rx="11" fill="#f1f5f0"/>
+    <g fill="#72a997">
+      <path d="M94 274h18v13H94z M118 274h18v13h-18z M142 274h18v13h-18z M190 274h18v13h-18z M214 274h18v13h-18z M238 274h18v13h-18z"/>
+      <path d="M94 296h18v13H94z M142 296h18v13h-18z M166 296h18v13h-18z M190 296h18v13h-18z M214 296h18v13h-18z"/>
+      <path d="M94 318h18v13H94z M118 318h18v13h-18z M142 318h18v13h-18z M166 318h18v13h-18z M214 318h18v13h-18z M238 318h18v13h-18z"/>
+    </g>
+    <path d="M166 274h18v13h-18z M118 296h18v13h-18z M238 296h18v13h-18z M190 318h18v13h-18z" fill="#e6c67b"/>
+  </g>
+  <text class="body" x="80" y="405">Aligned sequences</text>
+  <text class="body" x="80" y="447">Grouped by target</text>
+
+  <path class="line" d="M301 322 H323" marker-end="url(#arrow)"/>
+  <rect class="card" x="328" y="145" width="240" height="354" rx="20"/>
+  <text class="step" x="352" y="184">02</text>
+  <text class="heading" x="352" y="225">Position index</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="352" y="269" width="66" height="72" rx="10"/>
+    <text x="385" y="315" text-anchor="middle" font-size="27" font-weight="700" fill="#25766c">ID</text>
+    <path class="line" d="M430 305 H455" marker-end="url(#arrow)"/>
+    <rect x="469" y="269" width="75" height="72" rx="10" fill="#f6efd9"/>
+    <text x="506" y="313" text-anchor="middle" font-size="23" font-weight="700">pos.</text>
+  </g>
+  <text class="body" x="352" y="393">ID → file position</text>
+  <text class="body" x="352" y="431">Seek, then read</text>
+  <text class="body" x="352" y="469">No repeated scans</text>
+
+  <path class="line" d="M573 322 H595" marker-end="url(#arrow)"/>
+  <rect class="card" x="600" y="145" width="240" height="354" rx="20"/>
+  <text class="step" x="624" y="184">03</text>
+  <text class="heading" x="624" y="225">Parallel chunks</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="624" y="261" width="48" height="28" rx="5"/>
+    <rect class="soft" x="624" y="299" width="48" height="28" rx="5"/>
+    <rect class="soft" x="624" y="337" width="48" height="28" rx="5"/>
+    <path class="line" d="M681 275 H710 V313 H744 M681 313 H744 M681 351 H710 V313" marker-end="url(#arrow)"/>
+    <rect x="756" y="284" width="60" height="60" rx="11" fill="#f6efd9"/>
+    <path class="line" d="M774 305 H798 M774 316 H798 M774 327 H798"/>
+  </g>
+  <text class="body" x="624" y="405">Across CPU nodes</text>
+  <text class="body" x="624" y="443">Parse and tokenize</text>
+  <text class="body" x="624" y="481">Count by column</text>
+
+  <path class="line" d="M845 322 H867" marker-end="url(#arrow)"/>
+  <rect class="card" x="872" y="145" width="240" height="354" rx="20"/>
+  <text class="step" x="896" y="184">04</text>
+  <text class="heading" x="896" y="225">HDF5 storage</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="896" y="266" width="112" height="89" rx="10"/>
+    <text x="952" y="324" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
+    <rect x="1020" y="266" width="68" height="89" rx="10" fill="#f6efd9"/>
+    <text x="1054" y="324" text-anchor="middle" font-size="36" font-weight="700">N</text>
+  </g>
+  <text class="body" x="896" y="405">Integer counts C</text>
+  <text class="body" x="896" y="443">MSA depth N</text>
+  <text class="body" x="896" y="481">Stored per entry</text>
+
+  <path class="line" d="M1117 322 H1139" marker-end="url(#arrow)"/>
+  <rect class="card" x="1144" y="145" width="240" height="354" rx="20"/>
+  <text class="step" x="1168" y="184">05</text>
+  <text class="heading" x="1168" y="225">Training reads</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="1168" y="266" width="192" height="89" rx="10"/>
+    <text x="1264" y="324" text-anchor="middle" font-size="36" font-weight="700" fill="#25766c">C / N</text>
+  </g>
+  <text class="body" x="1168" y="405">Recover profile</text>
+  <text class="body" x="1168" y="447">Profile → model</text>
+
+  <rect x="56" y="542" width="1328" height="68" rx="15" fill="#e9f3ed"/>
+  <rect x="80" y="561" width="6" height="30" rx="3" fill="#e6c67b"/>
+  <text x="104" y="585" font-size="26" fill="#25766c">Store integer counts first; recover per-position amino-acid frequencies when loading.</text>
+</svg>

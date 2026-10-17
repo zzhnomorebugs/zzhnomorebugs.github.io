@@ -1,0 +1,214 @@
+---
+title: "Protein Sequence Generation"
+layout: research-project
+collection: research
+permalink: /research/protein-foundation/
+lang: en
+lang_switch_url: /zh/research/protein-foundation/
+research_project: true
+mathjax: true
+project_class: protein-foundation-project
+project_stylesheet: protein-foundation-project.css
+project_title: "Protein Sequence Generation"
+project_area: "Shanghai AI Lab · Training and data engineering"
+order: 1
+published: false
+read_time: false
+date: 2026-10-18
+index_title: "Protein sequence generation: From large-scale MSA processing to model training"
+excerpt: "Build a data pipeline for more than 30 million protein sequences, from locating MSAs and parallel preprocessing to storing integer profile counts in HDF5. Compare tokenizer efficiency and use short 150M training runs to select configurations before completing one final run each at 150M and 650M parameters."
+project_image: /images/research/protein-foundation/pipeline-en.svg
+project_chapters:
+  - id: foundation-goal
+    label: Project goal
+  - id: foundation-profile
+    label: MSA profiles
+  - id: foundation-preprocessing
+    label: Preprocessing
+  - id: foundation-storage
+    label: Count storage
+  - id: foundation-training
+    label: Training studies
+  - id: foundation-summary
+    label: Takeaways
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="foundation-goal">
+  <p class="retro-kicker">Protein generation at scale</p>
+  <h2><span class="retro-chapter__number">01</span> Turn large-scale sequence data into usable generation conditions</h2>
+  <p class="retro-lede">The project aims to train models that generate protein sequences, providing a foundation for subsequent candidate screening and studies of target properties. The internship work focused on implementing a working training pipeline and addressing the preprocessing, storage, and data delivery challenges of a large corpus.</p>
+  <ol class="retro-pipeline" aria-label="Protein sequence generation workflow">
+    <li><strong>Input: Protein sequences and MSAs</strong><span>Extract amino acid distributions at each aligned position to condition generation.</span></li>
+    <li><strong>Training: Learn sequence generation</strong><span>Run short controlled comparisons, select modules and configurations, then start full training.</span></li>
+    <li><strong>Output: Candidates for screening</strong><span>Use subsequent evaluation and screening to study sequences with target properties.</span></li>
+  </ol>
+  <p>This work was conducted at Shanghai Artificial Intelligence Laboratory. With more than 30 million sequences, integrating an algorithm into a model is only part of the task: repeatedly scanning the raw data to find each MSA, or saving fully expanded intermediate representations, can make preprocessing and storage themselves a limit on training.</p>
+  <div class="retro-two-column pf-role-grid">
+    <div><h3>Data engineering</h3><p>Build a record position index, distribute preprocessing across CPU servers, compare tokenizer implementations, and store MSA profiles as compact integer counts.</p></div>
+    <div><h3>Training and experiments</h3><p>Implement and compare ways to inject time conditioning, study sampling algorithms and hyperparameters, and complete final 150M and 650M training runs after initial 150M experiments.</p></div>
+  </div>
+</section>
+
+<section class="retro-chapter" id="foundation-profile">
+  <p class="retro-kicker">From aligned sequences to a profile</p>
+  <h2><span class="retro-chapter__number">02</span> Summarize aligned sequences as frequencies at each position</h2>
+  <p class="retro-lede">A multiple sequence alignment (MSA) places related sequences into common aligned positions. Counting amino acid classes within a column describes the variation and conservation at that position in the input alignment.</p>
+  <p>Suppose an MSA contains \(N\) sequences of aligned length \(L\), with \(K\) classes. Convert each class into a one-hot indicator, sum over the sequence dimension, and divide by \(N\):</p>
+  <div class="retro-equation">\[C_{j,a}=\sum_{m=1}^{N}\mathbf{1}\!\left[x^{(m)}_j=a\right],\qquad P_{j,a}=\frac{C_{j,a}}{N}.\]</div>
+  <p>\(C\in\mathbb{N}_0^{L\times K}\) stores integer counts, while \(P\in[0,1]^{L\times K}\) is the profile. The class vocabulary and alignment processing rules must remain consistent between preprocessing and training data loading.</p>
+  <figure class="pf-profile-demo" aria-labelledby="pf-profile-caption">
+    <div class="pf-profile-grid">
+      <div class="pf-demo-panel">
+        <p class="pf-demo-label">MSA · 4 illustrative sequences</p>
+        <div class="pf-msa" role="img" aria-label="Four illustrative aligned sequences: ACDG, ACDG, ATDA, and ATEG. The second position contains two C tokens and two T tokens.">
+          <div><span>A</span><span class="pf-residue-c">C</span><span>D</span><span>G</span></div>
+          <div><span>A</span><span class="pf-residue-c">C</span><span>D</span><span>G</span></div>
+          <div><span>A</span><span class="pf-residue-t">T</span><span>D</span><span>A</span></div>
+          <div><span>A</span><span class="pf-residue-t">T</span><span>E</span><span>G</span></div>
+        </div>
+        <p class="pf-demo-note">Count occurrences of each class within a column.</p>
+      </div>
+      <div class="pf-demo-panel">
+        <p class="pf-demo-label">Integer counts C · Store</p>
+        <ol class="pf-site-list">
+          <li><span>Position 1</span><code>A: 4</code></li>
+          <li><span>Position 2</span><code>C: 2 · T: 2</code></li>
+          <li><span>Position 3</span><code>D: 3 · E: 1</code></li>
+          <li><span>Position 4</span><code>G: 3 · A: 1</code></li>
+        </ol>
+        <p class="pf-demo-note">Also retain the number of aligned sequences, N = 4.</p>
+      </div>
+      <div class="pf-demo-panel">
+        <p class="pf-demo-label">Frequencies P = C / N · Use</p>
+        <ol class="pf-site-list">
+          <li><span>Position 1</span><code>A: 1.00</code></li>
+          <li><span>Position 2</span><code>C: .50 · T: .50</code></li>
+          <li><span>Position 3</span><code>D: .75 · E: .25</code></li>
+          <li><span>Position 4</span><code>G: .75 · A: .25</code></li>
+        </ol>
+        <p class="pf-demo-note">Convert to floating-point frequencies when loaded.</p>
+      </div>
+    </div>
+    <figcaption class="retro-figure__caption" id="pf-profile-caption">Figure 1 · From an MSA to a profile. Only nonzero classes are listed; omitted classes have zero counts. These illustrative sequences explain the calculation and are not experimental candidates.</figcaption>
+  </figure>
+  <p>In this example, A has frequency 1 at the first position, meaning that all input sequences agree there. At the second position, C and T each have frequency 0.5, so generation still requires a choice informed by the conditions and sequence context. A profile provides marginal frequencies at individual positions; it cannot by itself express dependencies between positions or require the model to copy each column.</p>
+</section>
+
+<section class="retro-chapter" id="foundation-preprocessing">
+  <p class="retro-kicker">Index once, process in parallel</p>
+  <h2><span class="retro-chapter__number">03</span> Locate each MSA before computing profiles in parallel</h2>
+  <p class="retro-lede">The first step in efficient preprocessing is to reduce repeated searches. Finding the MSA for a target protein should not require scanning every record from the beginning of the raw data each time.</p>
+  <h3>Position indexing: Separate lookup from parsing</h3>
+  <p>Preprocessing first builds an index from record identifiers to storage positions. For a target, the program looks up its position, then reads and parses the corresponding MSA record. The initial scan builds reusable location information for subsequent target retrieval.</p>
+  <div class="pf-code-block">
+    <p class="pf-code-label">Position index data flow · Pseudocode</p>
+    <pre><code>position = record_index[target_id]
+msa_record = read_record_at(position)
+aligned_tokens = tokenize(msa_record)
+counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
+  </div>
+  <p>Here, position abstracts the location of a record; the essential point is to avoid repeated scans from the beginning. The index locates the record, while parsing and tokenization convert its contents into sequences ready for counting. Each stage can be optimized separately.</p>
+  <h3>Partitioning: Distribute independent targets across CPU nodes</h3>
+  <p>Partition the target records and process the partitions concurrently on multiple CPU servers. Each task handles lookup, reading, parsing, and profile counting, allowing the large corpus to be preprocessed in parallel and stored as HDF5 data for training.</p>
+  <figure class="retro-figure pf-pipeline-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-foundation/pipeline-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-foundation/pipeline-mobile-en.svg" width="640" height="1500">
+        <img src="{{ base_path }}/images/research/protein-foundation/pipeline-en.svg" alt="Build a record position index for raw MSAs, then distribute partitions across CPU nodes for parsing and counting. HDF5 stores integer counts C and the number of aligned sequences N; training loads C and divides by N to recover the profile." width="1440" height="650" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 2 · The data pipeline from raw MSAs to model inputs. Position indexing reduces repeated lookup work, parallel tasks parse and count, and training reuses the preprocessed results.</figcaption>
+  </figure>
+  <h3>Tokenization: Choose an implementation through timing comparisons</h3>
+  <p>After lookup is accelerated, sequence parsing and token conversion still run tens of millions of times. Different tokenizer processing methods were timed and compared in a table to select a more efficient implementation. The selected method achieved approximately a <strong>40% speedup</strong> over the default method, specifically in the tokenizer stage of preprocessing.</p>
+</section>
+
+<section class="retro-chapter" id="foundation-storage">
+  <p class="retro-kicker">Store counts, normalize on load</p>
+  <h2><span class="retro-chapter__number">04</span> Store integer counts and compute frequencies when loading</h2>
+  <p class="retro-lede">The numerator of a profile is already an integer. Because frequencies can be recovered from counts and the number of aligned sequences, every position and class need not be stored permanently as a floating-point probability.</p>
+  <ol class="retro-pipeline" aria-label="Storing and recovering an MSA profile">
+    <li><strong>Aggregate: MSA → C and N</strong><span>Sum one-hot indicators along MSA depth to obtain class counts at each position.</span></li>
+    <li><strong>Store: Integers in HDF5</strong><span>Save compact integer counts and the sequence count required to recover frequencies.</span></li>
+    <li><strong>Load: C / N → Profile</strong><span>Convert to floating point and normalize before supplying the generation condition.</span></li>
+  </ol>
+  <div class="pf-code-block">
+    <p class="pf-code-label">Storage and loading data flow · Pseudocode</p>
+    <pre><code># Offline preprocessing: C has shape [L, K]
+C = sum(one_hot(msa_tokens), axis="msa_depth")
+save_h5(integer_counts=C, msa_count=N)
+
+# Training data loading: recover frequencies when needed
+C, N = load_h5(record_id)
+profile = to_float(C) / N</code></pre>
+  </div>
+  <p>The stored values are exact counts, rather than probabilities truncated to integers. Provided the integer type can represent the largest count, \(C/N\) recovers the corresponding empirical frequencies. The required bit width therefore depends on MSA depth and the range of the counts.</p>
+  <div class="retro-table-scroll">
+    <table class="retro-comparison">
+      <caption>Table 1 · Representations of an MSA, integer counts, and a floating-point profile</caption>
+      <thead><tr><th scope="col">Representation</th><th scope="col">Logical shape</th><th scope="col">Information retained</th><th scope="col">Role in the pipeline</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Aligned MSA tokens</th><td>\(N\times L\)</td><td>The class at each position in every sequence</td><td>Input to offline counting</td></tr>
+        <tr><th scope="row">One-hot expansion</th><td>\(N\times L\times K\)</td><td>Class indicators for individual sequences</td><td>Intermediate representation explaining aggregation</td></tr>
+        <tr class="retro-highlight"><th scope="row">Integer counts C + sequence count N</th><td>\(L\times K\) + one denominator</td><td>Occurrences of each class at each position</td><td>Persistent HDF5 storage</td></tr>
+        <tr><th scope="row">Floating-point profile P</th><td>\(L\times K\)</td><td>Class frequencies at each position</td><td>Model input recovered after loading</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Aggregation removes the MSA depth dimension. For the same \(L\times K\) shape, compact integer storage further reduces the bytes per element. These are two distinct storage improvements: one changes the statistical representation retained, while the other changes its storage type.</p>
+  <div class="pf-storage-comparison" aria-label="Storage requirements before and after preprocessing optimization">
+    <div><span class="pf-storage-label">Naive approach · Initial estimate</span><strong>10+ TB</strong><p>The initial data representation and processing plan.</p></div>
+    <span class="pf-storage-arrow" aria-hidden="true">→</span>
+    <div><span class="pf-storage-label">Optimized output · Actual scale</span><strong>100+ GB</strong><p>Compact HDF5 data after preprocessing.</p></div>
+  </div>
+  <p class="retro-caption">The 10+ TB figure is the initial capacity estimate for the naive approach; 100+ GB is the scale of the final HDF5 output. The storage savings reflect changes to both representation and storage type.</p>
+</section>
+
+<section class="retro-chapter" id="foundation-training">
+  <p class="retro-kicker">Compare before the full training run</p>
+  <h2><span class="retro-chapter__number">05</span> Select modules with short experiments before full training</h2>
+  <p class="retro-lede">A full training run for a larger generative model consumes substantial resources. Early experiments therefore used a 150M model for short runs, holding other training settings constant and comparing loss at the same step count before selecting modules and configurations.</p>
+  <h3>Training studies: How time embeddings enter the network</h3>
+  <p>The time variable describes the current noise stage. A time embedding encodes this information and injects it into the network. Even with the same backbone and objective, the injection method can affect how the model learns to denoise, making it a useful module to compare.</p>
+  <div class="retro-equation">\[e_t=\operatorname{TimeEmbed}(t),\qquad \widehat{x}=f_\theta(x_t,e_t,P).\]</div>
+  <p>This expression summarizes three inputs: the current state \(x_t\), the time condition \(e_t\), and the MSA profile \(P\). Experiments changed the time-conditioning implementation while keeping the other settings constant, comparing loss and convergence trends at matching training steps. These comparisons apply to configurations with the same training objective and loss definition.</p>
+  <h3>Sampling studies: Compare algorithms and hyperparameters separately</h3>
+  <p>Once trained, the model still requires iterative updates to generate sequences. Separate comparisons therefore explored diffusion sampling algorithms and their hyperparameters, studying update rules and control options during generation. Training loss informs training configuration choices; sampling algorithms must be examined during generation.</p>
+  <div class="retro-table-scroll">
+    <table class="retro-comparison">
+      <caption>Table 2 · Separate roles for training configuration comparisons and sampling studies</caption>
+      <thead><tr><th scope="col">Study</th><th scope="col">What was compared</th><th scope="col">Basis and purpose</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Time-conditioning injection</th><td>Ways of introducing time embeddings into the network</td><td>Keep other settings constant and compare loss at the same step count to help select training configurations</td></tr>
+        <tr><th scope="row">Sampling algorithms</th><td>Iterative update algorithms used during generation</td><td>Study the sampling process; training loss alone cannot establish generation quality</td></tr>
+        <tr><th scope="row">Sampling hyperparameters</th><td>Parameter controls within the sampling process</td><td>Study how parameter choices affect generation alongside algorithm comparisons</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>Data delivery: More workers do not always mean higher throughput</h3>
+  <p>Training also exposed failures and reduced loading efficiency when the number of data-loader workers was too large, alongside GPU utilization that could not reach the desired level. Fitting the data on disk is therefore only one requirement: data must also arrive fast enough to keep up with computation, and loading concurrency needs to be adjusted against observed efficiency.</p>
+  <p>Data access, CPU processing, and model computation jointly determine training progress. Moving parsing, token conversion, and profile counting into offline preprocessing lets training load counts and normalize them directly, reducing repeated computation of the same statistics.</p>
+  <ol class="retro-pipeline" aria-label="From short comparisons to final model training">
+    <li><strong>150M: Short comparisons</strong><span>Compare candidate modules under the same training settings.</span></li>
+    <li><strong>Set modules and the data pipeline</strong><span>Combine configuration studies with data processing improvements into a full training plan.</span></li>
+    <li><strong>150M + 650M: Final training</strong><span>Complete one final model training run at each parameter scale.</span></li>
+  </ol>
+</section>
+
+<section class="retro-chapter" id="foundation-summary">
+  <p class="retro-kicker">Engineering contributions</p>
+  <h2><span class="retro-chapter__number">06</span> Connect data processing and controlled experiments to final training</h2>
+  <p class="retro-lede">The main contributions were in implementing the generative modeling pipeline: locating large-scale MSA records, computing their statistics, storing them compactly, and supplying them to training, while using early controlled comparisons to reduce trial and error in full training runs.</p>
+  <div class="retro-results-grid">
+    <div><strong>100+ GB</strong><span class="retro-result__label">Final preprocessed data</span><p>The naive approach was initially estimated at 10+ TB; integer counts and a denominator retain the information needed for profiles.</p></div>
+    <div><strong>About 40%</strong><span class="retro-result__label">Tokenizer speedup</span><p>Timing comparisons across processing methods improved preprocessing efficiency over the default implementation.</p></div>
+    <div><strong>150M / 650M</strong><span class="retro-result__label">Final model scales</span><p>Initial short comparisons used 150M; one final training run was completed at each of the two scales.</p></div>
+  </div>
+  <p>The common approach was to replace repeated searches with position indexing, distribute independent counting tasks across CPU nodes, store recoverable frequencies as integer counts, and evaluate training and sampling choices in their respective comparison workflows. Together, these steps connected large-scale data processing with a working model training pipeline, providing a foundation for subsequent candidate generation and property screening.</p>
+  <div class="retro-support pf-references">
+    <h3>Implementation concepts</h3>
+    <p>For the general idea of position indexing, see the <a href="https://www.htslib.org/doc/faidx.html" target="_blank" rel="noopener noreferrer">HTSlib FASTA / FASTQ index documentation</a>. For HDF5 array shapes and storage types, see the <a href="https://docs.h5py.org/en/stable/high/dataset.html" target="_blank" rel="noopener noreferrer">h5py Dataset documentation</a>.</p>
+  </div>
+</section>
