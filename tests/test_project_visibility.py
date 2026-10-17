@@ -6,6 +6,7 @@ import os
 import contextlib
 import importlib.util
 import io
+import json
 from pathlib import Path
 import shutil
 import subprocess
@@ -174,6 +175,55 @@ class ProjectVisibilityTests(unittest.TestCase):
         self.assertEqual(self.pages[0].read_bytes(), self.initial)
         self.assertEqual(self.pages[1].read_bytes(), changed)
 
+    def write_default_group(self, slugs):
+        path = self.root / "scripts" / "private_projects.json"
+        path.write_text(json.dumps(slugs), encoding="utf-8")
+        return path
+
+    def test_default_group_round_trip_leaves_other_public_projects_unchanged(self):
+        self.write_default_group(["protein"])
+        outside = self.root / "_research" / "outside.html"
+        outside.write_bytes(self.initial)
+        private = self.initial.replace(b"published : true", b"published : false", 1)
+        for state, expected in (("private", private), ("public", self.initial), ("private", private)):
+            with self.subTest(state=state):
+                self.command(state)
+                for page in self.pages:
+                    self.assertEqual(page.read_bytes(), expected)
+                self.assertEqual(outside.read_bytes(), self.initial)
+                self.assertEqual(json.loads((self.root / "scripts" / "private_projects.json").read_text(encoding="utf-8")), ["protein"])
+
+    def test_default_group_synchronizes_mixed_language_states(self):
+        self.write_default_group(["protein"])
+        private = self.initial.replace(b"published : true", b"published : false", 1)
+        self.pages[0].write_bytes(private)
+        self.command("public")
+        for page in self.pages:
+            self.assertEqual(page.read_bytes(), self.initial)
+        self.command("private")
+        for page in self.pages:
+            self.assertEqual(page.read_bytes(), private)
+
+    def test_invalid_default_group_configuration_changes_no_pages(self):
+        path = self.root / "scripts" / "private_projects.json"
+        configurations = {
+            "missing": None,
+            "empty": b"[]",
+            "malformed JSON": b"{",
+            "object instead of list": b'{"projects": ["protein"]}',
+            "non-string member": b"[1]",
+            "unknown slug": b'["protein", "does-not-exist"]',
+        }
+        for label, configuration in configurations.items():
+            with self.subTest(configuration=label):
+                if configuration is None:
+                    path.unlink(missing_ok=True)
+                else:
+                    path.write_bytes(configuration)
+                self.command("private", ok=False)
+                for page in self.pages:
+                    self.assertEqual(page.read_bytes(), self.initial)
+
     @unittest.skipUnless(shutil.which("git"), "Git is needed for isolated publish tests")
     def test_push_commits_only_selected_pages_and_preserves_staging(self):
         self.setup_repository()
@@ -212,6 +262,24 @@ class ProjectVisibilityTests(unittest.TestCase):
         self.assertEqual(self.git("rev-parse", "HEAD"), self.git("rev-parse", "refs/heads/main", cwd=self.remote))
         self.assertEqual(self.git("for-each-ref", "--format=%(refname)", "refs/tags", cwd=self.remote), "")
         self.assertEqual(self.git("for-each-ref", "--format=%(refname)", "refs/tags"), "refs/tags/local-only")
+
+    @unittest.skipUnless(shutil.which("git"), "Git is needed for isolated publish tests")
+    def test_default_group_push_only_commits_group_pages_and_preserves_other_staging(self):
+        self.write_default_group(["protein"])
+        outside = self.root / "_research" / "outside.html"
+        outside.write_bytes(self.initial)
+        self.setup_repository()
+        (self.root / "other.txt").write_text("unrelated staged change\n", encoding="utf-8")
+        self.git("add", "other.txt")
+        staged_before = self.git("diff", "--cached")
+        self.command("private", "--push")
+        self.assertEqual(
+            set(self.git("show", "--format=", "--name-only", "HEAD").splitlines()),
+            {"_research/protein.html", "_research/protein-zh.html"},
+        )
+        self.assertEqual(self.git("diff", "--cached"), staged_before)
+        self.assertEqual(outside.read_bytes(), self.initial)
+        self.assertEqual(self.git("rev-parse", "HEAD"), self.git("rev-parse", "refs/heads/main", cwd=self.remote))
 
     @unittest.skipUnless(shutil.which("git"), "Git is needed for isolated publish tests")
     def test_push_rejects_preexisting_unpushed_commits(self):

@@ -10,4 +10,6 @@
 
 用户说将研究项目设为 `private` / `public` 时，默认指网站不发布／发布，源码仍可保存在公开 GitHub 仓库；这不提供访问控制或源码保密。
 
-优先使用 `python scripts/project_visibility.py <slug> private|public`，同步切换同一项目的全部语言页。用户明确要求推送时可加 `--push`；先用 `list` 查看项目 slug 与本地状态。多个项目可用逗号分隔。完整用法见 [docs/PROJECT_VISIBILITY.md](docs/PROJECT_VISIBILITY.md)。不要为了切换项目而改变整个仓库的可见性。
+用户说“把这组 private 项目全部公开／隐藏”时，使用 `python scripts/project_visibility.py public|private`，同步切换 `scripts/private_projects.json` 中固定项目组的全部语言页。该组记录当前的 `protein-control` 与 `protein-foundation`，公开后仍保留组成员，不按当时的 `published` 状态重新筛选；其他公开项目不受影响。用户要求推送时加 `--push`。
+
+仍可使用 `python scripts/project_visibility.py <slug> private|public` 单独切换项目，多个 slug 可用逗号分隔；`list` 查看状态与默认组。完整用法见 [docs/PROJECT_VISIBILITY.md](docs/PROJECT_VISIBILITY.md)。不要为了切换项目而改变整个仓库的可见性。

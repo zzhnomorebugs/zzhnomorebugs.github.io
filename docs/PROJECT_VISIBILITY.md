@@ -8,29 +8,38 @@
 
 直接告诉 Codex：
 
-- “把 protein-foundation 设为 private 并推送。”
-- “把蛋白质序列生成项目设为 public 并推送。”
-- “把 protein-foundation 和 protein-control 都设为 private 并推送。”
+- “把这组 private 项目全部设为 public 并推送。”
+- “把这组项目全部设为 private 并推送。”
 
-仓库的 `AGENTS.md` 已记录约定，后续处理会使用同一工具同步更新中英文页面。
+默认组固定包含目前隐藏的两个项目：`protein-foundation`（蛋白质序列生成）与 `protein-control`（蛋白质序列可控生成），会同步更新其全部中英文页面。
+
+该组保存在 `scripts/private_projects.json`，公开后成员仍然保留，因此下一次可以用同一指令全部隐藏。不会把原本公开的其他项目也纳入切换。后续要加入项目，只需将其 slug 加入这个 JSON 列表。
+
+仓库的 `AGENTS.md` 已记录此约定。
 
 ## 一条本地命令
 
 在仓库根目录执行，使用 Python 3，无需安装额外依赖。
 
 ```powershell
+# 将固定组全部公开，并提交推送
+python scripts/project_visibility.py public --push
+
+# 将同一组全部隐藏，并提交推送
+python scripts/project_visibility.py private --push
+
 # 查看各项目的本地状态
 python scripts/project_visibility.py list
 
-# 只修改本地状态
-python scripts/project_visibility.py protein-foundation private
-python scripts/project_visibility.py protein-foundation public
+# 只改本地、不提交推送：省略 --push
+python scripts/project_visibility.py public
+python scripts/project_visibility.py private
+```
 
-# 修改、仅提交该项目页面，并推送当前分支
+原来的单项目和多项目指令仍可使用：
+
+```powershell
 python scripts/project_visibility.py protein-foundation public --push
-python scripts/project_visibility.py protein-foundation private --push
-
-# 同时切换多个项目
 python scripts/project_visibility.py protein-foundation,protein-control private --push
 ```
 

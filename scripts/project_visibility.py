@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import dataclass
+import json
 import os
 from pathlib import Path
 import re
@@ -101,6 +102,22 @@ def discover_projects(root: Path) -> dict[str, list[ProjectPage]]:
         slug = path.stem.removesuffix("-zh")
         projects.setdefault(slug, []).append(page)
     return projects
+
+
+def default_project_group(root: Path) -> list[str]:
+    """Load a fixed group so publishing it does not change the next selection."""
+    path = root / "scripts" / "private_projects.json"
+    if not path.is_file():
+        raise VisibilityError("Default project group not found: scripts/private_projects.json")
+    try:
+        slugs = json.loads(path.read_text(encoding="utf-8-sig"))
+    except (json.JSONDecodeError, UnicodeError) as exc:
+        raise VisibilityError("Invalid default project group: scripts/private_projects.json") from exc
+    if not isinstance(slugs, list) or not slugs or any(
+        not isinstance(slug, str) or not slug.strip() for slug in slugs
+    ):
+        raise VisibilityError("Default project group must be a nonempty JSON list of project slugs.")
+    return list(dict.fromkeys(slug.strip() for slug in slugs))
 
 
 def git(root: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -234,9 +251,9 @@ def switch_projects(root: Path, slugs: list[str], public: bool, push: bool) -> i
 def main(argv: list[str] | None = None, *, root: Path | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Publish or hide research pages. private hides pages, not public repository source or assets.",
-        epilog="Examples: list | protein-foundation private | protein-foundation,protein-control public --push",
+        epilog="Examples: public --push | private --push | list | protein-foundation private",
     )
-    parser.add_argument("project", help="Project slug, comma-separated slugs, or list")
+    parser.add_argument("project", help="public/private for the default group, project slug(s), or list")
     parser.add_argument("visibility", choices=("private", "public"), nargs="?")
     parser.add_argument("--push", action="store_true", help="Commit only selected clean tracked pages and push their upstream branch")
     args = parser.parse_args(argv)
@@ -250,8 +267,14 @@ def main(argv: list[str] | None = None, *, root: Path | None = None) -> int:
                 state = ("public" if True in values else "private") if len(values) == 1 else "mixed"
                 filenames = ", ".join(page.path.name for page in pages)
                 print(f"{slug:<28} {state:<8} {filenames}")
+            if (root / "scripts" / "private_projects.json").is_file():
+                print(f"Default group: {', '.join(default_project_group(root))}")
             print("private only hides the web pages; public repository source and assets remain accessible.")
             return 0
+        if args.project in ("private", "public"):
+            if args.visibility is not None:
+                parser.error("the default group accepts only one public/private state")
+            return switch_projects(root, default_project_group(root), args.project == "public", args.push)
         if args.visibility is None:
             parser.error("a project requires private or public")
         slugs = list(dict.fromkeys(slug.strip() for slug in args.project.split(",")))
