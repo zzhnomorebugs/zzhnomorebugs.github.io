@@ -204,18 +204,18 @@ project_chapters:
   </div>
   <h3>三体案例：观察总能量是否漂移</h3>
   <div class="physical-evidence" aria-label="三体生成案例及能量变化">
-    <figure class="retro-figure"><h3>无可行性训练项</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-baseline.webp" alt="未加入能量相关监督的三体生成轨迹，三种颜色区分三颗粒子" width="2500" height="2385" loading="lazy"></a></figure>
-    <figure class="retro-figure"><h3>加入能量相关监督</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-prior.webp" alt="加入能量相关监督后的三体生成轨迹" width="2500" height="2371" loading="lazy"></a></figure>
+    {% include research-rollout.html stem="three-body-baseline-rollout" label="无可行性训练项" alt="未加入可行性训练项的三体生成轨迹按物理时间回放，三种颜色区分三颗粒子" frame_count=10 frame_ms=400 %}
+    {% include research-rollout.html stem="three-body-momentum-rollout" label="加入动量约束" alt="加入动量约束的三体生成轨迹按物理时间回放" frame_count=10 frame_ms=400 %}
     <figure class="retro-figure"><h3>总能量随物理时间变化</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp"><img src="{{ base_path }}/images/research/physical-dynamics/three-body-energy.webp" alt="三体案例的总能量曲线，对比无先验与有先验的生成结果，加入监督的曲线更稳定" width="2500" height="1410" loading="lazy"></a></figure>
   </div>
-  <p class="retro-caption">图 3 · 蓝色曲线为无可行性训练项的结果，橙色为加入监督的结果；方块表示引力势能，圆点表示动能，深色线表示总能量。总能量曲线更稳定，但仍有变化。三体生成包含 10 帧，轨迹连线使用三次样条展示，误差评估未使用平滑。两条生成轨迹无需重合；要检验的是各自的物理可行性。</p>
+  <p class="retro-caption">图 3 · 动图按生成的 10 个物理时间帧回放，轨迹连线连接相邻输出点。本例比较无可行性训练项与加入动量约束的结果，与上表采用能量相关监督的三体主实验是不同设置。能量图中，蓝色为无约束，橙色为动量约束；方块表示引力势能，圆点表示动能，深色线表示总能量。此案例中加入约束后的总能量曲线更稳定，但仍有变化。两条生成轨迹无需重合；要检验的是各自的物理可行性。</p>
   <h3>五弹簧案例：观察总动量是否保持稳定</h3>
   <div class="physical-evidence" aria-label="五弹簧生成案例及动量变化">
-    <figure class="retro-figure"><h3>无可行性训练项</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-baseline.webp" alt="未加入动量约束的五弹簧系统生成轨迹，五种颜色区分五颗粒子" width="2500" height="1887" loading="lazy"></a></figure>
-    <figure class="retro-figure"><h3>加入动量约束</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-prior.webp" alt="加入动量约束后的五弹簧系统生成轨迹" width="2500" height="1887" loading="lazy"></a></figure>
+    {% include research-rollout.html stem="five-spring-baseline-rollout" label="无可行性训练项" alt="未加入动量约束的五弹簧系统生成轨迹按物理时间回放，五种颜色区分五颗粒子" frame_count=50 frame_ms=80 %}
+    {% include research-rollout.html stem="five-spring-prior-rollout" label="加入动量约束" alt="加入动量约束后的五弹簧系统生成轨迹按物理时间回放" frame_count=50 frame_ms=80 %}
     <figure class="retro-figure"><h3>动量分量随物理时间变化</h3><a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp"><img src="{{ base_path }}/images/research/physical-dynamics/five-spring-momentum.webp" alt="五弹簧案例中不同方向的总动量曲线，对比加入与未加入动量约束的时间变化" width="2500" height="1410" loading="lazy"></a></figure>
   </div>
-  <p class="retro-caption">图 4 · 蓝色为无可行性训练项的结果，橙色为加入动量约束的结果，深浅两条曲线对应两个坐标轴的总动量。约束针对总动量的时间变化，而不是让它趋近于零。案例用于展示行为，整体效果由上方多次实验的误差表衡量。</p>
+  <p class="retro-caption">图 4 · 动图逐帧回放生成的粒子位置，虚线表示作为生成条件的弹簧连接。动量图中，蓝色为无可行性训练项，橙色为加入动量约束，深浅两条曲线对应两个坐标轴的总动量。约束针对总动量的时间变化，而不是让它趋近于零。案例用于展示行为，整体效果由上方多次实验的误差表衡量。</p>
   <h3>PDE：预测准确度与生成可行性是两种评估</h3>
   <p>已知系数的平流、Darcy 与线性化浅水方程离散后可形成线性约束；Burgers 方程含有 \(u\,\partial_xu\) 这样的多线性结构。实验分别评估有条件预测的场值误差，以及生成场的 PDE 残差。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="PDE预测和生成评估">
@@ -292,3 +292,5 @@ project_chapters:
   <p>训练中的软约束与能量相关监督不保证每个生成样本精确满足守恒律。有限差分残差还依赖离散网格；物理场仍可能包含噪声与高频细节误差。模型也需要可利用的先验或可计算的相关量，不能把这套方法理解为无需物理知识就能求解任意未知方程。</p>
   <div class="retro-callout"><strong>最值得带走的一点</strong><p>在生成模型中，正确的物理约束不仅要描述真实世界，还要匹配模型正在估计的对象。</p></div>
 </section>
+
+<script src="{{ base_path }}/assets/js/physical-rollouts.js?v={{ site.time | date: '%s' }}" defer></script>

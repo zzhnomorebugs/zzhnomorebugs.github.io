@@ -144,44 +144,36 @@ project_chapters:
   <h2><span class="retro-chapter__number">05</span> 交互在变化，模块的分工也可以出人意料</h2>
   <p class="retro-lede">三体与弹簧案例分别展示了两件事：元系统会随轨迹变化调整交互，不同投影还会形成不同的潜在连接模式。</p>
   <h3>三体：轨迹变化与交互权重</h3>
-  <p>下图上排为三体运动轨迹，下排为三个潜在子系统之间的交互矩阵。四个时间截面选自同一段演化；矩阵的行、列都索引潜在模块。</p>
-  <div class="decouple-snapshots decouple-three-body" aria-label="三体轨迹与潜在交互的四个时间截面">
-    {% assign body_times = "5,7,8,12" | split: "," %}
-    {% for t in body_times %}
-    <figure class="retro-figure decouple-snapshot">
-      <h4>t = {{ t }}</h4>
-      <span class="decouple-plot-label">三体轨迹</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-trajectory.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-trajectory.webp" alt="t={{ t }} 时的三体轨迹" width="734" height="700" loading="lazy"></a>
-      <span class="decouple-plot-label">潜在交互 A(t)</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-attention.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-attention.webp" alt="t={{ t }} 时 DNS 三个潜在子系统的交互矩阵" width="800" height="794" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">{% case t %}{% when '5' %}物体较分散时，交互相对稳定。{% when '7' %}两个物体开始靠近，交互出现变化。{% when '8' %}第三个物体参与相互作用。{% when '12' %}后续运动中，权重继续调整。{% endcase %}</figcaption>
-    </figure>
-    {% endfor %}
-  </div>
-  <p class="retro-caption">图 3 · 三体案例的轨迹与元系统状态。它说明模型能学习随时间变化的潜在关系；这些权重不直接表示万有引力大小。soft 权重中标注的 0.000 是显示精度下的取整。</p>
+  <p>下图同步播放三体示例的运动与 DNS 输出的交互矩阵。轨迹展示物理模拟的运动，矩阵展示三个潜在子系统之间的交互；矩阵的行、列都索引潜在模块。</p>
+  <figure class="retro-figure decouple-animation">
+    <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution.webp">
+      <picture>
+        <source media="(max-width: 740px) and (prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-mobile-poster.webp" width="648" height="1422">
+        <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-poster.webp" width="1194" height="710">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-mobile.webp" width="648" height="1422">
+        <img src="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution.webp" alt="同步播放三体运动与 DNS 三个潜在子系统的交互矩阵，轨迹和权重随同一时间索引变化" width="1194" height="710" loading="lazy" decoding="async">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 3 · 三体案例的轨迹与元系统状态随时间同步演化。它说明模型能学习随时间变化的潜在关系；这些权重不直接表示万有引力大小。soft 权重中标注的 0.000 是显示精度下的取整。</figcaption>
+  </figure>
   <figure class="retro-figure decouple-focus-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-focus.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-focus.webp" alt="三个潜在子系统对三体 9 维坐标输入的敏感度：第一个关注整体，另两个分别偏向 x 与 y/z 坐标" width="1592" height="495" loading="lazy"></a>
     <figcaption class="retro-figure__caption">图 4 · 控制信号对输入各维度的敏感度，连线粗细表示关注强度。这里分析的是输入到控制的敏感度，与元系统的交互矩阵是不同对象。</figcaption>
   </figure>
   <p>三体案例中，第一个子系统关注整体输入，另外两个分别偏向 x 轴和 y / z 轴。<strong>三个子系统没有分别对应三个天体。</strong>这说明有用的解耦可以是特征层面的分工，预测效果与物理可解释性需要分别评价。</p>
   <h3>弹簧：soft 与 sparse 形成不同的潜在连接</h3>
-  <p>五颗小球的运动由不可见的弹簧连接决定。下图每个时间截面依次显示物体轨迹、DNS 的 soft 交互和 DNS<sub>G</sub> 的 sparse 交互。</p>
-  <div class="decouple-snapshots decouple-spring" aria-label="弹簧系统轨迹及两种投影的潜在交互">
-    {% assign spring_times = "1,4,13,28" | split: "," %}
-    {% for t in spring_times %}
-    <figure class="retro-figure decouple-snapshot">
-      <h4>t = {{ t }}</h4>
-      <span class="decouple-plot-label">小球轨迹</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-trajectory.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-trajectory.webp" alt="t={{ t }} 时弹簧系统中五颗小球的轨迹" width="842" height="816" loading="lazy"></a>
-      <span class="decouple-plot-label">DNS · soft</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-soft.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-soft.webp" alt="t={{ t }} 时 DNS 的潜在交互热力图" width="824" height="815" loading="lazy"></a>
-      <span class="decouple-plot-label">DNS<sub>G</sub> · sparse</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-sparse.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-sparse.webp" alt="t={{ t }} 时 DNS G 的稀疏潜在交互热力图" width="824" height="815" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">{% case t %}{% when '1' %}初期交互保留较多跨模块权重。{% when '4' %}稀疏版本开始突出模块自身的状态。{% when '13' %}稀疏版本在本例中接近对角结构。{% when '28' %}两种交互模式在后期仍有明显区别。{% endcase %}</figcaption>
-    </figure>
-    {% endfor %}
-  </div>
-  <p class="retro-caption">图 5 · 同一弹簧案例中的潜在交互演化。矩阵描述八个潜在模块，不能直接读作五颗小球之间真实弹簧的邻接矩阵；物理连接由下游预测任务评价。soft 权重中标注的 0.00 是显示精度下的取整。</p>
+  <p>五颗小球的运动由不可见的弹簧连接决定。下图将输入数据中的小球轨迹、DNS 的 soft 交互和 DNS<sub>G</sub> 的 sparse 交互按同一时间索引同步播放，可以直接观察运动与潜在连接的共同变化。</p>
+  <figure class="retro-figure decouple-animation">
+    <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp">
+      <picture>
+        <source media="(max-width: 740px) and (prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-mobile-poster.webp" width="648" height="2094">
+        <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-poster.webp" width="1780" height="710">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-mobile.webp" width="648" height="2094">
+        <img src="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp" alt="同步播放五颗小球的输入运动轨迹、DNS 的 soft 交互矩阵和 DNS G 的 sparse 交互矩阵" width="1780" height="710" loading="lazy" decoding="async">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 5 · 同一弹簧案例中的运动与潜在交互演化。矩阵描述八个潜在模块，不能直接读作五颗小球之间真实弹簧的邻接矩阵；物理连接由下游预测任务评价。soft 权重中标注的 0.00 是显示精度下的取整。</figcaption>
+  </figure>
 </section>
 
 <section class="retro-chapter" id="decouple-results">

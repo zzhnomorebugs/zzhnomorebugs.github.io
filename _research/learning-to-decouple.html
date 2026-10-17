@@ -144,44 +144,36 @@ project_chapters:
   <h2><span class="retro-chapter__number">05</span> Interactions evolve, and module roles can be unexpected</h2>
   <p class="retro-lede">The three-body and spring examples illustrate two points: the meta-system adjusts interactions as trajectories change, and different projections can create different patterns of latent connectivity.</p>
   <h3>Three-body system: changing trajectories and interaction weights</h3>
-  <p>The upper plots below show the three-body trajectories; the lower plots show interaction matrices among three latent subsystems. The four snapshots come from the same evolution, and both matrix rows and columns index latent modules.</p>
-  <div class="decouple-snapshots decouple-three-body" aria-label="Four snapshots of three-body trajectories and latent interactions">
-    {% assign body_times = "5,7,8,12" | split: "," %}
-    {% for t in body_times %}
-    <figure class="retro-figure decouple-snapshot">
-      <h4>t = {{ t }}</h4>
-      <span class="decouple-plot-label">Three-body trajectories</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-trajectory.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-trajectory.webp" alt="Three-body trajectories at t={{ t }}" width="734" height="700" loading="lazy"></a>
-      <span class="decouple-plot-label">Latent interactions A(t)</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-attention.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-t{{ t }}-attention.webp" alt="Interaction matrix for the three latent subsystems in DNS at t={{ t }}" width="800" height="794" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">{% case t %}{% when '5' %}Interactions are relatively stable while the bodies are far apart.{% when '7' %}Interactions change as two bodies approach each other.{% when '8' %}The third body becomes involved in the interaction.{% when '12' %}Weights continue to adjust as motion proceeds.{% endcase %}</figcaption>
-    </figure>
-    {% endfor %}
-  </div>
-  <p class="retro-caption">Figure 3 · Trajectories and meta-system states in a three-body example. The model can learn time-varying latent relationships; these weights do not directly represent gravitational force magnitudes. The 0.000 labels in the soft weights are rounded at the displayed precision.</p>
+  <p>The animation synchronizes the motion of a three-body example with the interaction matrix output by DNS. The trajectories show physically simulated motion; the matrix shows interactions among three latent subsystems, with both rows and columns indexing latent modules.</p>
+  <figure class="retro-figure decouple-animation">
+    <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution.webp">
+      <picture>
+        <source media="(max-width: 740px) and (prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-mobile-poster.webp" width="648" height="1422">
+        <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-poster.webp" width="1194" height="710">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution-mobile.webp" width="648" height="1422">
+        <img src="{{ base_path }}/images/research/learning-to-decouple/three-body-evolution.webp" alt="Synchronized three-body motion and interaction matrix of the three latent DNS subsystems, with trajectories and weights sharing the same time index" width="1194" height="710" loading="lazy" decoding="async">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 3 · Synchronized evolution of trajectories and meta-system states in a three-body example. The model can learn time-varying latent relationships; these weights do not directly represent gravitational force magnitudes. The 0.000 labels in the soft weights are rounded at the displayed precision.</figcaption>
+  </figure>
   <figure class="retro-figure decouple-focus-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/three-body-focus.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/three-body-focus.webp" alt="Sensitivity of three latent subsystems to the 9-dimensional three-body coordinate input: the first attends to the whole input, while the other two favor x and y/z coordinates respectively" width="1592" height="495" loading="lazy"></a>
     <figcaption class="retro-figure__caption">Figure 4 · Sensitivity of control signals to input dimensions; thicker lines indicate greater sensitivity. This analyzes input-to-control sensitivity, a different object from the meta-system's interaction matrix.</figcaption>
   </figure>
   <p>In the three-body example, the first subsystem attends to the whole input, while the other two favor the x axis and y / z axes respectively. <strong>The three subsystems do not correspond individually to the three celestial bodies.</strong> Useful decoupling can therefore divide roles at the feature level; predictive performance and physical interpretability must be evaluated separately.</p>
   <h3>Spring system: soft and sparse yield different latent connections</h3>
-  <p>The motion of five balls is determined by hidden spring connections. Each snapshot below shows the object trajectories, the soft interactions of DNS, and the sparse interactions of DNS<sub>G</sub>, in that order.</p>
-  <div class="decouple-snapshots decouple-spring" aria-label="Spring-system trajectories and latent interactions under two projections">
-    {% assign spring_times = "1,4,13,28" | split: "," %}
-    {% for t in spring_times %}
-    <figure class="retro-figure decouple-snapshot">
-      <h4>t = {{ t }}</h4>
-      <span class="decouple-plot-label">Ball trajectories</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-trajectory.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-trajectory.webp" alt="Trajectories of the five balls in the spring system at t={{ t }}" width="842" height="816" loading="lazy"></a>
-      <span class="decouple-plot-label">DNS · soft</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-soft.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-soft.webp" alt="Heatmap of latent interactions in DNS at t={{ t }}" width="824" height="815" loading="lazy"></a>
-      <span class="decouple-plot-label">DNS<sub>G</sub> · sparse</span>
-      <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-sparse.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/spring-t{{ t }}-sparse.webp" alt="Heatmap of sparse latent interactions in DNS G at t={{ t }}" width="824" height="815" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">{% case t %}{% when '1' %}Early interactions retain more cross-module weights.{% when '4' %}The sparse version begins to emphasize each module's own state.{% when '13' %}The sparse version is nearly diagonal in this example.{% when '28' %}The two interaction patterns remain clearly different later on.{% endcase %}</figcaption>
-    </figure>
-    {% endfor %}
-  </div>
-  <p class="retro-caption">Figure 5 · Evolution of latent interactions within the same spring example. The matrices describe eight latent modules and cannot be read directly as adjacency matrices of real springs among the five balls; physical connections are evaluated by the downstream prediction task. The 0.00 labels in the soft weights are rounded at the displayed precision.</p>
+  <p>The motion of five balls is determined by hidden spring connections. The animation synchronizes the ball trajectories from the input data, the soft interactions of DNS, and the sparse interactions of DNS<sub>G</sub> at the same time index, making their joint evolution directly visible.</p>
+  <figure class="retro-figure decouple-animation">
+    <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp">
+      <picture>
+        <source media="(max-width: 740px) and (prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-mobile-poster.webp" width="648" height="2094">
+        <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-poster.webp" width="1780" height="710">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/learning-to-decouple/spring-evolution-mobile.webp" width="648" height="2094">
+        <img src="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp" alt="Synchronized input trajectories of five balls, the soft DNS interaction matrix, and the sparse DNS G interaction matrix" width="1780" height="710" loading="lazy" decoding="async">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 5 · Evolution of motion and latent interactions within the same spring example. The matrices describe eight latent modules and cannot be read directly as adjacency matrices of real springs among the five balls; physical connections are evaluated by the downstream prediction task. The 0.00 labels in the soft weights are rounded at the displayed precision.</figcaption>
+  </figure>
 </section>
 
 <section class="retro-chapter" id="decouple-results">

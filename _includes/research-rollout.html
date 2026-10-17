@@ -1,0 +1,13 @@
+<figure class="retro-figure physical-rollout" data-physical-rollout data-frame-count="{{ include.frame_count }}" data-frame-ms="{{ include.frame_ms }}">
+  <h3>{{ include.label | escape }}</h3>
+  <div class="physical-rollout__media">
+    <span class="physical-rollout__counter" aria-hidden="true" hidden>01 / {{ include.frame_count }}</span>
+    <a class="image-popup" href="{{ base_path }}/images/research/physical-dynamics/{{ include.stem }}.webp" aria-label="{{ include.alt | escape }}">
+      <picture>
+        <source media="(prefers-reduced-motion: reduce)" srcset="{{ base_path }}/images/research/physical-dynamics/{{ include.stem }}-poster.webp">
+        <img src="{{ base_path }}/images/research/physical-dynamics/{{ include.stem }}.webp" alt="{{ include.alt | escape }}" width="800" height="800" loading="lazy" decoding="async">
+      </picture>
+      <video class="physical-rollout__video" data-src="{{ base_path }}/images/research/physical-dynamics/{{ include.stem }}.mp4" poster="{{ base_path }}/images/research/physical-dynamics/{{ include.stem }}-poster.webp" loop muted playsinline preload="none" aria-hidden="true"></video>
+    </a>
+  </div>
+</figure>

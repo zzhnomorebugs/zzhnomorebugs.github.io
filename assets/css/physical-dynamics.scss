@@ -13,12 +13,18 @@
 .physical-project .physical-figure > a { padding: 0; overflow: hidden; }
 .physical-project .physical-evidence {
   display: grid;
-  grid-template-columns: 1fr 1fr 1.45fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
   align-items: start;
   margin: 1.65rem 0 0.75rem;
 }
 .physical-project .physical-evidence > figure { min-width: 0; margin: 0; }
+.physical-project .physical-evidence > figure:last-child {
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 760px;
+  justify-self: center;
+}
 .physical-project .physical-evidence img { width: 100%; max-height: none; }
 .physical-project .physical-evidence figcaption { margin-top: 0.5rem !important; text-align: center; }
 .physical-project .physical-evidence h3 {
@@ -27,6 +33,39 @@
   font-weight: 550;
   text-align: center;
 }
+.physical-project .physical-rollout h3 { margin-bottom: 1.65rem; }
+.physical-project .physical-rollout__media { position: relative; }
+.physical-project .physical-rollout__counter {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  right: 0.15rem;
+  color: var(--retro-muted);
+  font-size: 0.75rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.physical-project .physical-rollout__media > a {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--retro-line);
+  border-radius: 3px;
+}
+.physical-project .physical-rollout__video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  pointer-events: none;
+}
+.physical-project .physical-rollout.is-video picture { visibility: hidden; }
+.physical-project .physical-rollout.is-video .physical-rollout__video { opacity: 1; }
 .physical-project .physical-metric-table td { font-variant-numeric: tabular-nums; }
 .physical-project .physical-metric-table td:nth-last-child(-n+2) { white-space: nowrap; }
 .physical-project .physical-metric-table th[scope="row"] { white-space: normal; }
