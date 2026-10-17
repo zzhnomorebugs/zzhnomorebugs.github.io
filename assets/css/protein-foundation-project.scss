@@ -1,0 +1,83 @@
+---
+---
+
+.protein-foundation-project {
+  .retro-hero__title {
+    max-width: 980px;
+    font-size: clamp(2.4rem, 5.6vw, 4.5rem);
+    line-height: 1.25;
+    letter-spacing: -0.04em;
+    text-wrap: balance;
+  }
+
+  .pf-role-grid > div { padding-top: 1rem; border-top: 2px solid var(--retro-accent); }
+  .pf-pipeline-figure > a { padding: 0; overflow: hidden; }
+  .pf-pipeline-figure img { width: 100%; max-height: none; }
+
+  .pf-profile-demo {
+    display: block;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    border: 1px solid var(--retro-line);
+    background: var(--retro-accent-soft);
+    border-radius: 4px;
+  }
+  .pf-profile-grid { display: grid; width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.6rem; }
+  .pf-demo-panel { min-width: 0; }
+  .pf-demo-label { margin: 0 0 1rem; font-size: 0.78rem; font-weight: 650; color: var(--retro-accent); text-align: center; }
+  .pf-msa { width: 100%; max-width: 230px; margin: 0 auto; }
+  .pf-msa > div { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.35rem; margin-bottom: 0.35rem; }
+  .pf-msa span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    border: 1px solid var(--retro-line);
+    border-radius: 3px;
+    background: var(--retro-paper);
+    font: 600 0.9rem/1.4 Consolas, monospace;
+  }
+  .pf-msa .pf-residue-c { background: #dceee8; color: #1d5f55; border-color: #a9cfc3; }
+  .pf-msa .pf-residue-t { background: #f4e8cd; color: #73551d; border-color: #dbc695; }
+  .pf-demo-note { margin: 0.8rem 0 0; color: var(--retro-muted); font-size: 0.72rem; text-align: center; }
+  .pf-site-list { margin: 0; padding: 0; list-style: none; }
+  .pf-site-list > li { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin: 0; min-height: 2.35rem; border-bottom: 1px solid var(--retro-line); font-size: 0.71rem; }
+  .pf-site-list > li + li { margin: 0; }
+  .pf-site-list > li > span { color: var(--retro-muted); white-space: nowrap; }
+  .pf-site-list code { padding: 0; border: 0; background: transparent; font-size: 0.74rem; white-space: nowrap; }
+  .pf-profile-demo > figcaption { margin-top: 1.2rem !important; }
+
+  .pf-code-block { margin: 1.5rem 0; border-left: 3px solid var(--retro-accent); background: var(--retro-accent-soft); }
+  .pf-code-label { padding: 0.75rem 1rem 0; margin: 0; font-size: 0.72rem; color: var(--retro-muted); }
+  .pf-code-block pre { margin: 0; padding: 0.85rem 1rem 1rem; max-width: 100%; overflow-x: auto; border: 0; border-radius: 0; background: transparent; font-size: 0.75rem; line-height: 1.85; box-shadow: none; }
+  .pf-code-block code { color: var(--retro-ink); border: 0; padding: 0; background: transparent; }
+  .retro-comparison tbody th { font-size: inherit; white-space: normal; min-width: 140px; }
+
+  .pf-storage-comparison { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 2rem; align-items: center; margin: 2rem 0 1rem; padding: 1.5rem 0; border-top: 1px solid var(--retro-line); border-bottom: 1px solid var(--retro-line); text-align: center; }
+  .pf-storage-label { display: block; font-size: 0.75rem; color: var(--retro-muted); }
+  .pf-storage-comparison strong { display: block; margin: 0.35rem 0; font-size: clamp(1.8rem, 3.2vw, 2.5rem); color: var(--retro-accent); line-height: 1.4; letter-spacing: -0.04em; }
+  .pf-storage-comparison p { margin: 0; font-size: 0.75rem; color: var(--retro-muted); }
+  .pf-storage-arrow { font-size: 1.6rem; color: var(--retro-muted); }
+  .pf-references { color: var(--retro-muted); }
+  .pf-references p { font-size: 0.76rem; }
+}
+
+@media (max-width: 740px) {
+  .protein-foundation-project {
+    .pf-profile-demo { padding: 1.1rem; }
+    .pf-profile-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .pf-demo-panel + .pf-demo-panel { padding-top: 1.2rem; border-top: 1px solid var(--retro-line); }
+    .pf-demo-label { text-align: center; }
+    .pf-demo-note { text-align: center; }
+    .pf-site-list { max-width: 290px; margin: 0 auto; }
+    .pf-site-list code { font-size: 0.8rem; }
+    .pf-storage-comparison { grid-template-columns: 1fr; gap: 0.7rem; }
+    .pf-storage-arrow { transform: rotate(90deg); line-height: 1; }
+    .pf-code-block pre { font-size: 0.69rem; }
+    .retro-results-grid strong { overflow-wrap: anywhere; }
+  }
+}
+
+@media print {
+  .protein-foundation-project .pf-profile-demo { break-inside: avoid; }
+}

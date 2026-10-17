@@ -19,3 +19,6 @@ vendor/
 # Local source material, previews, and verification helpers
 tmp/
 
+# Python helper bytecode
+__pycache__/
+

@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1500" viewBox="0 0 640 1500" role="img" aria-labelledby="title desc">
+  <title id="title">MSA 数据预处理与训练读取流程，手机版</title>
+  <desc id="desc">从上到下依次为原始 MSA 数据、位置索引、分块并行预处理、HDF5 存储及训练读取。位置索引让程序定位后读取，避免反复从头扫描。多个 CPU 节点解析、tokenize 并按列聚合，保存整数计数 C 和 MSA 条数 N；读取时以 C 除以 N 恢复 profile，交给模型。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M2 1 L10 6 L2 11" fill="none" stroke="#25766c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;fill:#243a35}
+      .card{fill:#fff;stroke:#d6e3dc;stroke-width:2}
+      .step{font-size:26px;font-weight:700;fill:#25766c}
+      .heading{font-size:30px;font-weight:700}
+      .body{font-size:26px;fill:#50615b}
+      .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .soft{fill:#e9f3ed}
+    </style>
+  </defs>
+  <rect width="640" height="1500" fill="#faf9f4"/>
+  <text x="46" y="45" font-size="24" letter-spacing="2" fill="#25766c">DATA PIPELINE</text>
+  <text x="46" y="88" font-size="32" font-weight="700">从 MSA 到训练数据</text>
+
+  <rect class="card" x="46" y="118" width="548" height="226" rx="20"/>
+  <text class="step" x="74" y="164">01</text>
+  <text class="heading" x="128" y="164">原始 MSA 数据</text>
+  <g aria-hidden="true">
+    <rect x="74" y="196" width="152" height="106" rx="11" fill="#f1f5f0"/>
+    <g fill="#72a997">
+      <path d="M87 215h16v14H87z M110 215h16v14h-16z M133 215h16v14h-16z M179 215h16v14h-16z M202 215h12v14h-12z"/>
+      <path d="M87 239h16v14H87z M133 239h16v14h-16z M156 239h16v14h-16z M179 239h16v14h-16z M202 239h12v14h-12z"/>
+      <path d="M87 263h16v14H87z M110 263h16v14h-16z M133 263h16v14h-16z M156 263h16v14h-16z M202 263h12v14h-12z"/>
+    </g>
+    <path d="M156 215h16v14h-16z M110 239h16v14h-16z M179 263h16v14h-16z" fill="#e6c67b"/>
+  </g>
+  <text class="body" x="260" y="232">多行对齐序列</text>
+  <text class="body" x="260" y="278">按目标组织 MSA</text>
+
+  <path class="line" d="M320 353 V381" marker-end="url(#arrow)"/>
+  <rect class="card" x="46" y="392" width="548" height="226" rx="20"/>
+  <text class="step" x="74" y="438">02</text>
+  <text class="heading" x="128" y="438">位置索引</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="74" y="477" width="59" height="83" rx="10"/>
+    <text x="103" y="528" text-anchor="middle" font-size="28" font-weight="700" fill="#25766c">ID</text>
+    <path class="line" d="M141 519 H162" marker-end="url(#arrow)"/>
+    <rect x="174" y="477" width="60" height="83" rx="10" fill="#f6efd9"/>
+    <text x="204" y="527" text-anchor="middle" font-size="26" font-weight="700">位置</text>
+  </g>
+  <text class="body" x="260" y="489">目标 ID → 文件位置</text>
+  <text class="body" x="260" y="532">定位后读取</text>
+  <text class="body" x="260" y="575">避免反复从头扫描</text>
+
+  <path class="line" d="M320 627 V655" marker-end="url(#arrow)"/>
+  <rect class="card" x="46" y="666" width="548" height="226" rx="20"/>
+  <text class="step" x="74" y="712">03</text>
+  <text class="heading" x="128" y="712">分块并行预处理</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="74" y="751" width="43" height="27" rx="5"/>
+    <rect class="soft" x="74" y="791" width="43" height="27" rx="5"/>
+    <rect class="soft" x="74" y="831" width="43" height="27" rx="5"/>
+    <path class="line" d="M126 765 H151 V805 H175 M126 805 H175 M126 845 H151 V805" marker-end="url(#arrow)"/>
+    <rect x="186" y="776" width="48" height="58" rx="9" fill="#f6efd9"/>
+    <path class="line" d="M198 793 H222 M198 805 H222 M198 817 H222"/>
+  </g>
+  <text class="body" x="260" y="763">多个 CPU 节点</text>
+  <text class="body" x="260" y="806">解析与 tokenize</text>
+  <text class="body" x="260" y="849">按列聚合计数</text>
+
+  <path class="line" d="M320 901 V929" marker-end="url(#arrow)"/>
+  <rect class="card" x="46" y="940" width="548" height="226" rx="20"/>
+  <text class="step" x="74" y="986">04</text>
+  <text class="heading" x="128" y="986">HDF5 存储</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="74" y="1027" width="88" height="88" rx="10"/>
+    <text x="118" y="1084" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
+    <rect x="174" y="1027" width="60" height="88" rx="10" fill="#f6efd9"/>
+    <text x="204" y="1084" text-anchor="middle" font-size="36" font-weight="700">N</text>
+  </g>
+  <text class="body" x="260" y="1037">整数计数 C</text>
+  <text class="body" x="260" y="1080">MSA 条数 N</text>
+  <text class="body" x="260" y="1123">按条目保存</text>
+
+  <path class="line" d="M320 1175 V1203" marker-end="url(#arrow)"/>
+  <rect class="card" x="46" y="1214" width="548" height="226" rx="20"/>
+  <text class="step" x="74" y="1260">05</text>
+  <text class="heading" x="128" y="1260">训练读取</text>
+  <g aria-hidden="true">
+    <rect class="soft" x="74" y="1301" width="160" height="88" rx="10"/>
+    <text x="154" y="1358" text-anchor="middle" font-size="35" font-weight="700" fill="#25766c">C / N</text>
+  </g>
+  <text class="body" x="260" y="1335">读取后计算频率</text>
+  <text class="body" x="260" y="1381">profile → 模型</text>
+</svg>
