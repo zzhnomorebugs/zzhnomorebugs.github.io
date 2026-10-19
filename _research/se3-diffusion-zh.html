@@ -1,0 +1,452 @@
+---
+title: "SE(3) 不变空间中的扩散"
+layout: research-project
+collection: research
+permalink: /zh/research/se3-diffusion/
+lang: zh-CN
+research_project: true
+mathjax: true
+project_class: se3-project
+project_stylesheet: se3-project.css
+project_title: "SE(3) 不变空间中的扩散"
+project_area: "几何生成 · 扩散过程 · 微分几何"
+order: 6
+published: true
+read_time: false
+date: 2026-10-18
+index_title: "从距离变化到坐标更新：理解三维结构的扩散采样"
+excerpt: "三维结构的距离表示天然不随旋转和平移改变，却受到几何可行性的约束。从距离流形与坐标空间的映射出发，展开局部线性近似、误差界、逆向 SDE / ODE、距离 score 与采样校准的主要推导，理解无显式投影采样如何运作。"
+project_image: /images/research/se3-diffusion/framework.webp
+papers: [se3-diffusion]
+project_chapters:
+  - id: se3-problem
+    label: 几何问题
+  - id: se3-background
+    label: 扩散基础
+  - id: se3-projection
+    label: 距离与坐标
+  - id: se3-linear
+    label: 局部近似
+  - id: se3-sde
+    label: 逆向 SDE
+  - id: se3-ode
+    label: 逆向 ODE
+  - id: se3-learning
+    label: 学习 score
+  - id: se3-corrector
+    label: 采样校准
+  - id: se3-results
+    label: 实验证据
+  - id: se3-takeaways
+    label: 总结
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="se3-problem">
+  <p class="retro-kicker">Geometry before sampling</p>
+  <h2><span class="retro-chapter__number">01</span> 以内部形状为建模对象，消去整体旋转与平移</h2>
+  <p class="retro-lede">同一个分子或人体骨架，整体旋转、平移后仍然具有相同的内部几何。距离表示可以消去这些自由度，但距离之间相互约束：随意改动一条边，未必还能拼成一个三维结构。</p>
+  <ol class="retro-pipeline" aria-label="三维结构扩散采样的输入与输出">
+    <li><strong>输入：结构条件与带噪坐标</strong><span>分子图或姿态类别提供条件，坐标表示当前的三维状态。</span></li>
+    <li><strong>建模：不变的距离变化</strong><span>由点间距离描述内部几何，预测去噪方向，再转换成坐标位移。</span></li>
+    <li><strong>输出：生成的三维坐标</strong><span>保留内部形状，以无显式流形投影的更新完成采样。</span></li>
+  </ol>
+  <h3>距离天然不变，坐标更新需要等变</h3>
+  <p>令 \(\mathcal C=[x_1,\ldots,x_n]^\top\in\mathbb R^{n\times3}\)，\(d\) 是完整的点间距离矩阵。这里的“邻接矩阵”指加权距离矩阵，不是化学键的二值连接矩阵。</p>
+  <div class="retro-equation" id="se3-eq-1">\[\begin{aligned}d_{ij}&=\|x_i-x_j\|,\qquad d=\operatorname{adj}(\mathcal C),\\
+  \mathcal C'&=\mathcal C R^\top+\mathbf1 b^\top,\quad R\in SO(3),\\
+  \operatorname{adj}(\mathcal C')&=\operatorname{adj}(\mathcal C).\end{aligned}\tag{1}\]</div>
+  <p>标量距离预测应保持不变；坐标位移则应随输入一起旋转。这让模型把学习能力集中在相对几何上。平移自由度可通过去质心固定，避免把无限平移空间上的“均匀分布”当成可归一化的坐标密度。</p>
+  <h3>难点：合法距离只占矩阵空间的一部分</h3>
+  <div class="retro-equation" id="se3-eq-2">\[M=\left\{d:\exists\mathcal C\in\mathbb R^{n\times3},\ d_{ij}=\|x_i-x_j\|\right\}.\tag{2}\]</div>
+  <p>例如，三点的距离必须满足三角不等式。三维可实现性还带来更强的约束，因此直接使用 \(d+\epsilon\)、逐边独立加入高斯噪声，通常会离开可行集合 \(M\)。对非退化结构，局部形状自由度一般为 \(3n-6\)，远少于全部 \(n(n-1)/2\) 条边长；碰撞与降秩位置需要单独处理。</p>
+  <div class="retro-callout"><strong>贯穿全文的思路</strong><p>在坐标上加噪，得到始终可实现的距离；在距离上描述去噪方向，再用一个便宜的局部算子把方向传回坐标。需要近似的是这一步几何转换，而不只是数值求解器。</p></div>
+  <p class="se3-equation-note">距离也对反射保持不变。完整距离通常确定的是模平移与 \(O(3)\) 的结构，无法单独区分镜像；若任务关心手性，还需要额外信息。下文的距离表示因此不被视为整个 \(SE(3)\) 商空间上的全局一一参数化。</p>
+</section>
+
+<section class="retro-chapter" id="se3-background">
+  <p class="retro-kicker">Forward diffusion and probability flow</p>
+  <h2><span class="retro-chapter__number">02</span> 先看清欧氏空间里，SDE 与 ODE 为什么能去噪</h2>
+  <p class="retro-lede">score 指向当前分布密度上升的方向。逆向 SDE 同时包含确定性去噪和随机扰动；概率流 ODE 用确定性向量场描述相同的边缘分布演化。这种对应依赖扩散系数，不能只删掉 SDE 的噪声项。</p>
+  <div class="retro-equation" id="se3-eq-3">\[\mathrm dx_t=f(t)x_t\,\mathrm dt+g(t)\,\mathrm dW_t,\qquad x_0\sim q_0.\tag{3}\]</div>
+  <p>正向时间从 \(0\) 到 \(T\)，逐渐破坏结构。对状态无关的标量噪声，逆过程与概率流分别为：</p>
+  <div class="retro-equation" id="se3-eq-4">\[\begin{aligned}
+  \mathrm dx_t&=\left[f(t)x_t-g^2(t)\nabla_x\log q_t(x_t)\right]\mathrm dt+g(t)\,\mathrm d\overline W_t,\\
+  \frac{\mathrm dx_t}{\mathrm dt}&=f(t)x_t-\frac12g^2(t)\nabla_x\log q_t(x_t).
+  \end{aligned}\tag{4}\]</div>
+  <p>生成时从 \(T\) 向 \(0\) 积分，\(\mathrm dt&lt;0\)，所以负号前的 score 实际把样本推向高密度区域。ODE 的 \(1/2\) 来自 Fokker–Planck 方程中扩散项的贡献。两者在精确 score 等条件下共享各时刻的分布，不要求样本轨迹相同。</p>
+  <h3>这篇工作的 ODE 聚焦于 VE 加噪</h3>
+  <div class="retro-equation" id="se3-eq-5">\[\begin{aligned}
+  \mathrm d\mathcal C_t&=\mathbf f(\mathcal C_t,t)\,\mathrm dt+\mathbf G(\mathcal C_t,t)\,\mathrm dW_t,\\
+  \text{VE:}\quad \mathbf f&=0,\quad \mathbf G=G(t)I,\quad
+  G^2(t)=\frac{\mathrm d\sigma_t^2}{\mathrm dt},\\
+  \mathcal C_t\mid\mathcal C_0&\sim\mathcal N(\mathcal C_0,\sigma_t^2 I).
+  \end{aligned}\tag{5}\]</div>
+  <p>最后一行把起点噪声方差取为零，并按 \(3n\) 维向量理解坐标；去质心时相应限制到中心化子空间。VE 的直觉是：均值保持，噪声尺度逐渐增大。后文涉及显式距离漂移的公式都使用这一设置，不能直接推广到任意噪声调度。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="主要数学符号">
+    <table class="retro-comparison se3-symbols"><caption>表 1 · 推导中反复出现的符号</caption><thead><tr><th scope="col">符号</th><th scope="col">含义</th></tr></thead><tbody>
+      <tr><td>\(\mathcal C_t,d_t\)</td><td>带噪坐标及其距离矩阵，\(d_t=\operatorname{adj}(\mathcal C_t)\)。</td></tr>
+      <tr><td>\(L,M,N\)</td><td>坐标嵌入空间、可行距离集合的正则流形部分、局部选择的谱坐标代表。</td></tr>
+      <tr><td>\(q_t,p_t,S_t\)</td><td>坐标分布、距离分布及论文建模中的距离 score，\(S_t=\nabla_d\log p_t\)。score 依赖所选距离流形的度量与参考测度，并非冗余距离在满维欧氏空间的普通密度梯度；两种密度也不直接数值等同。</td></tr>
+      <tr><td>\(G(t),g(t)\)</td><td>坐标与距离描述中的噪声强度。它们属于不同空间，不能不经推导便互换。</td></tr>
+      <tr><td>\(\varphi,\pi_M,J\)</td><td>距离到坐标代表的局部映射、距离可行性投影、距离映射的 Jacobian。</td></tr>
+      <tr><td>\(\tau,\kappa\)</td><td>离散时间步长、用于放大去噪漂移的 corrector 系数。</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section class="retro-chapter" id="se3-projection">
+  <p class="retro-kicker">Coordinates, distances, and projection</p>
+  <h2><span class="retro-chapter__number">03</span> 把一次距离更新，写成一个坐标重建问题</h2>
+  <p class="retro-lede">如果先在距离流形上写逆过程，每一步都要把候选距离拉回合法集合，再找回一组坐标。把这两个操作合起来，才能看清计算代价来自哪里。</p>
+  <figure class="retro-figure se3-framework">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/framework.webp"><img src="{{ base_path }}/images/research/se3-diffusion/framework.webp" alt="坐标空间 L、谱坐标代表 N 与距离流形 M 之间的映射，距离的切向更新转换为坐标位移" width="2400" height="870" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 1 · 距离与坐标交替的几何框架。灰色区域是坐标空间 L，蓝色区域表示可行距离，绿色区域表示所选坐标代表；橙色方向在距离侧给出去噪变化，红色方向是转换后的坐标更新。谱坐标用于分析，采样时可以直接维护普通坐标。</figcaption>
+  </figure>
+  <h3>先写出需要投影的理想化更新</h3>
+  <p>沿论文的流形描述，设 \(\mathcal B_t^M\) 为流形 Brownian motion。在适当的几何、度量及噪声条件下，用下式表示距离扩散；它不意味着任意坐标加噪都诱导一个各向同性的距离过程。</p>
+  <div class="retro-equation" id="se3-eq-6">\[\mathrm dd_t=f(d_t)\,\mathrm dt+g(t)\,\mathrm d\mathcal B_t^M.\tag{6}\]</div>
+  <p>令 \(t_k=k\tau\)。逆向离散一步的距离提案与投影写成：</p>
+  <div class="retro-equation" id="se3-eq-7">\[\begin{aligned}
+  F^{\mathcal N}(d_t,t)&=\tau\left[f(d_t)-g^2(t)S_t(d_t)\right]+\sqrt\tau g(t)z^{t,d_t},\\
+  d^{k-1}&=\pi_{M,d^k}\!\left(d^k-F^{\mathcal N}(d^k,t_k)\right),\\
+  \mathcal C^{k-1}&=\varphi\circ\pi_{M,d^k}\!\left(d^k-F^{\mathcal N}(d^k,t_k)\right).
+  \end{aligned}\tag{7}\]</div>
+  <p>\(z^{t,d_t}\) 是切空间中的高斯向量。噪声整体取反不改变其分布；这里保持论文的减去 \(F^{\mathcal N}\) 记号。\(\pi_M\) 保证距离可实现，\(\varphi\) 选一组坐标代表。</p>
+  <h3>合起来，就是 metric MDS</h3>
+  <div class="retro-equation" id="se3-eq-8">\[\begin{aligned}
+  \widehat d&=d+\alpha,\\
+  \varphi\circ\pi_{M,d}(\widehat d)&\in\underset{\mathcal C\in N}{\operatorname{argmin}}\;
+  \sum_{i&lt;j}\left(\|x_i-x_j\|-\widehat d_{ij}\right)^2.
+  \end{aligned}\tag{8}\]</div>
+  <p>这一目标要让重建坐标的距离尽可能接近提案。实现中可去掉选规约束 \(\mathcal C\in N\)：整体旋转、平移不会改变目标值。优化仍是非线性的，逐采样步求解会带来额外迭代。</p>
+  <div class="retro-support">
+    <h3>谱坐标说明“代表”是什么</h3>
+    <p>对可行距离，用平方距离双中心化可得到 Gram 矩阵：</p>
+    <div class="retro-equation" id="se3-eq-9">\[H=I-\frac1n\mathbf1\mathbf1^\top,\quad
+    B=-\frac12H(d\odot d)H,\quad
+    B=U\Lambda U^\top,\quad\mathcal C_{\mathrm{spec}}=U_3\Lambda_3^{1/2}.\tag{9}\]</div>
+    <p>这里必须使用<strong>平方距离</strong>。可行三维距离对应 \(B\succeq0\)、\(\operatorname{rank}(B)\leq3\)。特征向量符号、重特征值与镜像会影响代表的选择，因此 \(\varphi\) 只在合适的局部选规下使用。对不可行提案做特征值截断的 classical MDS，也不等于精确求解式 (8) 的 metric MDS。</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="se3-linear">
+  <p class="retro-kicker">A local linear replacement</p>
+  <h2><span class="retro-chapter__number">04</span> 用沿边的微小位移，近似昂贵的投影</h2>
+  <p class="retro-lede">一条边希望变长时，两个端点应沿连线反向移动；但端点一动，其他相邻边也会变。方法用与邻接数量相关的缩放限制这种牵连，再把所有边的作用加起来。</p>
+  <h3>第一步：写出距离对端点坐标的导数</h3>
+  <div class="retro-equation" id="se3-eq-10">\[u_{ij}=\frac{x_i-x_j}{d_{ij}},\qquad
+  \frac{\partial d_{ij}}{\partial x_i}=u_{ij},\quad
+  \frac{\partial d_{ij}}{\partial x_j}=-u_{ij},\quad
+  \frac{\partial d_{ij}}{\partial x_\ell}=0\;(\ell\notin\{i,j\}).\tag{10}\]</div>
+  <p>这些导数只在 \(d_{ij}&gt;0\) 时使用。每条边产生一对大小相同、方向相反的位移，因此总位移为零；旋转坐标时，方向向量也一起旋转。</p>
+  <h3>第二步：只改变一条边，得到候选更新</h3>
+  <p>令 \(\bar e_{uv}\) 只在 \((u,v)\)、\((v,u)\) 两个位置为 1。对 \(\widehat d=d+\delta\bar e_{uv}\)，论文采用：</p>
+  <div class="retro-equation" id="se3-eq-11">\[\begin{aligned}
+  \widehat{\mathcal C}&=\mathcal C+\frac{\delta}{2(n-1)}\frac{\partial d_{uv}}{\partial\mathcal C},\\
+  \widehat x_u&=x_u+\frac{\delta}{2(n-1)}u_{uv},\qquad
+  \widehat x_v=x_v-\frac{\delta}{2(n-1)}u_{uv}.
+  \end{aligned}\tag{11}\]</div>
+  <p>若只有两个点，端点各移动 \(\delta/2\)，恰好完成边长变化。点数更多时，\(1/(n-1)\) 将动作缩小，表达其他相邻边对移动的牵制。这是局部近似，不是任意构型上距离 Jacobian 的精确逆。</p>
+  <figure class="retro-figure se3-local-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/approximation.webp"><img src="{{ base_path }}/images/research/se3-diffusion/approximation.webp" alt="局部距离投影近似示意：扰动一条边，通过两个端点沿边反向移动得到坐标候选" width="2400" height="1870" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 2 · 单边扰动的坐标近似。距离提案未必能被全部满足；端点的沿边移动给出一个可实现的坐标候选，其距离残差可以被控制。</figcaption>
+  </figure>
+  <h3>第三步：保留误差界的推导，而不把“有界”理解成“精确”</h3>
+  <p>记 \(E(\widehat{\mathcal C};\widehat d)\) 为式 (8) 的距离残差。目标边的变化量为 \(\delta/(n-1)\)，残差为 \(-\delta(n-2)/(n-1)\)；其余最多 \(2(n-2)\) 条受影响的边，每条变化不超过 \(|\delta|/[2(n-1)]\)。因此在小扰动、不发生端点穿越的条件下：</p>
+  <div class="retro-equation" id="se3-eq-12">\[\begin{aligned}
+  0\leq\min_{\mathcal C'}E(\mathcal C';\widehat d)
+  &\leq E(\widehat{\mathcal C};\widehat d)\\
+  &\leq\left(\frac{n-2}{n-1}\right)^2\delta^2
+  +2(n-2)\left(\frac{\delta}{2(n-1)}\right)^2\\
+  &=\frac{2n^2-7n+6}{2(n-1)^2}\delta^2.
+  \end{aligned}\tag{12}\]</div>
+  <p>系数随 \(n\to\infty\) 趋于 1，不会仅因为点数增大而发散。这个界控制的是<strong>单边扰动下候选解的目标函数值</strong>；它没有给出坐标误差、全局最优性或整段采样轨迹的误差保证，多边扰动还会出现交叉作用。</p>
+  <h3>第四步：线性叠加，得到所有边的坐标作用</h3>
+  <div class="retro-equation" id="se3-eq-13">\[\begin{aligned}
+  A\circledast\frac{\partial d}{\partial\mathcal C}
+  &:=\frac12\sum_{i,j}A_{ij}\frac{\partial d_{ij}}{\partial\mathcal C}
+  =\sum_{i&lt;j}A_{ij}\frac{\partial d_{ij}}{\partial\mathcal C},\\
+  \Delta\mathcal C&\approx\frac1{2(n-1)}\alpha\circledast\frac{\partial d}{\partial\mathcal C},\\
+  \Delta x_i&\approx\frac1{2(n-1)}\sum_{j\ne i}\alpha_{ij}u_{ij}.
+  \end{aligned}\tag{13}\]</div>
+  <p>\(A\) 在此表示对称边权，\(\circledast\) 避免把 \((i,j)\) 与 \((j,i)\) 重复计算。对小的多边提案，将单边算子叠加得到一阶替代；它把边上的标量信号转成每个点的三维向量。</p>
+  <div class="retro-equation" id="se3-eq-14">\[\mathcal C^{k-1}\approx\mathcal C^k-
+  \frac{F^{\mathcal N}(d^k,t_k)}{2(n-1)}\circledast\frac{\partial d^k}{\partial\mathcal C^k}.\tag{14}\]</div>
+  <div class="retro-callout"><strong>“无投影”发生在实现层</strong><p>每次只更新坐标，重新计算的距离自然可实现，因此省去显式的非线性距离投影。它仍然近似了原先想要的距离方向；几何约束没有消失。</p></div>
+  <div class="retro-support"><h3>为什么链式法则还不够？</h3><p>若把距离向量化，记 \(J=\partial d/\partial\operatorname{vec}(\mathcal C)\)。局部线性化后，原来的距离重建变为：</p>
+    <div class="retro-equation">\[\begin{aligned}
+    \operatorname{adj}(\mathcal C+\Delta\mathcal C)&\approx d+J\Delta\mathcal C,\\
+    \min_{\Delta\mathcal C}\|J\Delta\mathcal C-\alpha\|^2
+    &\ \Longrightarrow\ J^\top J\Delta\mathcal C=J^\top\alpha,\\
+    \Delta\mathcal C_{\min\text{-}\mathrm{norm}}&=J^+\alpha.
+    \end{aligned}\]</div>
+    <p>这里按向量理解 \(\Delta\mathcal C\)，并固定刚体自由度。严格局部最小范数解涉及伪逆 \(J^+\)，边信号回传则是 \(J^\top\alpha\)。论文用缩放后的转置算子替代更昂贵的耦合求解；一般不能写成 \(J^+=J^\top/[2(n-1)]\)。</p></div>
+</section>
+
+<section class="retro-chapter" id="se3-sde">
+  <p class="retro-kicker">Lifting the reverse SDE</p>
+  <h2><span class="retro-chapter__number">05</span> 将距离侧的逆过程，传回坐标空间</h2>
+  <p class="retro-lede">局部转换给出了 score 怎样推动坐标。接下来用已知的正向坐标加噪过程，替代距离侧难以直接求出的漂移与随机项，得到论文提出的坐标逆向 SDE。</p>
+  <p>将式 (7) 代入式 (14)，在同一时刻记 \(S_t=\nabla_d\log p_t\)，可看到三类作用：</p>
+  <div class="retro-equation" id="se3-eq-15">\[\begin{aligned}
+  \Delta\mathcal C\approx{}&-\frac{\tau f(d_t)}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\\
+  &+\frac{\tau g^2(t)S_t}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}
+  -\frac{\sqrt\tau g(t)z^{t,d_t}}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}.
+  \end{aligned}\tag{15}\]</div>
+  <p>第一项逆转正向漂移；第二项沿学习到的距离 score 去噪；第三项提供随机性。按论文对正向坐标过程与距离过程的局部对应，将前者的漂移、噪声写回后，提出：</p>
+  <div class="retro-equation" id="se3-eq-16">\[\mathrm d\mathcal C_t\approx
+  \left[\mathbf f(\mathcal C_t,t)-\frac{g^2(t)}{2(n-1)}
+  S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}\right]\mathrm dt
+  +\mathbf G(\mathcal C_t,t)\,\mathrm d\overline W_t.\tag{16}\]</div>
+  <p>式 (16) 对应论文的坐标逆向 SDE。这里保留近似号，提醒局部映射已经引入近似。\(g(t)\) 是距离侧的系数，\(\mathbf G\) 是坐标侧的系数；该式也不能被视为任意状态相关扩散矩阵的通用时间反演定理。</p>
+  <div class="retro-callout"><strong>直觉：距离决定“要怎样变”，方向来自当前坐标</strong><p>神经网络提供边长变化的标量信号；\(\partial d_{ij}/\partial\mathcal C\) 将它变为沿当前边方向的推拉。即使不显式固定坐标朝向，也能得到随旋转一起变化的更新。</p></div>
+</section>
+
+<section class="retro-chapter" id="se3-ode">
+  <p class="retro-kicker">Radial drift and the ODE approximation</p>
+  <h2><span class="retro-chapter__number">06</span> 坐标加的是高斯噪声，距离却会发生径向漂移</h2>
+  <p class="retro-lede">距离是向量的模长。即使坐标噪声均值为零，模长也会系统性增大；而共享端点的距离增量还会相关。理解这两点，才能看清论文 ODE 中额外的倒数距离项，以及最终实用形式的近似来源。</p>
+  <h3>从一次坐标扰动，写出精确的距离变化</h3>
+  <p>令 \(r=x_u-x_v\)，\(\eta\sim\mathcal N(0,2G^2(t)I_3)\)。对时间步 \(\tau\)，相对坐标变为 \(r+\sqrt\tau\eta\)。用平方差分解：</p>
+  <div class="retro-equation" id="se3-eq-17">\[d_{uv}^{t+\tau}-d_{uv}^t
+  =\frac{2\sqrt\tau\eta^\top r+\tau\|\eta\|^2}
+  {\|r+\sqrt\tau\eta\|+\|r\|}.\tag{17}\]</div>
+  <p>这就是距离转移分析的起点。分母也依赖同一份噪声，因此计算一阶矩时，不能把它直接当成常数并忽略相关项。</p>
+  <h3>保留论文给出的矩与 ODE 形式</h3>
+  <p>arXiv 版本的距离矩近似采用以下系数，并在忽略边间依赖后给出逐边 ODE：</p>
+  <div class="retro-equation" id="se3-eq-18">\[\begin{aligned}
+  \mathbb E[d_{uv}^t-d_{uv}^{t+\tau}]&\approx-\frac{3\tau G^2(t)}{d_{uv}^t}+o(\tau),\\
+  \mathbb E[(d_{uv}^{t+\tau}-d_{uv}^t)^2]&=2\tau G^2(t)+o(\tau),\\
+  \frac{\mathrm dd_t}{\mathrm dt}&\approx G^2(t)\left(\frac3{d_t}-S_t(d_t)\right),\\
+  \frac{\mathrm d\mathcal C_t}{\mathrm dt}&\approx\frac{G^2(t)}{2(n-1)}
+  \left(\frac3{d_t}-S_t(d_t)\right)\circledast\frac{\partial d_t}{\partial\mathcal C_t}.
+  \end{aligned}\tag{18}\]</div>
+  <p>倒数、除法都只对非对角距离逐元素计算。\(3/d_t\) 表达径向漂移，score 项表达分布引导；再通过同一个局部算子传回坐标。这里的形式对应论文主文的距离矩与 ODE，而不被当作独立坐标 VE 加噪的精确联合概率流。</p>
+  <div class="retro-support se3-math-check">
+    <h3>数学细节：三维 Itô 公式给出的系数与相关性</h3>
+    <p>对文中设定的 \(\mathrm dx_i=G(t)\mathrm dW_i\)，相对噪声协方差为 \(2G^2I_3\)。令 \(d=\|r\|\)、\(u=r/d\)，模长的梯度与 Hessian 为：</p>
+    <div class="retro-equation">\[\nabla_r d=u,\qquad\nabla_r^2d=\frac{I_3-uu^\top}{d},\qquad
+    \frac12\operatorname{tr}\!\left(2G^2I_3\nabla_r^2d\right)=\frac{2G^2}{d}.\]</div>
+    <p>将这一二阶漂移项与一阶随机项合起来，Itô 公式给出：</p>
+    <div class="retro-equation" id="se3-eq-19">\[\begin{aligned}
+    \mathrm dd_{ij}&=\frac{2G^2(t)}{d_{ij}}\,\mathrm dt
+    +G(t)u_{ij}^\top(\mathrm dW_i-\mathrm dW_j),\\
+    \mathbb E[\Delta d_{ij}]&=\frac{2\tau G^2(t)}{d_{ij}}+o(\tau),\qquad
+    \mathbb E[(\Delta d_{ij})^2]=2\tau G^2(t)+o(\tau).
+    \end{aligned}\tag{19}\]</div>
+    <p>因此在这一噪声约定下，精确的单边径向漂移系数为 <strong>2</strong>，与式 (18) 中原文的 3 有差异。保留二阶展开中的分母相关项，可以得到这一修正。用标量 \(\rho\) 表示单条边的长度，其概率流为：</p>
+    <div class="retro-equation">\[\dot\rho=\frac{2G^2(t)}\rho-G^2(t)\partial_\rho\log p_t^{ij}(\rho).\]</div>
+    <p>其中 \(p_t^{ij}\) 是这条边的边缘密度；单边概率流仍不能直接拼成联合距离的独立更新。</p>
+    <p>设 \(J\) 为式 (10) 对应的距离 Jacobian，联合距离增量的协方差率为：</p>
+    <div class="retro-equation" id="se3-eq-20">\[\begin{aligned}
+    A&=G^2JJ^\top,\\
+    A_{(ij),(k\ell)}&=G^2(\delta_{ik}-\delta_{i\ell}-\delta_{jk}+\delta_{j\ell})
+    u_{ij}^\top u_{k\ell}.
+    \end{aligned}\tag{20}\]</div>
+    <p>同一条边的方差率是 \(2G^2\)，共享点的边一般具有非零相关性。完整距离又是冗余表示，不能假设它在所有边构成的欧氏空间中具有普通满维密度。对正则区域选择独立局部变量 \(y\)，并采用对应坐标密度时，一般的 Fokker–Planck 与概率流关系为：</p>
+    <div class="retro-equation" id="se3-eq-21">\[\begin{aligned}
+    \partial_t p&=-\sum_a\partial_a(b_ap)+\frac12\sum_{a,b}\partial_a\partial_b(A_{ab}p),\\
+    v_a&=b_a-\frac1{2p}\sum_b\partial_b(A_{ab}p)
+    =b_a-\frac12(\nabla\!\cdot A)_a-\frac12(A\nabla\log p)_a.
+    \end{aligned}\tag{21}\]</div>
+    <p>式 (21) 中的 \(b,A\) 是所选局部变量的漂移与协方差，不能直接把冗余距离的矩阵照搬为独立局部变量的系数。这说明“坐标噪声各向同性”并不自动带来“距离噪声独立且各向同性”。</p>
+  </div>
+  <h3>实用 ODE：把显式的倒数距离项一并近似掉</h3>
+  <p>为避免很小的距离出现在分母，论文同时采用高斯距离 score 近似，并省略式 (18) 的显式径向漂移项，最终使用：</p>
+  <div class="retro-equation" id="se3-eq-22">\[\frac{\mathrm d\mathcal C_t}{\mathrm dt}\approx
+  -\frac{G^2(t)}{2(n-1)}S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}.\tag{22}\]</div>
+  <p>这一步得到一个便于离散和加速的确定性采样方向。它同时依赖距离分布、边间依赖与几何 lifting 的近似；不能据此宣称与原始坐标扩散具有严格相同的所有边缘分布。后面的 corrector 就是针对这些累计偏差的经验补偿。</p>
+</section>
+
+<section class="retro-chapter" id="se3-learning">
+  <p class="retro-kicker">Learning edge signals on sparse graphs</p>
+  <h2><span class="retro-chapter__number">07</span> 学的是距离去噪信号，损失可以落在坐标向量上</h2>
+  <p class="retro-lede">网络不需要输出一组绝对朝向。它从距离和结构条件提取不变特征，预测边上的去噪信号，再通过几何方向组合成坐标向量；训练时直接比较这个组合结果与目标向量。</p>
+  <h3>从径向分布假设到可计算的监督</h3>
+  <p>论文用高斯项与 Maxwell–Boltzmann 型径向项组合，近似条件距离 score：</p>
+  <div class="retro-equation" id="se3-eq-23">\[S_t^{\mathrm{cond}}(d_t,d_0)
+  :=\nabla_d\log p_t(d_t\mid d_0)
+  \approx\frac{a_t}{d_t}-\frac{d_t-d_0}{2\sigma_t^2}.\tag{23}\]</div>
+  <p>\(a_t\) 是混合径向行为的超参数；两点相对坐标的噪声方差为 \(2\sigma_t^2\)，对应分母中的 2。真实的单边条件距离服从非中心卡分布，所有边之间又有关联，所以式 (23) 是建模假设。</p>
+  <p>为去掉不稳定的 \(1/d_t\) 项，实用监督改为：</p>
+  <div class="retro-equation" id="se3-eq-24">\[\widetilde S_t^{\mathrm{cond}}=-\frac{d_t-d_0}{2\sigma_t^2}.\tag{24}\]</div>
+  <p>直觉是：看当前距离相对干净距离偏了多少，按噪声尺度归一化后朝回拉。式 (24) 是把距离变化当成高斯变化的近似，不能等同于精确的坐标高斯 score。</p>
+  <h3>信息传递与坐标空间损失</h3>
+  <div class="retro-equation" id="se3-eq-25">\[h_u^{(m+1)}=\psi\!\left(h_u^{(m)},
+  \sum_{v\in\mathcal N(u)}h_v^{(m)}\cdot\phi(e_{uv},d_{uv})\right).\tag{25}\]</div>
+  <p>消息由边特征 \(e_{uv}\)、距离与节点表示共同形成，任务条件由分子图或姿态类别等提供。实验骨干没有显式嵌入扩散时间；下式中的 \(t\) 标记当前噪声级，不表示网络一定接收时间输入。将网络得到的边信号沿式 (10) 回传，可得到 \(n\times3\) 的向量场 \(s_\theta(d_t,t)\)。论文的损失写为：</p>
+  <div class="retro-equation" id="se3-eq-26">\[\begin{aligned}
+  \ell(\theta;d_t,d_0)&=\left\|s_\theta(d_t,t)-
+  \widetilde S_t^{\mathrm{cond}}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\right\|_F^2,\\
+  \mathcal L(\theta)&=\frac1{N_\sigma}\sum_{t=1}^{N_\sigma}\frac{\sigma_t}{2}
+  \mathbb E_{d_0,d_t}[\ell(\theta;d_t,d_0)].
+  \end{aligned}\tag{26}\]</div>
+  <p>这里 \(s_\theta\) 表示<strong>回传后的坐标向量</strong>，不能再当成 \(n\times n\) 的原始距离 score。若条件 score 和映射都是精确的，去噪目标的条件期望与边缘 score 有标准联系；采用式 (24) 后，网络学习的是相应的近似目标。缩放系数可以放在采样器或目标中，但实现时必须一致。</p>
+  <h3>稀疏图：将全连接归一化替换为局部度数归一化</h3>
+  <p>实际消息传递只使用部分边。对对称边权 \(S_{ij}\)，将完整图的 \(1/[2(n-1)]\) lifting 推广为：</p>
+  <div class="retro-equation" id="se3-eq-27">\[v_i^{E}(S)=\frac1{2\deg(i)}\sum_{j\in\mathcal N(i)}
+  S_{ij}\frac{x_i-x_j}{d_{ij}}.\tag{27}\]</div>
+  <p>式 (27) 明确按每个节点聚合；完整图上 \(\deg(i)=n-1\)，就回到式 (13) 的逐节点归一化。论文的稀疏表达同时使用全坐标导数与双向求和，存在计数约定差异；这里用逐节点形式明确实现含义。度数不同的图上它仍是一种经验近似，网络输出、采样系数和 corrector 必须采用一致的归一化。若每步需要保持去质心，可以在更新后重新中心化，这不会改变距离。</p>
+  <p>边越少，计算越省，但可能丢失确定结构所需的几何约束。仅要求最小度数不小于 4，并不足以保证任意三维图的结构唯一；局部可恢复性涉及刚性，全局唯一性还涉及全局刚性与镜像问题。</p>
+</section>
+
+<section class="retro-chapter" id="se3-corrector">
+  <p class="retro-kicker">Compensating accumulated approximation error</p>
+  <h2><span class="retro-chapter__number">08</span> 用 corrector 调整有效去噪步幅</h2>
+  <p class="retro-lede">局部 lifting、忽略边间相关性、近似距离 score 都会带来偏差。corrector 的直觉是：一次名义上的去噪步可能没有走到目标噪声水平，于是放大漂移，让实际进度更接近预期。</p>
+  <h3>把误差显式写进一步更新</h3>
+  <p>用 \(v_\theta\) 表示包含 \(1/[2(n-1)]\) 归一化后的预测向量：在完整图的统一约定下，\(v_\theta=s_\theta/[2(n-1)]\)；稀疏图则使用相应度数归一化。为分析其影响，论文假设预测误差具有高斯型行为：</p>
+  <div class="retro-equation" id="se3-eq-28">\[v_\theta(d_t,t)=
+  \frac1{2(n-1)}S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}
+  +\epsilon(d_t,t).\tag{28}\]</div>
+  <p>从较高噪声时刻 \(s\) 走向 \(t&lt;s\)，记 \(\Delta\sigma^2=\sigma_s^2-\sigma_t^2&gt;0\)。冻结当前向量场并积分式 (22)：</p>
+  <div class="retro-equation" id="se3-eq-29">\[\begin{aligned}
+  \mathcal C_t&\approx\mathcal C_s+
+  \Delta\sigma^2\left[v_\theta(d_s,s)-\epsilon(d_s,s)\right],\\
+  \mathcal C_t^{\mathrm{model}}&=\mathcal C_s+\Delta\sigma^2v_\theta(d_s,s).
+  \end{aligned}\tag{29}\]</div>
+  <p>理想一步与模型一步之间相差 \(\Delta\sigma^2\epsilon\)。在论文的误差模型中，这可以被解释为残留了额外噪声，目标时刻 \(t\) 的样本仍更像某个更高噪声时刻的分布。这是一种解释模型，不是任意预测误差都能化为时间偏移的定理。</p>
+  <h3>将补偿落实为乘法系数</h3>
+  <div class="retro-equation" id="se3-eq-30">\[\mathcal C_t\approx\mathcal C_s+
+  \kappa_\theta(d_s,s,t)\left(\sigma_s^2-\sigma_t^2\right)v_\theta(d_s,s),
+  \qquad\kappa_\theta&gt;1.\tag{30}\]</div>
+  <p>实验进一步用每个数据集上的常数近似 \(\kappa_\theta\)，通过搜索确定。这里的 corrector 是<strong>漂移放大系数</strong>，不是额外运行一段 Langevin 链。SDE 中也可对去噪漂移施加相应校准，但不能随意将随机项按同样倍数放大。</p>
+  <div class="retro-callout"><strong>为什么它能帮助，也为什么它需要调节</strong><p>系数增大可以补偿去噪不足，同时也会放大方向误差、影响稳定性。corrector 支持更有效的少步采样，但没有恢复精确概率流或消除全部几何近似的保证。</p></div>
+  <p>一次实用 ODE 更新的顺序因此很明确：由当前坐标计算距离 → 网络预测边信号 → 沿边方向聚合并归一化 → 按噪声方差差值与 corrector 更新坐标 → 重新计算距离。每一步都维护三维坐标，不额外求解 metric MDS。</p>
+</section>
+
+<section class="retro-chapter" id="se3-results">
+  <p class="retro-kicker">Evidence across molecules and human poses</p>
+  <h2><span class="retro-chapter__number">09</span> 实验检验的是：同一模型能否更有效地采样</h2>
+  <p class="retro-lede">分子构象与人体姿态实验比较不同采样规则，关注减少采样步数后的覆盖率、匹配误差和结构质量。步数减少说明更新次数更少；实际时间加速还取决于每步成本。</p>
+  <h3>对照：调过步长的 Langevin dynamics</h3>
+  <div class="retro-equation" id="se3-eq-31">\[\mathcal C_{k-1}=\mathcal C_k+
+  \alpha_k\widehat s_k(\mathcal C_k)+\sqrt{2\alpha_k}z_k,
+  \qquad\alpha_k=\delta\sigma_k^2,\quad z_k\sim\mathcal N(0,I).\tag{31}\]</div>
+  <p>LD 的步长 \(\delta\) 和新采样器的超参数都进行搜索；分子实验使用相同的已训练模型，改变采样步数与采样规则。原文中的 5000 个训练噪声时间级，不应理解为仅进行 5000 次优化更新。</p>
+  <h3>从随机坐标到分子构象，形状如何逐渐恢复？</h3>
+  <p>图 3 展示 Drugs 数据集中的分子构象在三种采样规则下的生成过程。沿每行从左向右，可以观察原子从分散的带噪状态逐渐组织成分子骨架；不同规则也形成了不同的去噪路径。</p>
+  <figure class="retro-figure se3-experiment-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/drugs-trajectory.webp"><img src="{{ base_path }}/images/research/se3-diffusion/drugs-trajectory.webp" alt="Drugs 分子的去噪轨迹：LD、SDE、ODE 三行分别从左到右展示带噪坐标逐渐形成分子构象" width="2600" height="682" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 3 · Drugs 分子的采样轨迹。三行依次为 LD、SDE 和 ODE，使用同一个训练模型，以不同采样规则推进。每列展示一个中间状态，观察的是结构恢复的过程。</figcaption>
+  </figure>
+  <h3>分子构象：召回与精度要一起看</h3>
+  <p>设参考构象集合为 \(S_r\)，生成集合为 \(S_g\)，\(\rho\) 为结构对齐后的 RMSD，\(\delta_0\) 为覆盖阈值。两个方向的指标分别为：</p>
+  <div class="retro-equation" id="se3-eq-32">\[\begin{aligned}
+  \text{COV-R}&=\frac{\bigl|\{X\in S_r:\min_{Y\in S_g}\rho(X,Y)&lt;\delta_0\}\bigr|}{|S_r|},\\
+  \text{MAT-R}&=\frac1{|S_r|}\sum_{X\in S_r}\min_{Y\in S_g}\rho(X,Y),\\
+  \text{COV-P}&=\frac{\bigl|\{Y\in S_g:\min_{X\in S_r}\rho(X,Y)&lt;\delta_0\}\bigr|}{|S_g|},\\
+  \text{MAT-P}&=\frac1{|S_g|}\sum_{Y\in S_g}\min_{X\in S_r}\rho(X,Y).
+  \end{aligned}\tag{32}\]</div>
+  <p>COV 越高越好，MAT 越低越好；R 衡量参考结构被覆盖的程度，P 衡量生成结构贴近参考集合的程度。QM9 与 Drugs 分别采用 0.5 Å 和 1.25 Å 的覆盖阈值。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="分子构象平均覆盖率与匹配误差">
+    <table class="retro-comparison"><caption>表 2 · 分子构象生成，均值指标；MAT 单位为 Å</caption><thead><tr><th scope="col">数据集</th><th scope="col">方法 / 步数</th><th scope="col">COV-R ↑ (%)</th><th scope="col">MAT-R ↓</th><th scope="col">COV-P ↑ (%)</th><th scope="col">MAT-P ↓</th></tr></thead><tbody>
+      <tr><th scope="row" rowspan="6">QM9</th><td>LD / 5000</td><td>90.07</td><td>0.2090</td><td>52.79</td><td>0.4448</td></tr>
+      <tr><td>LD / 100</td><td>88.07</td><td>0.2711</td><td>54.80</td><td>0.5090</td></tr>
+      <tr><td>SDE / 1000</td><td>89.25</td><td>0.2215</td><td>55.15</td><td>0.4323</td></tr>
+      <tr><td>SDE / 100</td><td>88.34</td><td>0.2763</td><td>53.48</td><td>0.4870</td></tr>
+      <tr class="retro-highlight"><td>ODE / 1000</td><td>90.24</td><td>0.2052</td><td>53.76</td><td>0.4304</td></tr>
+      <tr><td>ODE / 100</td><td>90.81</td><td>0.2691</td><td>48.73</td><td>0.5190</td></tr>
+      <tr><th scope="row" rowspan="6">Drugs</th><td>LD / 5000</td><td>89.13</td><td>0.8629</td><td>61.47</td><td>1.1712</td></tr>
+      <tr><td>LD / 1000</td><td>82.92</td><td>0.9525</td><td>48.27</td><td>1.3205</td></tr>
+      <tr><td>SDE / 1000</td><td>83.39</td><td>0.9728</td><td>58.43</td><td>1.2393</td></tr>
+      <tr><td>SDE / 100</td><td>86.44</td><td>0.9261</td><td>64.53</td><td>1.1584</td></tr>
+      <tr><td>ODE / 1000</td><td>90.64</td><td>0.8493</td><td>59.67</td><td>1.1915</td></tr>
+      <tr><td>ODE / 100</td><td>87.76</td><td>0.9105</td><td>53.32</td><td>1.8528</td></tr>
+    </tbody></table>
+  </div>
+  <p>QM9 上，ODE 1000 步相较 LD 5000 步的四个均值指标均有改善，更新次数为五分之一；压到 100 步后，COV-R 仍高，但 MAT 与精度方向存在取舍。Drugs 上，ODE 1000 步改善召回方向，SDE 100 步则有较好的精度方向表现，因此不能用单一覆盖率宣称所有指标都提升。</p>
+  <p class="se3-equation-note">分子实验的补充设置还包含对 NaN 样本的替换处理，因此这些指标不应被解释为采样过程从不发生数值失效。</p>
+  <h3>100 步生成的构象，具体是什么样子？</h3>
+  <p>图 4 将 QM9 和 Drugs 的构象样例并排展示。每个面板包含十个分子；同一数据集的 SDE 与 ODE 面板按相同分子顺序排列，便于观察不同采样规则生成的三维形状。</p>
+  <figure class="se3-gallery se3-molecule-gallery" aria-label="QM9 与 Drugs 的 100 步分子构象样例">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) GEOM-QM9</span><strong>SDE · 100 步</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-sde100.webp" alt="QM9 的十个分子使用 SDE 进行 100 步采样后的三维构象，按两行排列" width="1370" height="566" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) GEOM-QM9</span><strong>ODE · 100 步</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-ode100.webp" alt="QM9 的十个分子使用 ODE 进行 100 步采样后的三维构象，顺序与 SDE 面板对应" width="1525" height="526" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) GEOM-Drugs</span><strong>SDE · 100 步</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-sde100.webp" alt="Drugs 的十个分子使用 SDE 进行 100 步采样后的三维构象，按两行排列" width="1725" height="706" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(d) GEOM-Drugs</span><strong>ODE · 100 步</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-ode100.webp" alt="Drugs 的十个分子使用 ODE 进行 100 步采样后的三维构象，顺序与 SDE 面板对应" width="1600" height="716" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">图 4 · SDE 与 ODE 在 100 步下生成的分子构象。各面板从左到右、从上到下阅读；球棍结构展示具体的三维几何，覆盖率与匹配误差见表 2。</figcaption>
+  </figure>
+  <h3>人体姿态：对齐后，生成样本离参考集合有多远？</h3>
+  <p>Human3.6M 实验将姿态表示为 17 个关键点；主对照生成 500 个 eating 类别的姿态。AD 将每个生成样本与参考集合中的最近姿态对齐后比较：</p>
+  <div class="retro-equation" id="se3-eq-33">\[\operatorname{AD}=\frac1{|S_g|}\sum_{X\in S_g}\min_{X_r\in S_r}
+  \|\operatorname{Align}(X,X_r)-X_r\|_F^2.\tag{33}\]</div>
+  <p>Align 最小化旋转和平移后的结构差异，AD 越低越好。它是生成到参考的单向最近邻匹配，不能单独证明多样性或整个姿态分布都被完整覆盖。</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="人体姿态平均 AD 结果">
+    <table class="retro-comparison"><caption>表 3 · eating 类别姿态的平均 AD，越低越好</caption><thead><tr><th scope="col">采样步数</th><th scope="col">LD</th><th scope="col">SDE</th><th scope="col">ODE</th></tr></thead><tbody>
+      <tr><th scope="row">100</th><td>5.1739</td><td><strong>2.3737</strong></td><td>2.8978</td></tr>
+      <tr><th scope="row">250</th><td>4.3071</td><td><strong>2.3452</strong></td><td>2.5739</td></tr>
+      <tr><th scope="row">500</th><td>4.0020</td><td>2.3463</td><td><strong>2.2811</strong></td></tr>
+      <tr><th scope="row">1000</th><td>3.7369</td><td>2.3315</td><td><strong>2.1620</strong></td></tr>
+    </tbody></table>
+  </div>
+  <p>在这组比较中，SDE 与 ODE 在每个列出的采样步数上都优于 LD；SDE 100 步的 AD 也低于 LD 1000 步。它支持改进采样规则在该任务上的效果，不应扩展为所有结构、类别和指标上的统一优势。</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/humanpose-sampling.webp"><img src="{{ base_path }}/images/research/se3-diffusion/humanpose-sampling.webp" alt="相同训练模型在 25、50、100、250、500、1000、2000 步下，用 LD、SDE 和 ODE 生成 eating 人体姿态的三行对比" width="1975" height="655" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">图 5 · 不同采样规则与步数下的 eating 姿态。每行分别是 LD、SDE 和 ODE，每列对应图中所标的采样步数。相同训练模型下，各采样器分别搜索超参数；图像展示结构质量，定量比较见表 3。</figcaption>
+  </figure>
+  <h3>固定为 100 步，再看一组生成样例</h3>
+  <p>图 6 将三种方法的采样步数统一为 100，每个面板展示 36 个 eating 类别姿态。除了单个示例的外观，还可以观察整组样例的骨架是否成形、肢体连接与空间布局是否合理。</p>
+  <figure class="se3-gallery se3-gallery--three se3-pose-gallery" aria-label="三种方法在 100 步下生成的 eating 姿态样例">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) LD</span><strong>100 步 · 36 个样例</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-ld100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-ld100.webp" alt="Langevin dynamics 在 100 步下生成的 36 个 eating 人体姿态" width="1466" height="1448" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) SDE</span><strong>100 步 · 36 个样例</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-sde100.webp" alt="所提 SDE 在 100 步下生成的 36 个 eating 人体姿态" width="1460" height="1418" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) ODE</span><strong>100 步 · 36 个样例</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-ode100.webp" alt="所提 ODE 在 100 步下生成的 36 个 eating 人体姿态" width="1418" height="1454" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">图 6 · 相同采样步数下的姿态样例。三个面板各展示 36 次生成结果，均按行阅读；这些样例补充了表 3 的整体误差指标，呈现不同采样规则下的结构质量。</figcaption>
+  </figure>
+  <h3>步数与校准强度如何共同影响结果？</h3>
+  <p>图 7 把参数搜索结果直接展示为 AD 热图：沿横轴改变采样步数，沿纵轴改变 LD 的步长或 SDE／ODE 的 corrector。合适的校准范围内可以保持较低 AD；过大的更新幅度也可能使采样失效。</p>
+  <figure class="se3-gallery se3-gallery--three se3-parameter-plots" aria-label="人体姿态采样的步数和超参数热图">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) LD</span><strong>步数 × 步长</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-ld.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-ld.webp" alt="LD 人体姿态采样的 AD 热图，横轴为采样步数，纵轴为步长" width="211" height="456" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) SDE</span><strong>步数 × corrector</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-sde.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-sde.webp" alt="SDE 人体姿态采样的 AD 热图，横轴为采样步数，纵轴为 corrector" width="413" height="435" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) ODE</span><strong>步数 × corrector</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-ode.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-ode.webp" alt="ODE 人体姿态采样的 AD 热图，横轴为采样步数，纵轴为 corrector" width="413" height="435" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">图 7 · 人体姿态生成的超参数分析。格内数值为 AD，越低越好；空白格对应无有效 AD 的数值失效结果。各图的采样步数档位与颜色范围不完全相同，跨图比较以格内数值为准。</figcaption>
+  </figure>
+</section>
+
+<section class="retro-chapter" id="se3-takeaways">
+  <p class="retro-kicker">What the geometric view contributes</p>
+  <h2><span class="retro-chapter__number">10</span> 将“几何如何传递”写出来，才能理解采样方向</h2>
+  <p class="retro-lede">这项工作的关键连接是：坐标加噪产生合法距离，距离 score 描述内部结构的变化，再通过沿边的局部线性算子形成坐标更新。这样，原先隐含在投影中的几何操作变成了可以分析、训练和校准的步骤。</p>
+  <div class="retro-equation" id="se3-eq-34">\[\mathcal C_t\xrightarrow{\operatorname{adj}}d_t
+  \xrightarrow{\text{distance score}}S_t
+  \xrightarrow{\;\frac1{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\;}
+  v_t\xrightarrow{\text{SDE / ODE step}}\mathcal C_{t-\tau}.\tag{34}\]</div>
+  <ul class="se3-limits">
+    <li><strong>局部算子替代显式投影。</strong>它减少了每一步的几何求解成本；单边残差界说明一种受控近似，并不构成全局轨迹保证。</li>
+    <li><strong>径向漂移与边间相关性是距离扩散的核心。</strong>坐标上的独立高斯噪声，经模长映射后不再是距离上的独立高斯过程；概率流的构造需要考虑这些几何作用。</li>
+    <li><strong>训练目标与采样器必须匹配。</strong>高斯距离 score、稀疏归一化和 corrector 共同决定实际向量场；corrector 是经验补偿，不能替代精确分布分析。</li>
+    <li><strong>距离表示有表达边界。</strong>镜像、退化构型和稀疏图的刚性都影响几何可恢复性；生成手性结构时需要补充相应信息。</li>
+    <li><strong>效果由具体指标支持。</strong>实验展示了相同模型下更有效的少步采样，同时也呈现了召回、精度及采样步数之间的取舍。</li>
+  </ul>
+</section>
