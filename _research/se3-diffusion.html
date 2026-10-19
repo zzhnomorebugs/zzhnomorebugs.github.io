@@ -1,0 +1,453 @@
+---
+title: "Diffusion in SE(3)-invariant Space"
+layout: research-project
+collection: research
+permalink: /research/se3-diffusion/
+lang: en
+lang_switch_url: /zh/research/se3-diffusion/
+research_project: true
+mathjax: true
+project_class: se3-project
+project_stylesheet: se3-project.css
+project_title: "Diffusion in SE(3)-invariant Space"
+project_area: "Geometric generation · Diffusion processes · Differential geometry"
+order: 6
+published: true
+read_time: false
+date: 2026-10-19
+index_title: "From Distance Changes to Coordinate Updates: Diffusion Sampling of 3D Structures"
+excerpt: "Distances describe 3D structures independently of rotation and translation, but must satisfy geometric feasibility constraints. Starting from maps between the distance manifold and coordinate space, this walkthrough develops the local linear approximation, error bound, reverse SDE and ODE, distance score, and sampling calibration behind projection-free generation."
+project_image: /images/research/se3-diffusion/framework.webp
+papers: [se3-diffusion]
+project_chapters:
+  - id: se3-problem
+    label: Geometry
+  - id: se3-background
+    label: Diffusion basics
+  - id: se3-projection
+    label: Distances and coordinates
+  - id: se3-linear
+    label: Local approximation
+  - id: se3-sde
+    label: Reverse SDE
+  - id: se3-ode
+    label: Reverse ODE
+  - id: se3-learning
+    label: Learning the score
+  - id: se3-corrector
+    label: Sampling calibration
+  - id: se3-results
+    label: Experiments
+  - id: se3-takeaways
+    label: Takeaways
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="se3-problem">
+  <p class="retro-kicker">Geometry before sampling</p>
+  <h2><span class="retro-chapter__number">01</span> Model internal shape while removing global rotation and translation</h2>
+  <p class="retro-lede">A molecule or human skeleton retains the same internal geometry after a global rotation or translation. Distances remove these degrees of freedom, but they also constrain one another: changing an arbitrary edge may leave no realizable three-dimensional structure.</p>
+  <ol class="retro-pipeline" aria-label="Inputs and outputs of 3D structure diffusion sampling">
+    <li><strong>Input: structural conditions and noisy coordinates</strong><span>A molecular graph or pose category provides the condition; coordinates describe the current three-dimensional state.</span></li>
+    <li><strong>Model: invariant changes in distance</strong><span>Pairwise distances describe internal geometry. Predict a denoising direction, then convert it into coordinate displacements.</span></li>
+    <li><strong>Output: generated 3D coordinates</strong><span>Recover internal shape through sampling updates that require no explicit manifold projection.</span></li>
+  </ol>
+  <h3>Distances are invariant; coordinate updates must be equivariant</h3>
+  <p>Let \(\mathcal C=[x_1,\ldots,x_n]^\top\in\mathbb R^{n\times3}\), and let \(d\) be the complete pairwise distance matrix. Here, “adjacency matrix” means a weighted distance matrix, rather than a binary matrix of chemical bonds.</p>
+  <div class="retro-equation" id="se3-eq-1">\[\begin{aligned}d_{ij}&=\|x_i-x_j\|,\qquad d=\operatorname{adj}(\mathcal C),\\
+  \mathcal C'&=\mathcal C R^\top+\mathbf1 b^\top,\quad R\in SO(3),\\
+  \operatorname{adj}(\mathcal C')&=\operatorname{adj}(\mathcal C).\end{aligned}\tag{1}\]</div>
+  <p>Scalar distance predictions should remain invariant, while coordinate displacements should rotate with the input. This lets the model focus on relative geometry. Translation can be fixed by centering the coordinates, avoiding the interpretation of a “uniform distribution” over unbounded translations as a normalizable coordinate density.</p>
+  <h3>The challenge: realizable distances occupy only part of matrix space</h3>
+  <div class="retro-equation" id="se3-eq-2">\[M=\left\{d:\exists\mathcal C\in\mathbb R^{n\times3},\ d_{ij}=\|x_i-x_j\|\right\}.\tag{2}\]</div>
+  <p>For example, the distances among three points must satisfy the triangle inequalities. Realizability in three dimensions imposes stronger constraints, so independently adding Gaussian noise to each edge through \(d+\epsilon\) generally leaves the feasible set \(M\). For nondegenerate structures, the local number of shape degrees of freedom is typically \(3n-6\), far below the \(n(n-1)/2\) edge lengths. Collisions and rank-deficient configurations require separate treatment.</p>
+  <div class="retro-callout"><strong>The idea throughout this walkthrough</strong><p>Add noise to coordinates to obtain distances that remain realizable. Describe denoising in distance space, then transfer that direction back to coordinates with an inexpensive local operator. The approximation concerns this geometric conversion, as well as numerical integration.</p></div>
+  <p class="se3-equation-note">Distances are also invariant under reflection. Complete distances generally determine a structure only up to translation and \(O(3)\), so they cannot distinguish mirror images on their own; tasks involving chirality need additional information. The distance representation below is therefore not treated as a global one-to-one parameterization of the entire \(SE(3)\) quotient space.</p>
+</section>
+
+<section class="retro-chapter" id="se3-background">
+  <p class="retro-kicker">Forward diffusion and probability flow</p>
+  <h2><span class="retro-chapter__number">02</span> First understand how SDEs and ODEs denoise in Euclidean space</h2>
+  <p class="retro-lede">The score points toward increasing density in the current distribution. A reverse SDE combines deterministic denoising with random perturbations; a probability-flow ODE describes the same evolution of marginal distributions through a deterministic vector field. This correspondence depends on the diffusion coefficient: simply deleting the SDE noise term is insufficient.</p>
+  <div class="retro-equation" id="se3-eq-3">\[\mathrm dx_t=f(t)x_t\,\mathrm dt+g(t)\,\mathrm dW_t,\qquad x_0\sim q_0.\tag{3}\]</div>
+  <p>Forward time runs from \(0\) to \(T\), gradually destroying structure. For state-independent scalar noise, the reverse process and probability flow are:</p>
+  <div class="retro-equation" id="se3-eq-4">\[\begin{aligned}
+  \mathrm dx_t&=\left[f(t)x_t-g^2(t)\nabla_x\log q_t(x_t)\right]\mathrm dt+g(t)\,\mathrm d\overline W_t,\\
+  \frac{\mathrm dx_t}{\mathrm dt}&=f(t)x_t-\frac12g^2(t)\nabla_x\log q_t(x_t).
+  \end{aligned}\tag{4}\]</div>
+  <p>Generation integrates from \(T\) toward \(0\), with \(\mathrm dt&lt;0\), so the score term with a preceding minus sign actually moves samples toward higher density. The ODE factor \(1/2\) comes from the diffusion term in the Fokker–Planck equation. With an exact score and the other required conditions, the two processes share the distribution at each time; their sample paths need not coincide.</p>
+  <h3>The ODE in this work focuses on variance-exploding (VE) noise</h3>
+  <div class="retro-equation" id="se3-eq-5">\[\begin{aligned}
+  \mathrm d\mathcal C_t&=\mathbf f(\mathcal C_t,t)\,\mathrm dt+\mathbf G(\mathcal C_t,t)\,\mathrm dW_t,\\
+  \text{VE:}\quad \mathbf f&=0,\quad \mathbf G=G(t)I,\quad
+  G^2(t)=\frac{\mathrm d\sigma_t^2}{\mathrm dt},\\
+  \mathcal C_t\mid\mathcal C_0&\sim\mathcal N(\mathcal C_0,\sigma_t^2 I).
+  \end{aligned}\tag{5}\]</div>
+  <p>The last line takes the initial noise variance to be zero and treats coordinates as a \(3n\)-dimensional vector; centering restricts the process to the corresponding centered subspace. In VE diffusion, the mean stays fixed as the noise scale grows. The explicit distance-drift formulas below use this setting and do not transfer directly to arbitrary noise schedules.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Main mathematical symbols">
+    <table class="retro-comparison se3-symbols"><caption>Table 1 · Symbols used throughout the derivation</caption><thead><tr><th scope="col">Symbol</th><th scope="col">Meaning</th></tr></thead><tbody>
+      <tr><td>\(\mathcal C_t,d_t\)</td><td>Noisy coordinates and their distance matrix, with \(d_t=\operatorname{adj}(\mathcal C_t)\).</td></tr>
+      <tr><td>\(L,M,N\)</td><td>The coordinate embedding space, the regular manifold part of the feasible distance set, and a locally chosen set of spectral coordinate representatives.</td></tr>
+      <tr><td>\(q_t,p_t,S_t\)</td><td>The coordinate distribution, distance distribution, and distance score in the paper’s formulation, \(S_t=\nabla_d\log p_t\). The score depends on the chosen metric and reference measure on the distance manifold. It is not an ordinary density gradient for redundant distances in a full-dimensional Euclidean space; the two densities are not numerically identical either.</td></tr>
+      <tr><td>\(G(t),g(t)\)</td><td>Noise strengths in the coordinate and distance descriptions. They belong to different spaces and cannot be interchanged without a derivation.</td></tr>
+      <tr><td>\(\varphi,\pi_M,J\)</td><td>A local map from distances to coordinate representatives, a projection onto feasible distances, and the Jacobian of the distance map.</td></tr>
+      <tr><td>\(\tau,\kappa\)</td><td>The discrete time step and the corrector coefficient that amplifies the denoising drift.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<section class="retro-chapter" id="se3-projection">
+  <p class="retro-kicker">Coordinates, distances, and projection</p>
+  <h2><span class="retro-chapter__number">03</span> Express a distance update as a coordinate reconstruction problem</h2>
+  <p class="retro-lede">Writing the reverse process on the distance manifold means that every step must bring proposed distances back to the feasible set and recover a set of coordinates. Combining these operations reveals where the computational cost arises.</p>
+  <figure class="retro-figure se3-framework">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/framework.webp"><img src="{{ base_path }}/images/research/se3-diffusion/framework.webp" alt="Maps among coordinate space L, spectral coordinate representatives N, and distance manifold M; a tangential distance update becomes a coordinate displacement" width="2400" height="870" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 1 · The geometry of alternating between distances and coordinates. The gray region is coordinate space L, the blue region represents feasible distances, and the green region represents the selected coordinate representatives. Orange indicates a denoising change in distance space; red indicates the resulting coordinate update. Spectral coordinates serve the analysis, while sampling can maintain ordinary coordinates directly.</figcaption>
+  </figure>
+  <h3>Start with an idealized update that requires projection</h3>
+  <p>Following the paper’s manifold formulation, let \(\mathcal B_t^M\) be manifold Brownian motion. Under suitable geometric, metric, and noise assumptions, distance diffusion is written as follows. This does not mean that arbitrary coordinate noise induces an isotropic distance process.</p>
+  <div class="retro-equation" id="se3-eq-6">\[\mathrm dd_t=f(d_t)\,\mathrm dt+g(t)\,\mathrm d\mathcal B_t^M.\tag{6}\]</div>
+  <p>Let \(t_k=k\tau\). One reverse discrete step proposes distances and projects them as follows:</p>
+  <div class="retro-equation" id="se3-eq-7">\[\begin{aligned}
+  F^{\mathcal N}(d_t,t)&=\tau\left[f(d_t)-g^2(t)S_t(d_t)\right]+\sqrt\tau g(t)z^{t,d_t},\\
+  d^{k-1}&=\pi_{M,d^k}\!\left(d^k-F^{\mathcal N}(d^k,t_k)\right),\\
+  \mathcal C^{k-1}&=\varphi\circ\pi_{M,d^k}\!\left(d^k-F^{\mathcal N}(d^k,t_k)\right).
+  \end{aligned}\tag{7}\]</div>
+  <p>Here, \(z^{t,d_t}\) is a Gaussian vector in the tangent space. Negating the entire noise vector preserves its distribution; the notation here follows the paper’s subtraction of \(F^{\mathcal N}\). The projection \(\pi_M\) ensures realizable distances, and \(\varphi\) selects coordinate representatives.</p>
+  <h3>Together, these operations form metric MDS</h3>
+  <div class="retro-equation" id="se3-eq-8">\[\begin{aligned}
+  \widehat d&=d+\alpha,\\
+  \varphi\circ\pi_{M,d}(\widehat d)&\in\underset{\mathcal C\in N}{\operatorname{argmin}}\;
+  \sum_{i&lt;j}\left(\|x_i-x_j\|-\widehat d_{ij}\right)^2.
+  \end{aligned}\tag{8}\]</div>
+  <p>This objective makes the reconstructed coordinates’ distances as close as possible to the proposal. In implementation, the gauge constraint \(\mathcal C\in N\) can be removed because global rotations and translations do not change the objective. The optimization remains nonlinear, and solving it at every sampling step adds iterations.</p>
+  <div class="retro-support">
+    <h3>Spectral coordinates explain what a “representative” means</h3>
+    <p>For feasible distances, double-centering the squared distances gives a Gram matrix:</p>
+    <div class="retro-equation" id="se3-eq-9">\[H=I-\frac1n\mathbf1\mathbf1^\top,\quad
+    B=-\frac12H(d\odot d)H,\quad
+    B=U\Lambda U^\top,\quad\mathcal C_{\mathrm{spec}}=U_3\Lambda_3^{1/2}.\tag{9}\]</div>
+    <p>This construction requires <strong>squared distances</strong>. Feasible three-dimensional distances correspond to \(B\succeq0\) and \(\operatorname{rank}(B)\leq3\). Eigenvector signs, repeated eigenvalues, and reflections affect the choice of representative, so \(\varphi\) is used only under a suitable local gauge. Classical MDS with eigenvalue truncation for an infeasible proposal is also different from solving the metric MDS problem in Eq. (8) exactly.</p>
+  </div>
+</section>
+
+<section class="retro-chapter" id="se3-linear">
+  <p class="retro-kicker">A local linear replacement</p>
+  <h2><span class="retro-chapter__number">04</span> Approximate expensive projection with small displacements along edges</h2>
+  <p class="retro-lede">When an edge should become longer, its endpoints should move in opposite directions along their connecting line. Moving either endpoint also changes adjacent edges. The method scales the displacement according to the number of neighbors to limit these effects, then sums the contributions from all edges.</p>
+  <h3>Step 1: differentiate distance with respect to endpoint coordinates</h3>
+  <div class="retro-equation" id="se3-eq-10">\[u_{ij}=\frac{x_i-x_j}{d_{ij}},\qquad
+  \frac{\partial d_{ij}}{\partial x_i}=u_{ij},\quad
+  \frac{\partial d_{ij}}{\partial x_j}=-u_{ij},\quad
+  \frac{\partial d_{ij}}{\partial x_\ell}=0\;(\ell\notin\{i,j\}).\tag{10}\]</div>
+  <p>These derivatives apply only when \(d_{ij}&gt;0\). Each edge produces equal and opposite displacements, so their sum is zero. Rotating the coordinates also rotates the direction vectors.</p>
+  <h3>Step 2: perturb a single edge to obtain a candidate update</h3>
+  <p>Let \(\bar e_{uv}\) have entries equal to 1 only at \((u,v)\) and \((v,u)\). For \(\widehat d=d+\delta\bar e_{uv}\), the paper uses:</p>
+  <div class="retro-equation" id="se3-eq-11">\[\begin{aligned}
+  \widehat{\mathcal C}&=\mathcal C+\frac{\delta}{2(n-1)}\frac{\partial d_{uv}}{\partial\mathcal C},\\
+  \widehat x_u&=x_u+\frac{\delta}{2(n-1)}u_{uv},\qquad
+  \widehat x_v=x_v-\frac{\delta}{2(n-1)}u_{uv}.
+  \end{aligned}\tag{11}\]</div>
+  <p>With just two points, each endpoint moves by \(\delta/2\), exactly realizing the distance change. With more points, \(1/(n-1)\) reduces the movement to account for constraints from adjacent edges. This is a local approximation, rather than the exact inverse of the distance Jacobian for arbitrary configurations.</p>
+  <figure class="retro-figure se3-local-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/approximation.webp"><img src="{{ base_path }}/images/research/se3-diffusion/approximation.webp" alt="Local approximation to distance projection: perturb one edge and move its endpoints in opposite directions along that edge to obtain candidate coordinates" width="2400" height="1870" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 2 · A coordinate approximation for a single-edge perturbation. The proposed distances may not all be satisfiable. Moving the endpoints along the edge gives a realizable coordinate candidate whose distance residual can be bounded.</figcaption>
+  </figure>
+  <h3>Step 3: derive the error bound while keeping its scope clear</h3>
+  <p>Let \(E(\widehat{\mathcal C};\widehat d)\) be the distance residual in Eq. (8). The target edge changes by \(\delta/(n-1)\), leaving a residual of \(-\delta(n-2)/(n-1)\). At most \(2(n-2)\) other edges are affected, each changing by no more than \(|\delta|/[2(n-1)]\). For small perturbations without endpoint crossing:</p>
+  <div class="retro-equation" id="se3-eq-12">\[\begin{aligned}
+  0\leq\min_{\mathcal C'}E(\mathcal C';\widehat d)
+  &\leq E(\widehat{\mathcal C};\widehat d)\\
+  &\leq\left(\frac{n-2}{n-1}\right)^2\delta^2
+  +2(n-2)\left(\frac{\delta}{2(n-1)}\right)^2\\
+  &=\frac{2n^2-7n+6}{2(n-1)^2}\delta^2.
+  \end{aligned}\tag{12}\]</div>
+  <p>The coefficient approaches 1 as \(n\to\infty\), rather than diverging merely because the number of points grows. The bound controls the <strong>candidate objective value under a single-edge perturbation</strong>. It does not guarantee coordinate error, global optimality, or error along an entire sampling trajectory; multiple perturbed edges also introduce cross effects.</p>
+  <h3>Step 4: superpose the edge contributions to coordinates</h3>
+  <div class="retro-equation" id="se3-eq-13">\[\begin{aligned}
+  A\circledast\frac{\partial d}{\partial\mathcal C}
+  &:=\frac12\sum_{i,j}A_{ij}\frac{\partial d_{ij}}{\partial\mathcal C}
+  =\sum_{i&lt;j}A_{ij}\frac{\partial d_{ij}}{\partial\mathcal C},\\
+  \Delta\mathcal C&\approx\frac1{2(n-1)}\alpha\circledast\frac{\partial d}{\partial\mathcal C},\\
+  \Delta x_i&\approx\frac1{2(n-1)}\sum_{j\ne i}\alpha_{ij}u_{ij}.
+  \end{aligned}\tag{13}\]</div>
+  <p>Here, \(A\) contains symmetric edge weights, and \(\circledast\) avoids counting \((i,j)\) and \((j,i)\) twice. For small proposals involving multiple edges, superposing the single-edge operators gives a first-order substitute that turns scalar edge signals into a three-dimensional vector at each point.</p>
+  <div class="retro-equation" id="se3-eq-14">\[\mathcal C^{k-1}\approx\mathcal C^k-
+  \frac{F^{\mathcal N}(d^k,t_k)}{2(n-1)}\circledast\frac{\partial d^k}{\partial\mathcal C^k}.\tag{14}\]</div>
+  <div class="retro-callout"><strong>“Projection-free” describes the implementation</strong><p>Only coordinates are updated, so distances recomputed from them are automatically realizable, removing the need for explicit nonlinear distance projection. The desired distance direction is still approximated; the geometric constraints remain.</p></div>
+  <div class="retro-support"><h3>Why is the chain rule alone insufficient?</h3><p>Vectorize the distances and write \(J=\partial d/\partial\operatorname{vec}(\mathcal C)\). Local linearization turns distance reconstruction into:</p>
+    <div class="retro-equation">\[\begin{aligned}
+    \operatorname{adj}(\mathcal C+\Delta\mathcal C)&\approx d+J\Delta\mathcal C,\\
+    \min_{\Delta\mathcal C}\|J\Delta\mathcal C-\alpha\|^2
+    &\ \Longrightarrow\ J^\top J\Delta\mathcal C=J^\top\alpha,\\
+    \Delta\mathcal C_{\min\text{-}\mathrm{norm}}&=J^+\alpha.
+    \end{aligned}\]</div>
+    <p>Here, \(\Delta\mathcal C\) is interpreted as a vector, with rigid-body degrees of freedom fixed. The exact local minimum-norm solution involves the pseudoinverse \(J^+\), whereas backpropagating edge signals gives \(J^\top\alpha\). The paper replaces the more expensive coupled solve with a scaled transpose operator; in general, \(J^+=J^\top/[2(n-1)]\) does not hold.</p></div>
+</section>
+
+<section class="retro-chapter" id="se3-sde">
+  <p class="retro-kicker">Lifting the reverse SDE</p>
+  <h2><span class="retro-chapter__number">05</span> Lift the reverse process from distances back to coordinates</h2>
+  <p class="retro-lede">The local conversion describes how a score moves coordinates. The next step uses the known forward coordinate-noising process to replace drift and random terms that are difficult to compute directly in distance space, yielding the paper’s proposed reverse coordinate SDE.</p>
+  <p>Substituting Eq. (7) into Eq. (14), and writing \(S_t=\nabla_d\log p_t\) at the same time, reveals three contributions:</p>
+  <div class="retro-equation" id="se3-eq-15">\[\begin{aligned}
+  \Delta\mathcal C\approx{}&-\frac{\tau f(d_t)}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\\
+  &+\frac{\tau g^2(t)S_t}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}
+  -\frac{\sqrt\tau g(t)z^{t,d_t}}{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}.
+  \end{aligned}\tag{15}\]</div>
+  <p>The first term reverses the forward drift; the second denoises along the learned distance score; the third supplies randomness. Using the paper’s local correspondence between the forward coordinate and distance processes, substituting the coordinate drift and noise gives the proposed form:</p>
+  <div class="retro-equation" id="se3-eq-16">\[\mathrm d\mathcal C_t\approx
+  \left[\mathbf f(\mathcal C_t,t)-\frac{g^2(t)}{2(n-1)}
+  S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}\right]\mathrm dt
+  +\mathbf G(\mathcal C_t,t)\,\mathrm d\overline W_t.\tag{16}\]</div>
+  <p>Equation (16) corresponds to the paper’s reverse coordinate SDE. The approximation sign records the approximation already introduced by the local map. Here, \(g(t)\) belongs to the distance description and \(\mathbf G\) to the coordinate description. This expression is not a general time-reversal theorem for arbitrary state-dependent diffusion matrices.</p>
+  <div class="retro-callout"><strong>Intuition: distances specify the change; current coordinates supply the direction</strong><p>The network supplies scalar signals for edge-length changes; \(\partial d_{ij}/\partial\mathcal C\) converts them into pushes and pulls along current edges. The resulting update rotates with the structure without explicitly fixing its orientation.</p></div>
+</section>
+
+<section class="retro-chapter" id="se3-ode">
+  <p class="retro-kicker">Radial drift and the ODE approximation</p>
+  <h2><span class="retro-chapter__number">06</span> Gaussian coordinate noise induces radial drift in distances</h2>
+  <p class="retro-lede">A distance is the norm of a vector. Even zero-mean coordinate noise systematically increases that norm, and distance increments sharing an endpoint can be correlated. These two facts explain the reciprocal-distance term in the paper’s ODE and the approximations behind its practical form.</p>
+  <h3>Derive the exact distance change from a coordinate perturbation</h3>
+  <p>Let \(r=x_u-x_v\) and \(\eta\sim\mathcal N(0,2G^2(t)I_3)\). Over a time step \(\tau\), the relative coordinate becomes \(r+\sqrt\tau\eta\). Factoring a difference of squares gives:</p>
+  <div class="retro-equation" id="se3-eq-17">\[d_{uv}^{t+\tau}-d_{uv}^t
+  =\frac{2\sqrt\tau\eta^\top r+\tau\|\eta\|^2}
+  {\|r+\sqrt\tau\eta\|+\|r\|}.\tag{17}\]</div>
+  <p>This is the starting point for analyzing distance transitions. The denominator depends on the same noise, so computing the first moment requires retaining the corresponding correlations rather than treating it as a constant.</p>
+  <h3>The moments and ODE form reported in the paper</h3>
+  <p>The arXiv version uses the following coefficients in its distance-moment approximation, then neglects inter-edge dependence to obtain an edgewise ODE:</p>
+  <div class="retro-equation" id="se3-eq-18">\[\begin{aligned}
+  \mathbb E[d_{uv}^t-d_{uv}^{t+\tau}]&\approx-\frac{3\tau G^2(t)}{d_{uv}^t}+o(\tau),\\
+  \mathbb E[(d_{uv}^{t+\tau}-d_{uv}^t)^2]&=2\tau G^2(t)+o(\tau),\\
+  \frac{\mathrm dd_t}{\mathrm dt}&\approx G^2(t)\left(\frac3{d_t}-S_t(d_t)\right),\\
+  \frac{\mathrm d\mathcal C_t}{\mathrm dt}&\approx\frac{G^2(t)}{2(n-1)}
+  \left(\frac3{d_t}-S_t(d_t)\right)\circledast\frac{\partial d_t}{\partial\mathcal C_t}.
+  \end{aligned}\tag{18}\]</div>
+  <p>Reciprocals and division are evaluated elementwise only for off-diagonal distances. The term \(3/d_t\) represents radial drift, while the score supplies distributional guidance; the same local operator then lifts these signals to coordinates. This reproduces the distance moments and ODE in the paper’s main text, rather than asserting an exact joint probability flow induced by independent coordinate VE noise.</p>
+  <div class="retro-support se3-math-check">
+    <h3>Mathematical detail: coefficients and correlations from Itô’s formula in 3D</h3>
+    <p>Under the stated convention \(\mathrm dx_i=G(t)\mathrm dW_i\), relative noise has covariance \(2G^2I_3\). Writing \(d=\|r\|\) and \(u=r/d\), the gradient and Hessian of the norm are:</p>
+    <div class="retro-equation">\[\nabla_r d=u,\qquad\nabla_r^2d=\frac{I_3-uu^\top}{d},\qquad
+    \frac12\operatorname{tr}\!\left(2G^2I_3\nabla_r^2d\right)=\frac{2G^2}{d}.\]</div>
+    <p>Combining this second-order drift with the first-order random term, Itô’s formula gives:</p>
+    <div class="retro-equation" id="se3-eq-19">\[\begin{aligned}
+    \mathrm dd_{ij}&=\frac{2G^2(t)}{d_{ij}}\,\mathrm dt
+    +G(t)u_{ij}^\top(\mathrm dW_i-\mathrm dW_j),\\
+    \mathbb E[\Delta d_{ij}]&=\frac{2\tau G^2(t)}{d_{ij}}+o(\tau),\qquad
+    \mathbb E[(\Delta d_{ij})^2]=2\tau G^2(t)+o(\tau).
+    \end{aligned}\tag{19}\]</div>
+    <p>Thus, under this noise convention, the exact single-edge radial drift coefficient is <strong>2</strong>, differing from the paper’s coefficient 3 in Eq. (18). Retaining the denominator correlations in the second-order expansion gives this correction. For the length \(\rho\) of a single edge, its probability flow is:</p>
+    <div class="retro-equation">\[\dot\rho=\frac{2G^2(t)}\rho-G^2(t)\partial_\rho\log p_t^{ij}(\rho).\]</div>
+    <p>Here, \(p_t^{ij}\) is the marginal density of this edge length. Individual edge probability flows still cannot be assembled directly into independent updates of the joint distances.</p>
+    <p>Let \(J\) be the distance Jacobian from Eq. (10). The covariance rate of the joint distance increments is:</p>
+    <div class="retro-equation" id="se3-eq-20">\[\begin{aligned}
+    A&=G^2JJ^\top,\\
+    A_{(ij),(k\ell)}&=G^2(\delta_{ik}-\delta_{i\ell}-\delta_{jk}+\delta_{j\ell})
+    u_{ij}^\top u_{k\ell}.
+    \end{aligned}\tag{20}\]</div>
+    <p>An edge has variance rate \(2G^2\), and edges sharing a point generally have nonzero correlations. Complete distances also form a redundant representation, so an ordinary full-dimensional density over the Euclidean space of all edges cannot be assumed. Choosing independent local variables \(y\) in a regular region, and using their coordinate density, gives the general Fokker–Planck and probability-flow relation:</p>
+    <div class="retro-equation" id="se3-eq-21">\[\begin{aligned}
+    \partial_t p&=-\sum_a\partial_a(b_ap)+\frac12\sum_{a,b}\partial_a\partial_b(A_{ab}p),\\
+    v_a&=b_a-\frac1{2p}\sum_b\partial_b(A_{ab}p)
+    =b_a-\frac12(\nabla\!\cdot A)_a-\frac12(A\nabla\log p)_a.
+    \end{aligned}\tag{21}\]</div>
+    <p>In Eq. (21), \(b,A\) are the drift and covariance of the chosen local variables. The matrix for redundant distances cannot simply be reused as their coefficients. Isotropic coordinate noise therefore does not automatically imply independent, isotropic distance noise.</p>
+  </div>
+  <h3>The practical ODE also approximates away the explicit reciprocal-distance term</h3>
+  <p>To avoid dividing by very small distances, the paper uses a Gaussian distance-score approximation and omits the explicit radial drift in Eq. (18), arriving at:</p>
+  <div class="retro-equation" id="se3-eq-22">\[\frac{\mathrm d\mathcal C_t}{\mathrm dt}\approx
+  -\frac{G^2(t)}{2(n-1)}S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}.\tag{22}\]</div>
+  <p>This gives a deterministic sampling direction that is convenient to discretize and accelerate. It relies on approximations to the distance distribution, inter-edge dependence, and geometric lifting, so it does not establish exact equality of all marginals with the original coordinate diffusion. The corrector introduced below empirically compensates for these accumulated biases.</p>
+</section>
+
+<section class="retro-chapter" id="se3-learning">
+  <p class="retro-kicker">Learning edge signals on sparse graphs</p>
+  <h2><span class="retro-chapter__number">07</span> Learn distance denoising signals with a loss on coordinate vectors</h2>
+  <p class="retro-lede">The network does not need to predict an absolute orientation. It extracts invariant features from distances and structural conditions, predicts denoising signals on edges, and combines them with geometric directions to form coordinate vectors. Training compares the resulting vectors directly with their targets.</p>
+  <h3>From a radial distribution assumption to computable supervision</h3>
+  <p>The paper combines a Gaussian term with a Maxwell–Boltzmann-type radial term to approximate the conditional distance score:</p>
+  <div class="retro-equation" id="se3-eq-23">\[S_t^{\mathrm{cond}}(d_t,d_0)
+  :=\nabla_d\log p_t(d_t\mid d_0)
+  \approx\frac{a_t}{d_t}-\frac{d_t-d_0}{2\sigma_t^2}.\tag{23}\]</div>
+  <p>The hyperparameter \(a_t\) controls the radial contribution. Relative-coordinate noise for two points has variance \(2\sigma_t^2\), accounting for the factor 2 in the denominator. The true conditional length of a single edge follows a noncentral chi distribution, and different edges are correlated, so Eq. (23) is a modeling assumption.</p>
+  <p>To remove the unstable \(1/d_t\) term, the practical supervision becomes:</p>
+  <div class="retro-equation" id="se3-eq-24">\[\widetilde S_t^{\mathrm{cond}}=-\frac{d_t-d_0}{2\sigma_t^2}.\tag{24}\]</div>
+  <p>Intuitively, measure how far each noisy distance is from its clean value, normalize by the noise scale, and pull it back. Equation (24) approximates distance changes as Gaussian; it is not the exact score of Gaussian coordinate noise.</p>
+  <h3>Message passing and a coordinate-space loss</h3>
+  <div class="retro-equation" id="se3-eq-25">\[h_u^{(m+1)}=\psi\!\left(h_u^{(m)},
+  \sum_{v\in\mathcal N(u)}h_v^{(m)}\cdot\phi(e_{uv},d_{uv})\right).\tag{25}\]</div>
+  <p>Messages combine edge features \(e_{uv}\), distances, and node representations; a molecular graph or pose category supplies task conditions. The experimental backbone does not explicitly embed diffusion time. The symbol \(t\) below labels the current noise level without requiring time to be a network input. Backpropagating predicted edge signals through Eq. (10) gives an \(n\times3\) vector field \(s_\theta(d_t,t)\). The paper’s loss is:</p>
+  <div class="retro-equation" id="se3-eq-26">\[\begin{aligned}
+  \ell(\theta;d_t,d_0)&=\left\|s_\theta(d_t,t)-
+  \widetilde S_t^{\mathrm{cond}}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\right\|_F^2,\\
+  \mathcal L(\theta)&=\frac1{N_\sigma}\sum_{t=1}^{N_\sigma}\frac{\sigma_t}{2}
+  \mathbb E_{d_0,d_t}[\ell(\theta;d_t,d_0)].
+  \end{aligned}\tag{26}\]</div>
+  <p>Here, \(s_\theta\) denotes the <strong>coordinate vectors after lifting</strong>, rather than a raw \(n\times n\) distance score. With exact conditional scores and an exact map, the conditional expectation of a denoising target has the standard connection to the marginal score. Using Eq. (24) instead trains the network on the corresponding approximate target. Scaling can be placed in the sampler or target, but the implementation must remain consistent.</p>
+  <h3>Sparse graphs: replace complete-graph normalization with local degree normalization</h3>
+  <p>Practical message passing uses only a subset of edges. For symmetric edge weights \(S_{ij}\), generalize the complete-graph lifting factor \(1/[2(n-1)]\) as:</p>
+  <div class="retro-equation" id="se3-eq-27">\[v_i^{E}(S)=\frac1{2\deg(i)}\sum_{j\in\mathcal N(i)}
+  S_{ij}\frac{x_i-x_j}{d_{ij}}.\tag{27}\]</div>
+  <p>Equation (27) explicitly aggregates at each node. For a complete graph, \(\deg(i)=n-1\), recovering the nodewise normalization in Eq. (13). The paper’s sparse expression combines full-coordinate derivatives with a sum over both edge directions, leaving differences in counting conventions; the nodewise form here makes the implementation explicit. On graphs with unequal degrees, this remains an empirical approximation, and network outputs, sampling coefficients, and the corrector must share a consistent normalization. If centering is required at each step, coordinates can be recentered after the update without changing distances.</p>
+  <p>Fewer edges reduce computation but may remove constraints needed to determine a structure. A minimum degree of at least 4 alone does not guarantee uniqueness for an arbitrary three-dimensional graph. Local recoverability involves rigidity; global uniqueness additionally involves global rigidity and reflection ambiguity.</p>
+</section>
+
+<section class="retro-chapter" id="se3-corrector">
+  <p class="retro-kicker">Compensating accumulated approximation error</p>
+  <h2><span class="retro-chapter__number">08</span> Use a corrector to adjust the effective denoising step</h2>
+  <p class="retro-lede">Local lifting, neglected edge correlations, and approximate distance scores all introduce bias. The corrector starts from the idea that a nominal denoising step may fall short of its target noise level. Amplifying the drift can bring the actual progress closer to the intended progress.</p>
+  <h3>Write prediction error explicitly into an update</h3>
+  <p>Let \(v_\theta\) denote the predicted vector including the \(1/[2(n-1)]\) normalization. Under a consistent complete-graph convention, \(v_\theta=s_\theta/[2(n-1)]\); sparse graphs use their corresponding degree normalization. To analyze the effect, the paper models prediction error as having Gaussian-like behavior:</p>
+  <div class="retro-equation" id="se3-eq-28">\[v_\theta(d_t,t)=
+  \frac1{2(n-1)}S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}
+  +\epsilon(d_t,t).\tag{28}\]</div>
+  <p>Moving from a higher-noise time \(s\) to \(t&lt;s\), define \(\Delta\sigma^2=\sigma_s^2-\sigma_t^2&gt;0\). Freeze the current vector field and integrate Eq. (22):</p>
+  <div class="retro-equation" id="se3-eq-29">\[\begin{aligned}
+  \mathcal C_t&\approx\mathcal C_s+
+  \Delta\sigma^2\left[v_\theta(d_s,s)-\epsilon(d_s,s)\right],\\
+  \mathcal C_t^{\mathrm{model}}&=\mathcal C_s+\Delta\sigma^2v_\theta(d_s,s).
+  \end{aligned}\tag{29}\]</div>
+  <p>The ideal step and the model step differ by \(\Delta\sigma^2\epsilon\). Under the paper’s error model, this can be interpreted as residual extra noise: samples intended for time \(t\) still resemble a distribution at a higher noise level. This is an explanatory model, rather than a theorem that arbitrary prediction errors are equivalent to a time shift.</p>
+  <h3>Implement the compensation as a multiplicative coefficient</h3>
+  <div class="retro-equation" id="se3-eq-30">\[\mathcal C_t\approx\mathcal C_s+
+  \kappa_\theta(d_s,s,t)\left(\sigma_s^2-\sigma_t^2\right)v_\theta(d_s,s),
+  \qquad\kappa_\theta&gt;1.\tag{30}\]</div>
+  <p>The experiments further approximate \(\kappa_\theta\) by a constant for each dataset, selected through search. This corrector is a <strong>drift amplification coefficient</strong>, rather than an additional Langevin chain. The denoising drift in the SDE can receive corresponding calibration, but the random term cannot simply be amplified by the same factor.</p>
+  <div class="retro-callout"><strong>Why it helps, and why it needs tuning</strong><p>A larger coefficient can compensate for insufficient denoising while also amplifying directional errors and affecting stability. The corrector supports more effective sampling with fewer steps, but does not guarantee recovery of the exact probability flow or removal of every geometric approximation.</p></div>
+  <p>A practical ODE step therefore follows a clear sequence: compute distances from current coordinates → predict edge signals → aggregate along edge directions and normalize → update coordinates using the noise-variance difference and corrector → recompute distances. Each step maintains three-dimensional coordinates without an additional metric MDS solve.</p>
+</section>
+
+<section class="retro-chapter" id="se3-results">
+  <p class="retro-kicker">Evidence across molecules and human poses</p>
+  <h2><span class="retro-chapter__number">09</span> Experiments test whether the same model can sample more effectively</h2>
+  <p class="retro-lede">Molecular conformation and human pose experiments compare sampling rules, measuring coverage, matching error, and structural quality as the number of steps decreases. Fewer steps mean fewer updates; actual runtime gains also depend on the cost per step.</p>
+  <h3>Baseline: Langevin dynamics with a tuned step size</h3>
+  <div class="retro-equation" id="se3-eq-31">\[\mathcal C_{k-1}=\mathcal C_k+
+  \alpha_k\widehat s_k(\mathcal C_k)+\sqrt{2\alpha_k}z_k,
+  \qquad\alpha_k=\delta\sigma_k^2,\quad z_k\sim\mathcal N(0,I).\tag{31}\]</div>
+  <p>The LD step-size parameter \(\delta\) and the new samplers’ hyperparameters are all searched. Molecular experiments keep the trained model fixed while varying the sampling rule and number of steps. The 5000 training noise levels reported in the paper should not be interpreted as only 5000 optimization updates.</p>
+  <h3>How does molecular shape emerge from random coordinates?</h3>
+  <p>Figure 3 shows conformation generation on Drugs using three sampling rules. Reading each row from left to right reveals atoms organizing from scattered noisy coordinates into a molecular structure; the rules follow different denoising paths.</p>
+  <figure class="retro-figure se3-experiment-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/drugs-trajectory.webp"><img src="{{ base_path }}/images/research/se3-diffusion/drugs-trajectory.webp" alt="Denoising trajectories of a Drugs molecule: the LD, SDE, and ODE rows show noisy coordinates forming a conformation from left to right" width="2600" height="682" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 3 · Sampling trajectories for a Drugs molecule. The rows show LD, SDE, and ODE, respectively, using the same trained model with different sampling rules. Each column shows an intermediate state in the recovery of structure.</figcaption>
+  </figure>
+  <h3>Molecular conformations: examine recall and precision together</h3>
+  <p>Let \(S_r\) be the reference conformation set, \(S_g\) the generated set, \(\rho\) the RMSD after structural alignment, and \(\delta_0\) the coverage threshold. The two metric directions are:</p>
+  <div class="retro-equation" id="se3-eq-32">\[\begin{aligned}
+  \text{COV-R}&=\frac{\bigl|\{X\in S_r:\min_{Y\in S_g}\rho(X,Y)&lt;\delta_0\}\bigr|}{|S_r|},\\
+  \text{MAT-R}&=\frac1{|S_r|}\sum_{X\in S_r}\min_{Y\in S_g}\rho(X,Y),\\
+  \text{COV-P}&=\frac{\bigl|\{Y\in S_g:\min_{X\in S_r}\rho(X,Y)&lt;\delta_0\}\bigr|}{|S_g|},\\
+  \text{MAT-P}&=\frac1{|S_g|}\sum_{Y\in S_g}\min_{X\in S_r}\rho(X,Y).
+  \end{aligned}\tag{32}\]</div>
+  <p>Higher COV and lower MAT are better. R measures how well reference structures are covered; P measures how closely generated structures match the reference set. The coverage thresholds are 0.5 Å for QM9 and 1.25 Å for Drugs.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Mean molecular conformation coverage and matching error">
+    <table class="retro-comparison"><caption>Table 2 · Molecular conformation generation, mean metrics; MAT in Å</caption><thead><tr><th scope="col">Dataset</th><th scope="col">Method / steps</th><th scope="col">COV-R ↑ (%)</th><th scope="col">MAT-R ↓</th><th scope="col">COV-P ↑ (%)</th><th scope="col">MAT-P ↓</th></tr></thead><tbody>
+      <tr><th scope="row" rowspan="6">QM9</th><td>LD / 5000</td><td>90.07</td><td>0.2090</td><td>52.79</td><td>0.4448</td></tr>
+      <tr><td>LD / 100</td><td>88.07</td><td>0.2711</td><td>54.80</td><td>0.5090</td></tr>
+      <tr><td>SDE / 1000</td><td>89.25</td><td>0.2215</td><td>55.15</td><td>0.4323</td></tr>
+      <tr><td>SDE / 100</td><td>88.34</td><td>0.2763</td><td>53.48</td><td>0.4870</td></tr>
+      <tr class="retro-highlight"><td>ODE / 1000</td><td>90.24</td><td>0.2052</td><td>53.76</td><td>0.4304</td></tr>
+      <tr><td>ODE / 100</td><td>90.81</td><td>0.2691</td><td>48.73</td><td>0.5190</td></tr>
+      <tr><th scope="row" rowspan="6">Drugs</th><td>LD / 5000</td><td>89.13</td><td>0.8629</td><td>61.47</td><td>1.1712</td></tr>
+      <tr><td>LD / 1000</td><td>82.92</td><td>0.9525</td><td>48.27</td><td>1.3205</td></tr>
+      <tr><td>SDE / 1000</td><td>83.39</td><td>0.9728</td><td>58.43</td><td>1.2393</td></tr>
+      <tr><td>SDE / 100</td><td>86.44</td><td>0.9261</td><td>64.53</td><td>1.1584</td></tr>
+      <tr><td>ODE / 1000</td><td>90.64</td><td>0.8493</td><td>59.67</td><td>1.1915</td></tr>
+      <tr><td>ODE / 100</td><td>87.76</td><td>0.9105</td><td>53.32</td><td>1.8528</td></tr>
+    </tbody></table>
+  </div>
+  <p>On QM9, ODE with 1000 steps improves all four mean metrics over LD with 5000 steps, using one fifth as many updates. At 100 steps, COV-R remains high, but MAT and precision involve trade-offs. On Drugs, ODE with 1000 steps improves recall metrics, while SDE with 100 steps performs well on precision metrics. A single coverage value therefore cannot establish improvement across all metrics.</p>
+  <p class="se3-equation-note">The supplementary molecular experiment settings also include replacement of NaN samples, so these metrics do not imply that sampling never encounters numerical failure.</p>
+  <h3>What do conformations generated in 100 steps look like?</h3>
+  <p>Figure 4 places QM9 and Drugs conformation examples side by side. Each panel contains ten molecules. For each dataset, the SDE and ODE panels use the same molecule order to make their generated three-dimensional shapes easier to compare.</p>
+  <figure class="se3-gallery se3-molecule-gallery" aria-label="Molecular conformations from QM9 and Drugs generated in 100 steps">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) GEOM-QM9</span><strong>SDE · 100 steps</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-sde100.webp" alt="Three-dimensional conformations of ten QM9 molecules after 100 SDE sampling steps, arranged in two rows" width="1370" height="566" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) GEOM-QM9</span><strong>ODE · 100 steps</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-qm9-ode100.webp" alt="Three-dimensional conformations of ten QM9 molecules after 100 ODE sampling steps, in the same order as the SDE panel" width="1525" height="526" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) GEOM-Drugs</span><strong>SDE · 100 steps</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-sde100.webp" alt="Three-dimensional conformations of ten Drugs molecules after 100 SDE sampling steps, arranged in two rows" width="1725" height="706" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(d) GEOM-Drugs</span><strong>ODE · 100 steps</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/molecules-drugs-ode100.webp" alt="Three-dimensional conformations of ten Drugs molecules after 100 ODE sampling steps, in the same order as the SDE panel" width="1600" height="716" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">Figure 4 · Molecular conformations generated by SDE and ODE in 100 steps. Read each panel from left to right and top to bottom. The ball-and-stick structures show concrete three-dimensional geometry; Table 2 reports coverage and matching errors.</figcaption>
+  </figure>
+  <h3>Human poses: how far are aligned samples from the reference set?</h3>
+  <p>The Human3.6M experiments represent a pose with 17 keypoints; the main comparison generates 500 poses from the eating category. AD compares each generated sample with its closest aligned pose in the reference set:</p>
+  <div class="retro-equation" id="se3-eq-33">\[\operatorname{AD}=\frac1{|S_g|}\sum_{X\in S_g}\min_{X_r\in S_r}
+  \|\operatorname{Align}(X,X_r)-X_r\|_F^2.\tag{33}\]</div>
+  <p>Align minimizes structural differences over rotations and translations; lower AD is better. This is a one-way nearest-neighbor match from generated samples to references, so it alone cannot establish diversity or complete coverage of the pose distribution.</p>
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Mean AD results for human poses">
+    <table class="retro-comparison"><caption>Table 3 · Mean AD for eating poses; lower is better</caption><thead><tr><th scope="col">Sampling steps</th><th scope="col">LD</th><th scope="col">SDE</th><th scope="col">ODE</th></tr></thead><tbody>
+      <tr><th scope="row">100</th><td>5.1739</td><td><strong>2.3737</strong></td><td>2.8978</td></tr>
+      <tr><th scope="row">250</th><td>4.3071</td><td><strong>2.3452</strong></td><td>2.5739</td></tr>
+      <tr><th scope="row">500</th><td>4.0020</td><td>2.3463</td><td><strong>2.2811</strong></td></tr>
+      <tr><th scope="row">1000</th><td>3.7369</td><td>2.3315</td><td><strong>2.1620</strong></td></tr>
+    </tbody></table>
+  </div>
+  <p>In this comparison, SDE and ODE outperform LD at every listed step count. SDE with 100 steps also has lower AD than LD with 1000 steps. This supports the sampling improvements on this task, without establishing a uniform advantage across all structures, categories, and metrics.</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/humanpose-sampling.webp"><img src="{{ base_path }}/images/research/se3-diffusion/humanpose-sampling.webp" alt="Three rows comparing eating poses generated by the same trained model using LD, SDE, and ODE at 25, 50, 100, 250, 500, 1000, and 2000 steps" width="1975" height="655" loading="lazy"></a>
+    <figcaption class="retro-figure__caption">Figure 5 · Eating poses under different sampling rules and step counts. The rows show LD, SDE, and ODE; each column corresponds to the indicated number of sampling steps. All samplers use the same trained model, with hyperparameters searched separately. The images show structural quality; Table 3 provides the quantitative comparison.</figcaption>
+  </figure>
+  <h3>Fix the budget at 100 steps and examine a set of samples</h3>
+  <p>Figure 6 fixes all three methods at 100 sampling steps, with 36 eating poses in each panel. Beyond any individual example, the galleries show whether the skeletons take shape and whether limb connections and spatial arrangements appear plausible across the set.</p>
+  <figure class="se3-gallery se3-gallery--three se3-pose-gallery" aria-label="Eating pose examples generated by three methods in 100 steps">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) LD</span><strong>100 steps · 36 samples</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-ld100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-ld100.webp" alt="Thirty-six eating poses generated by Langevin dynamics in 100 steps" width="1466" height="1448" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) SDE</span><strong>100 steps · 36 samples</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-sde100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-sde100.webp" alt="Thirty-six eating poses generated by the proposed SDE in 100 steps" width="1460" height="1418" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) ODE</span><strong>100 steps · 36 samples</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/poses-ode100.webp"><img src="{{ base_path }}/images/research/se3-diffusion/poses-ode100.webp" alt="Thirty-six eating poses generated by the proposed ODE in 100 steps" width="1418" height="1454" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">Figure 6 · Pose samples with an equal sampling budget. Each panel shows 36 generated poses, read row by row. These examples complement the aggregate error metric in Table 3 by showing structural quality under the different sampling rules.</figcaption>
+  </figure>
+  <h3>How do step count and calibration strength affect results together?</h3>
+  <p>Figure 7 presents the parameter search as AD heatmaps. The horizontal axis varies the number of sampling steps; the vertical axis varies the LD step size or the SDE/ODE corrector. Suitable calibration ranges maintain low AD, while excessively large updates can cause sampling to fail.</p>
+  <figure class="se3-gallery se3-gallery--three se3-parameter-plots" aria-label="Heatmaps of step counts and hyperparameters for human pose sampling">
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(a) LD</span><strong>Steps × step size</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-ld.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-ld.webp" alt="AD heatmap for LD human pose sampling, with step count on the horizontal axis and step size on the vertical axis" width="211" height="456" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(b) SDE</span><strong>Steps × corrector</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-sde.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-sde.webp" alt="AD heatmap for SDE human pose sampling, with step count on the horizontal axis and corrector on the vertical axis" width="413" height="435" loading="lazy"></a>
+    </div>
+    <div class="se3-gallery__panel">
+      <p class="se3-gallery__label"><span>(c) ODE</span><strong>Steps × corrector</strong></p>
+      <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/pose-params-ode.webp"><img src="{{ base_path }}/images/research/se3-diffusion/pose-params-ode.webp" alt="AD heatmap for ODE human pose sampling, with step count on the horizontal axis and corrector on the vertical axis" width="413" height="435" loading="lazy"></a>
+    </div>
+    <figcaption class="retro-figure__caption">Figure 7 · Hyperparameter analysis for human pose generation. Cell values are AD, with lower values preferred; blank cells indicate numerical failures without a valid AD. Step-count grids and color ranges differ across panels, so compare the cell values when reading across plots.</figcaption>
+  </figure>
+</section>
+
+<section class="retro-chapter" id="se3-takeaways">
+  <p class="retro-kicker">What the geometric view contributes</p>
+  <h2><span class="retro-chapter__number">10</span> Make the geometric conversion explicit to understand the sampling direction</h2>
+  <p class="retro-lede">The central connection is that coordinate noise produces feasible distances, the distance score describes changes in internal structure, and a local operator along edges turns those signals into coordinate updates. Geometry previously hidden inside projection becomes a sequence of operations that can be analyzed, learned, and calibrated.</p>
+  <div class="retro-equation" id="se3-eq-34">\[\mathcal C_t\xrightarrow{\operatorname{adj}}d_t
+  \xrightarrow{\text{distance score}}S_t
+  \xrightarrow{\;\frac1{2(n-1)}\circledast\frac{\partial d_t}{\partial\mathcal C_t}\;}
+  v_t\xrightarrow{\text{SDE / ODE step}}\mathcal C_{t-\tau}.\tag{34}\]</div>
+  <ul class="se3-limits">
+    <li><strong>A local operator replaces explicit projection.</strong> It reduces the geometric solve required at each step. The single-edge residual bound describes a controlled approximation, rather than a global trajectory guarantee.</li>
+    <li><strong>Radial drift and edge correlations are central to distance diffusion.</strong> Independent Gaussian coordinate noise does not remain an independent Gaussian process after mapping vectors to their lengths. Constructing a probability flow must account for these geometric effects.</li>
+    <li><strong>The training target and sampler must agree.</strong> The Gaussian distance score, sparse normalization, and corrector jointly determine the practical vector field. The corrector provides empirical compensation, rather than an exact distributional analysis.</li>
+    <li><strong>Distance representations have limits.</strong> Reflections, degenerate configurations, and sparse-graph rigidity affect geometric recoverability. Generating chiral structures requires additional information.</li>
+    <li><strong>Specific metrics support specific claims.</strong> The experiments show more effective sampling with fewer steps using the same model, while also revealing trade-offs among recall, precision, and sampling budget.</li>
+  </ul>
+</section>
