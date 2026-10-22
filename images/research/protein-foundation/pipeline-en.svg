@@ -12,6 +12,7 @@
       .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
       .soft{fill:#e9f3ed}
       .gold{fill:#e6c67b}
+      .math{font-family:"Cambria Math","Times New Roman",serif;font-style:italic;font-weight:400}
     </style>
   </defs>
   <rect width="1440" height="650" fill="#faf9f4"/>
@@ -70,9 +71,9 @@
   <text class="heading" x="896" y="225">HDF5 storage</text>
   <g aria-hidden="true">
     <rect class="soft" x="896" y="266" width="112" height="89" rx="10"/>
-    <text x="952" y="324" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
+    <text class="math" x="952" y="324" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
     <rect x="1020" y="266" width="68" height="89" rx="10" fill="#f6efd9"/>
-    <text x="1054" y="324" text-anchor="middle" font-size="36" font-weight="700">N</text>
+    <text class="math" x="1054" y="324" text-anchor="middle" font-size="36" font-weight="700">N</text>
   </g>
   <text class="body" x="896" y="405">Integer counts C</text>
   <text class="body" x="896" y="443">MSA depth N</text>
@@ -84,7 +85,7 @@
   <text class="heading" x="1168" y="225">Training reads</text>
   <g aria-hidden="true">
     <rect class="soft" x="1168" y="266" width="192" height="89" rx="10"/>
-    <text x="1264" y="324" text-anchor="middle" font-size="36" font-weight="700" fill="#25766c">C / N</text>
+    <g role="img" aria-label="C divided by N"><text class="math" x="1264" y="299" text-anchor="middle" font-size="27">C</text><path d="M1242 309 H1286" fill="none" stroke="#25766c" stroke-width="1.5"/><text class="math" x="1264" y="339" text-anchor="middle" font-size="27">N</text></g>
   </g>
   <text class="body" x="1168" y="405">Recover profile</text>
   <text class="body" x="1168" y="447">Profile → model</text>

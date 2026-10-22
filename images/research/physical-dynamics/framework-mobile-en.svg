@@ -7,6 +7,7 @@
       .title{font-size:25px;font-weight:700}.label{font-size:19px;fill:#25766c;font-weight:700}.stage{font-size:26px;font-weight:700}
       .body{font-size:22px}.note{font-size:19px;fill:#60716b}.prior{font-size:23px;font-weight:700;fill:#25766c}
       .arrow{fill:none;stroke:#7b9c91;stroke-width:3;marker-end:url(#arrow)}
+    .math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-weight:400}.math .var{font-style:italic}.math .sub{font-size:70%;baseline-shift:sub}
     </style>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#7b9c91" stroke-width="1.5"/></marker>
   </defs>
@@ -15,10 +16,10 @@
   <text x="150" y="47" class="title">Physical priors for dynamics</text>
   <g text-anchor="middle">
     <rect x="60" y="88" width="520" height="110" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
-    <text x="320" y="128" class="stage">Full trajectory / field x₀ + random noise</text>
-    <text x="320" y="171" class="note">Construct a noisy sample at diffusion time t</text>
+    <text x="320" y="128" class="stage">Full trajectory / field <tspan class="math"><tspan class="var">x</tspan><tspan class="sub">0</tspan></tspan> + random noise</text>
+    <text x="320" y="171" class="note">Construct a noisy sample at diffusion time <tspan class="math"><tspan class="var">t</tspan></tspan></text>
     <rect x="60" y="234" width="520" height="86" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
-    <text x="320" y="286" class="stage">Noisy state xₜ</text>
+    <text x="320" y="286" class="stage">Noisy state <tspan class="math"><tspan class="var">x</tspan><tspan class="sub var">t</tspan></tspan></text>
     <rect x="60" y="356" width="520" height="110" rx="10" fill="#edf5ef" stroke="#25766c" stroke-width="2"/>
     <text x="320" y="397" class="stage">Diffusion predictor</text>
     <text x="320" y="439" class="note">Use the noisy state and diffusion time</text>

@@ -12,9 +12,9 @@ published: true
 read_time: false
 date: 2026-10-11
 index_title: "RETRO：以反应中心排序引导逆合成"
-index_title_en: "RETRO: Reaction-center-guided generation"
+index_title_en: "RETRO: Reaction-center-guided retrosynthesis"
 excerpt: "从反应中心出发排列分子图，用 RetroDiT 与离散流匹配生成反应物。围绕结构先验、模型设计和实验分析，讲清楚原子顺序为什么重要。"
-excerpt_en: "A Chinese walkthrough of reaction-center-rooted atom ordering, RetroDiT, and discrete flow matching for single-step retrosynthesis."
+excerpt_en: "Order molecular graphs from the reaction center, then generate reactants with RetroDiT and discrete flow matching. Structural priors, model design, and experiments explain why atom ordering matters."
 project_image: /images/research/retro/framework.webp
 project_area: "分子生成 · 逆合成"
 project_area_en: "Molecular generation · Retrosynthesis"
@@ -38,7 +38,7 @@ papers: [retro-order]
   <div class="retro-support">
     <h3>任务定义与评测方式</h3>
     <p>给定产物图 \(G_P\)，学习条件分布 \(p(G_R\mid G_P)\)。这里的 \(G_R\) 表示反应物集合对应的图，不要求只有一个连通分量。</p>
-    <p>主要指标为 Top-k Exact Match：数据集记录的反应物集合是否出现在前 k 个预测中。它衡量与已记录答案的一致程度；没有命中并不必然意味着其他合成方案在化学上不可行。本文关注一步预测，不直接解决完整多步路线搜索。</p>
+    <p>主要指标为 Top-\(k\) Exact Match：数据集记录的反应物集合是否出现在前 \(k\) 个预测中。它衡量与已记录答案的一致程度；没有命中并不必然意味着其他合成方案在化学上不可行。本文关注一步预测，不直接解决完整多步路线搜索。</p>
   </div>
 </section>
 
@@ -175,7 +175,7 @@ papers: [retro-order]
       <figcaption class="retro-figure__caption">图 6 · 一个具体产物的候选生成分布。图中的 95% 与 83% 是该案例的采样频率，不能作为总体准确率。</figcaption>
     </figure>
     <p>该案例展示同一化学结构在不同输入排列下，可以得到不同的候选分布。它用于解释排序的作用，整体收益应以数据集实验与消融为依据。</p>
-    <p>论文评测对每个产物进行 100 次采样，对生成结构标准化、去重，并按出现频率排序后计算 Top-k。主表与规模消融数值存在小幅差异，本页分别引用对应实验。</p>
+    <p>论文评测对每个产物进行 100 次采样，对生成结构标准化、去重，并按出现频率排序后计算 Top-\(k\)。主表与规模消融数值存在小幅差异，本页分别引用对应实验。</p>
   </div>
 </section>
 

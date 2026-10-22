@@ -18,7 +18,7 @@ published: true
 read_time: false
 date: 2026-10-12
 index_title: "Generating Physical Dynamics: Bringing Symmetries and Conservation Laws into Diffusion Models"
-index_title_en: "Generating Physical Dynamics under Priors"
+index_title_en: "Generating Physical Dynamics: Bringing Symmetries and Conservation Laws into Diffusion Models"
 excerpt: "A plausible-looking trajectory need not obey physical laws. Starting from distributional symmetries and conservation constraints, this project explains why the conditional mean in diffusion models creates a Jensen gap, and how training objectives can improve the generation of particle trajectories and physical fields."
 excerpt_en: "A plausible-looking trajectory need not obey physical laws. Starting from distributional symmetries and conservation constraints, this project explains why the conditional mean in diffusion models creates a Jensen gap, and how training objectives can improve the generation of particle trajectories and physical fields."
 project_image: /images/publications/generating_under_prior.png
@@ -95,7 +95,7 @@ project_chapters:
   <div class="retro-callout">
     <strong>Represent global translation classes with centered coordinates</strong>
     <p>For the theoretical analysis, global translation can be removed by working in a centered Euclidean subspace \(E\). Subtracting one mean center, computed over all positions in the entire trajectory, preserves the center's motion over physical time. The same displacement is subtracted at every frame, and velocities remain unchanged.</p>
-    <p>The following theorems describe rotations and particle permutations in this modeled space. Noise also lies in \(E\): orthogonally projecting a standard Gaussian onto \(E\) produces isotropic Gaussian noise on that subspace.</p>
+    <p>Densities and gradients are defined on the modeled space \(E\), where the following theorems describe rotations and particle permutations. Noise also lies in \(E\): orthogonally projecting a standard Gaussian onto \(E\) produces isotropic Gaussian noise on that subspace.</p>
   </div>
 
   <div class="retro-support" id="physical-theorem-1">
@@ -250,12 +250,12 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 2 · Main experimental errors for the three-body and five-spring systems</caption>
       <thead><tr><th scope="col">System</th><th scope="col">Metric ↓</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="3">Three-body · energy-related supervision</th><td>Trajectory MSE</td><td>2.4132 ± 0.1208</td><td>1.9880 ± 0.3418</td></tr>
-        <tr><td>Velocity MSE</td><td>2.5745 ± 0.0790</td><td>0.8328 ± 0.1042</td></tr>
-        <tr><td>Energy error</td><td>4.3292 ± 0.7235</td><td>0.5465 ± 0.0705</td></tr>
-        <tr><th scope="row" rowspan="3">Five-spring · momentum constraint</th><td>Dynamic MSE (×10<sup>−2</sup>)</td><td>5.1754 ± 0.0286</td><td>5.0731 ± 0.0406</td></tr>
-        <tr><td>Momentum error</td><td>5.3699 ± 0.0462</td><td>0.3898 ± 0.0118</td></tr>
-        <tr><td>Energy error</td><td>1.0618 ± 0.0243</td><td>0.7418 ± 0.0129</td></tr>
+        <tr><th scope="row" rowspan="3">Three-body · energy-related supervision</th><td>Trajectory MSE</td><td>\(2.4132\pm 0.1208\)</td><td>\(1.9880\pm 0.3418\)</td></tr>
+        <tr><td>Velocity MSE</td><td>\(2.5745\pm 0.0790\)</td><td>\(0.8328\pm 0.1042\)</td></tr>
+        <tr><td>Energy error</td><td>\(4.3292\pm 0.7235\)</td><td>\(0.5465\pm 0.0705\)</td></tr>
+        <tr><th scope="row" rowspan="3">Five-spring · momentum constraint</th><td>Dynamic MSE (\(\times 10^{-2}\))</td><td>\(5.1754\pm 0.0286\)</td><td>\(5.0731\pm 0.0406\)</td></tr>
+        <tr><td>Momentum error</td><td>\(5.3699\pm 0.0462\)</td><td>\(0.3898\pm 0.0118\)</td></tr>
+        <tr><td>Energy error</td><td>\(1.0618\pm 0.0243\)</td><td>\(0.7418\pm 0.0129\)</td></tr>
       </tbody>
     </table>
   </div>
@@ -279,11 +279,11 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 3 · PDE prediction and generation evaluation</caption>
       <thead><tr><th scope="col">Task and metric ↓</th><th scope="col">Dataset</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="2">Prediction RMSE (×10<sup>−2</sup>)</th><td>Advection</td><td>1.7263 ± 0.0491</td><td>1.6536 ± 0.0677</td></tr>
-        <tr><td>Darcy flow</td><td>2.0648 ± 0.0600</td><td>1.9678 ± 0.0651</td></tr>
-        <tr><th scope="row" rowspan="3">PDE residual RMSE of generated fields</th><td>Advection</td><td>2.398 ± 0.024</td><td>2.305 ± 0.001</td></tr>
-        <tr><td>Burgers</td><td>6.862 ± 0.060</td><td>6.610 ± 0.012</td></tr>
-        <tr><td>Shallow water</td><td>8.0153 ± 0.0960</td><td>7.7618 ± 0.0645</td></tr>
+        <tr><th scope="row" rowspan="2">Prediction RMSE (\(\times 10^{-2}\))</th><td>Advection</td><td>\(1.7263\pm 0.0491\)</td><td>\(1.6536\pm 0.0677\)</td></tr>
+        <tr><td>Darcy flow</td><td>\(2.0648\pm 0.0600\)</td><td>\(1.9678\pm 0.0651\)</td></tr>
+        <tr><th scope="row" rowspan="3">PDE residual RMSE of generated fields</th><td>Advection</td><td>\(2.398\pm 0.024\)</td><td>\(2.305\pm 0.001\)</td></tr>
+        <tr><td>Burgers</td><td>\(6.862\pm 0.060\)</td><td>\(6.610\pm 0.012\)</td></tr>
+        <tr><td>Shallow water</td><td>\(8.0153\pm 0.0960\)</td><td>\(7.7618\pm 0.0645\)</td></tr>
       </tbody>
     </table>
   </div>

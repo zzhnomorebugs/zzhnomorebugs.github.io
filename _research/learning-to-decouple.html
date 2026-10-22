@@ -63,13 +63,13 @@ project_chapters:
   <h2><span class="retro-chapter__number">02</span> Model subsystem states and interaction states separately</h2>
   <p class="retro-lede">DNS decouples dynamics in latent feature space: several subsystems each receive a control signal and maintain a hidden state, while a separate meta-system maintains their time-varying interaction weights.</p>
   <div class="decouple-scheme" aria-label="DNS modeling workflow">
-    <div class="decouple-scheme__input"><span>Joint observation</span><strong>c(t<sub>k</sub>)</strong><p>Learnable mappings p<sub>i</sub> produce different control signals</p></div>
+    <div class="decouple-scheme__input"><span>Joint observation</span><strong>\(c(t_k)\)</strong><p>Learnable mappings \(p_i\) produce different control signals</p></div>
     <div class="decouple-scheme__modules">
-      <div><strong>Subsystem 1</strong><span>x<sub>1</sub>(t) → z<sub>1</sub>(t)</span></div>
-      <div><strong>Subsystem 2</strong><span>x<sub>2</sub>(t) → z<sub>2</sub>(t)</span></div>
-      <div><strong>Subsystem n</strong><span>x<sub>n</sub>(t) → z<sub>n</sub>(t)</span></div>
+      <div><strong>Subsystem 1</strong><span>\(x_1(t)\to z_1(t)\)</span></div>
+      <div><strong>Subsystem 2</strong><span>\(x_2(t)\to z_2(t)\)</span></div>
+      <div><strong>Subsystem \(n\)</strong><span>\(x_n(t)\to z_n(t)\)</span></div>
     </div>
-    <div class="decouple-scheme__meta"><span>Interaction meta-system</span><strong>A(t)</strong><p>Read latent states and update interactions; interaction weights contribute to subsystem state updates</p></div>
+    <div class="decouple-scheme__meta"><span>Interaction meta-system</span><strong>\(A(t)\)</strong><p>Read latent states and update interactions; interaction weights contribute to subsystem state updates</p></div>
     <p class="decouple-scheme__readout">Latent states → Task readout → Trajectory prediction / Link prediction / Action recognition</p>
   </div>
   <h3>First division: different controls, different states</h3>
@@ -87,14 +87,14 @@ project_chapters:
   <p class="retro-lede">DNS first interpolates each subsystem's discrete control signals into a continuous path, then drives its hidden state with changes along that path. The interaction matrix determines which latent states each subsystem reads when updating.</p>
   <figure class="retro-figure decouple-control-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/framework.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/framework.webp" alt="Discrete observations form multiple continuous control paths, each driving its corresponding subsystem's hidden state over time" width="1412" height="869" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 1 · Observations, control paths, and hidden states. Discrete observations form different continuous control paths that drive the subsystems; interactions among modules are modeled separately by A(t).</figcaption>
+    <figcaption class="retro-figure__caption">Figure 1 · Observations, control paths, and hidden states. Discrete observations form different continuous control paths that drive the subsystems; interactions among modules are modeled separately by \(A(t)\).</figcaption>
   </figure>
   <h3>Subsystems: control paths drive state changes</h3>
   <div class="retro-equation">\[\mathrm{d}z_i(t)=F\!\left([A(t)z(t)]_i\right)\,\mathrm{d}x_i(t).\]</div>
   <p>\([A(t)z(t)]_i\) is the weighted state received by subsystem \(i\). \(F\) maps it to a vector field, which is multiplied by the change in the control path \(\mathrm{d}x_i(t)\). All subsystems share \(F\), each using its own \(x_i\) and \(z_i\).</p>
   <p>After obtaining \(x_i(t_k)\) at the observation timestamps, cubic spline interpolation provides controls and derivatives at intermediate times. For a differentiable control path, the integral form is:</p>
   <div class="retro-equation">\[z_i(t_1)=z_i(t_0)+\int_{t_0}^{t_1}F\!\left([A(s)z(s)]_i\right)x_i'(s)\,\mathrm{d}s.\]</div>
-  <p>The numerical solver can therefore advance in continuous time without requiring equal intervals between observations. With noisy data, natural smoothing splines can replace cubic spline interpolation of the control paths; this variant is denoted DNS<sub>S</sub>.</p>
+  <p>The numerical solver can therefore advance in continuous time without requiring equal intervals between observations. With noisy data, natural smoothing splines can replace cubic spline interpolation of the control paths; this variant is denoted \(\mathrm{DNS}_{\mathrm{S}}\).</p>
   <h3>Meta-system: interactions remain constrained</h3>
   <p>DNS constrains each row of the interaction matrix to the probability simplex:</p>
   <div class="retro-equation">\[\mathcal S=\{A\in\mathbb R^{n\times n}:A\mathbf 1=\mathbf 1,\ A_{ij}\geq0\}.\]</div>
@@ -121,11 +121,11 @@ project_chapters:
   <p class="retro-lede">Although both satisfy nonnegativity and normalization, softmax and sparsemax produce different interaction structures. The former maintains smooth, dense weights; the latter allows some latent connections to become exactly zero.</p>
   <figure class="retro-figure decouple-projection-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/projections.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/projections.webp" alt="Geometric comparison of softmax and L2 projection onto a 1-dimensional simplex: softmax stays in the interior, while L2 projection can reach an endpoint" width="1800" height="1721" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 2 · Mapping geometry on the simplex. Red: L2 projection; green: softmax. For two weights, the constraint set is a line segment; softmax maps finite scores to its interior, while L2 projection can also reach the boundary.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 2 · Mapping geometry on the simplex. Red: \(L_2\) projection; green: softmax. For two weights, the constraint set is a line segment; softmax maps finite scores to its interior, while \(L_2\) projection can also reach the boundary.</figcaption>
   </figure>
   <div class="retro-two-column">
     <div><h3>DNS: softmax</h3><div class="retro-equation">\[a_j=\frac{\exp(\ell_j)}{\sum_k\exp(\ell_k)}.\]</div><p>Finite logits yield strictly positive weights, suitable for adjusting information allocation continuously. Softmax can be understood through entropy-regularized optimization as smooth normalization; applying it to a probability vector generally changes that vector again.</p></div>
-    <div><h3>DNS<sub>G</sub>: sparsemax</h3><div class="retro-equation">\[a=\underset{p\in\Delta}{\arg\min}\ \tfrac12\|p-\ell\|_2^2.\]</div><p>\(\Delta=\{p:p\geq0,\sum_jp_j=1\}\). This is a genuine Euclidean projection: vectors already on the simplex remain unchanged. Its output can contain exact zeros, though it may also remain dense.</p></div>
+    <div><h3>\(\mathrm{DNS}_{\mathrm{G}}\): sparsemax</h3><div class="retro-equation">\[a=\underset{p\in\Delta}{\arg\min}\ \tfrac12\|p-\ell\|_2^2.\]</div><p>\(\Delta=\{p:p\geq0,\sum_jp_j=1\}\). This is a genuine Euclidean projection: vectors already on the simplex remain unchanged. Its output can contain exact zeros, though it may also remain dense.</p></div>
   </div>
   <h3>Why is this projection suitable for neural networks?</h3>
   <p>sparsemax has a closed-form thresholding solution:</p>
@@ -162,7 +162,7 @@ project_chapters:
   </figure>
   <p>In the three-body example, the first subsystem attends to the whole input, while the other two favor the x axis and y / z axes respectively. <strong>The three subsystems do not correspond individually to the three celestial bodies.</strong> Useful decoupling can therefore divide roles at the feature level; predictive performance and physical interpretability must be evaluated separately.</p>
   <h3>Spring system: soft and sparse yield different latent connections</h3>
-  <p>The motion of five balls is determined by hidden spring connections. The animation synchronizes the ball trajectories from the input data, the soft interactions of DNS, and the sparse interactions of DNS<sub>G</sub> at the same time index, making their joint evolution directly visible.</p>
+  <p>The motion of five balls is determined by hidden spring connections. The animation synchronizes the ball trajectories from the input data, the soft interactions of DNS, and the sparse interactions of \(\mathrm{DNS}_{\mathrm{G}}\) at the same time index, making their joint evolution directly visible.</p>
   <figure class="retro-figure decouple-animation">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp">
       <picture>
@@ -181,12 +181,12 @@ project_chapters:
   <h2><span class="retro-chapter__number">06</span> What does explicit division of roles bring to three types of tasks?</h2>
   <p class="retro-lede">The experiments evaluate future states, physical links, and sequence classes separately. Baselines receive the joint input without an additional object-grouping prior; results reflect the corresponding datasets and sampling settings.</p>
   <div class="retro-results-grid">
-    <div><span class="retro-result__value">2.2164</span><span class="retro-result__label">Irregular three-body · DNS</span><p class="retro-result__note">Prediction MSE (× 10<sup>−2</sup>), lower is better; CT-GRU scores 2.4811.</p></div>
-    <div><span class="retro-result__value">94.25%</span><span class="retro-result__label">Irregular springs · DNS<sub>G</sub></span><p class="retro-result__note">Link prediction accuracy under Clean conditions; NeuralCDE scores 89.74%.</p></div>
+    <div><span class="retro-result__value">2.2164</span><span class="retro-result__label">Irregular three-body · DNS</span><p class="retro-result__note">Prediction MSE (\(\times 10^{-2}\)), lower is better; CT-GRU scores 2.4811.</p></div>
+    <div><span class="retro-result__value">94.25%</span><span class="retro-result__label">Irregular springs · \(\mathrm{DNS}_{\mathrm{G}}\)</span><p class="retro-result__note">Link prediction accuracy under Clean conditions; NeuralCDE scores 89.74%.</p></div>
     <div><span class="retro-result__value">91.35%</span><span class="retro-result__label">Irregular action videos · DNS</span><p class="retro-result__note">Classification accuracy with normalized inputs; NeuralCDE scores 89.73%.</p></div>
   </div>
   <h3>Three-body system: predict future positions from past positions</h3>
-  <p>The regular setting provides 8 historical positions; the irregular setting retains 6 of those timestamps, with 3 subsequent positions to predict. Each observation contains the 9-dimensional coordinates of three bodies. Table values are MSE (× 10<sup>−2</sup>), where lower is better.</p>
+  <p>The regular setting provides 8 historical positions; the irregular setting retains 6 of those timestamps, with 3 subsequent positions to predict. Each observation contains the 9-dimensional coordinates of three bodies. Table values are MSE (\(\times 10^{-2}\)), where lower is better.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="MSE comparison for three-body trajectory prediction">
     <table class="retro-comparison"><caption>Table 1 · MSE for three-body trajectory prediction</caption><thead><tr><th scope="col">Method</th><th scope="col">Regular sampling</th><th scope="col">Irregular sampling</th></tr></thead><tbody>
       <tr><th scope="row">CT-GRU</th><td>1.8272</td><td>2.4811</td></tr>
@@ -200,25 +200,25 @@ project_chapters:
   <p>The input contains the positions and velocities of five balls, and the goal is to determine whether a spring connects each pair. Clean denotes data with no added noise; Short 25% retains only the first 25% of each sequence in both training and testing.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Accuracy comparison for spring link prediction">
     <table class="retro-comparison"><caption>Table 2 · Spring link prediction accuracy</caption><thead><tr><th scope="col">Method</th><th scope="col">Clean · Regular</th><th scope="col">Clean · Irregular</th><th scope="col">Short · 25%</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>92.89 ± 0.52</td><td>88.47 ± 0.34</td><td>78.00</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>92.47 ± 0.06</td><td>89.74 ± 0.18</td><td>87.51</td></tr>
-      <tr><th scope="row">RIM</th><td>89.73 ± 0.07</td><td>—</td><td>71.26</td></tr>
-      <tr><th scope="row">DNS</th><td><strong>94.44 ± 0.69</strong></td><td>93.60 ± 1.21</td><td>92.13</td></tr>
-      <tr><th scope="row">DNS<sub>G</sub></th><td>94.31 ± 0.48</td><td><strong>94.25 ± 0.29</strong></td><td><strong>92.31</strong></td></tr>
+      <tr><th scope="row">CT-GRU</th><td>\(92.89\pm 0.52\)</td><td>\(88.47\pm 0.34\)</td><td>78.00</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td>\(92.47\pm 0.06\)</td><td>\(89.74\pm 0.18\)</td><td>87.51</td></tr>
+      <tr><th scope="row">RIM</th><td>\(89.73\pm 0.07\)</td><td>—</td><td>71.26</td></tr>
+      <tr><th scope="row">DNS</th><td><strong>\(94.44\pm 0.69\)</strong></td><td>\(93.60\pm 1.21\)</td><td>92.13</td></tr>
+      <tr><th scope="row">\(\mathrm{DNS}_{\mathrm{G}}\)</th><td>\(94.31\pm 0.48\)</td><td><strong>\(94.25\pm 0.29\)</strong></td><td><strong>92.31</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">Link prediction accuracy (%). Short reduces the length of each input sequence, rather than reducing the number of training examples to 25%. Different input conditions are compared separately rather than combined into a single ranking.</p>
   <h3>Noisy conditions: consider projection and control paths together</h3>
-  <p>With noise added during both training and testing, DNS<sub>G</sub> reaches 93.76 ± 0.36%; with noise added only at test time, it falls to 87.86 ± 0.46%. In the latter setting, DNS scores 89.56 ± 0.42%, DNS<sub>S</sub> with smoothing splines scores 92.99 ± 1.30%, and CT-GRU scores 92.80 ± 0.53%.</p>
+  <p>With noise added during both training and testing, \(\mathrm{DNS}_{\mathrm{G}}\) reaches \(93.76\pm 0.36\%\); with noise added only at test time, it falls to \(87.86\pm 0.46\%\). In the latter setting, DNS scores \(89.56\pm 0.42\%\), \(\mathrm{DNS}_{\mathrm{S}}\) with smoothing splines scores \(92.99\pm 1.30\%\), and CT-GRU scores \(92.80\pm 0.53\%\).</p>
   <p>These results show that the benefits of sparse interactions depend on the data conditions. Smoothing the control signal can mitigate noise, and no variant can be described as better under all conditions.</p>
   <h3>Action recognition: from image features to video classes</h3>
   <p>The task contains three actions: clapping, waving, and jogging. ResNet18 supplies image features, and the sequence model classifies the action; irregular videos have different numbers of observed frames.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Classification accuracy comparison for human action videos">
     <table class="retro-comparison"><caption>Table 3 · Action video classification accuracy</caption><thead><tr><th scope="col">Method</th><th scope="col">Normalized · Irregular</th><th scope="col">Unnormalized · Regular</th><th scope="col">Unnormalized · Irregular</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>67.30 ± 6.19</td><td>60.33</td><td>66.67</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>89.73 ± 3.38</td><td>70.33</td><td>59.17</td></tr>
+      <tr><th scope="row">CT-GRU</th><td>\(67.30\pm 6.19\)</td><td>60.33</td><td>66.67</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td>\(89.73\pm 3.38\)</td><td>70.33</td><td>59.17</td></tr>
       <tr><th scope="row">RIM</th><td>—</td><td>55.50</td><td>—</td></tr>
-      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>91.35 ± 3.48</strong></td><td><strong>97.00</strong></td><td><strong>95.33</strong></td></tr>
+      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>\(91.35\pm 3.48\)</strong></td><td><strong>97.00</strong></td><td><strong>95.33</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">Classification accuracy (%). Normalized and unnormalized denote experimental conditions with different input scales; “—” means that the baseline was not used for the irregular setting, not that its accuracy is zero.</p>

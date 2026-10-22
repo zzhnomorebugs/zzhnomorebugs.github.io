@@ -97,17 +97,17 @@ project_chapters:
         <p class="pf-demo-note">沿同一列，统计同一类别出现几次。</p>
       </div>
       <div class="pf-demo-panel">
-        <p class="pf-demo-label">整数计数 C · 保存</p>
+        <p class="pf-demo-label">整数计数 \(C\) · 保存</p>
         <ol class="pf-site-list">
           <li><span>位点 1</span><code>A: 4</code></li>
           <li><span>位点 2</span><code>C: 2 · T: 2</code></li>
           <li><span>位点 3</span><code>D: 3 · E: 1</code></li>
           <li><span>位点 4</span><code>G: 3 · A: 1</code></li>
         </ol>
-        <p class="pf-demo-note">同时保留 MSA 条数 N = 4。</p>
+        <p class="pf-demo-note">同时保留 MSA 条数 \(N=4\)。</p>
       </div>
       <div class="pf-demo-panel">
-        <p class="pf-demo-label">频率 P = C / N · 使用</p>
+        <p class="pf-demo-label">频率 \(P=\frac{C}{N}\) · 使用</p>
         <ol class="pf-site-list">
           <li><span>位点 1</span><code>A: 1.00</code></li>
           <li><span>位点 2</span><code>C: .50 · T: .50</code></li>
@@ -171,8 +171,8 @@ counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
       <tbody>
         <tr><th scope="row">对齐后的 MSA token</th><td>\(N\times L\)</td><td>每条序列各个位点的类别</td><td>离线统计的输入</td></tr>
         <tr><th scope="row">one-hot 展开</th><td>\(N\times L\times K\)</td><td>逐条序列的类别指示量</td><td>解释聚合运算的中间表示</td></tr>
-        <tr class="retro-highlight"><th scope="row">整数计数 C + 条数 N</th><td>\(L\times K\) + 一个分母</td><td>每个位点、每个类别出现的次数</td><td>HDF5 持久存储</td></tr>
-        <tr><th scope="row">浮点 profile P</th><td>\(L\times K\)</td><td>逐位点类别频率</td><td>加载后提供给模型</td></tr>
+        <tr class="retro-highlight"><th scope="row">整数计数 \(C\) 与条数 \(N\)</th><td>\(L\times K\) + 一个分母</td><td>每个位点、每个类别出现的次数</td><td>HDF5 持久存储</td></tr>
+        <tr><th scope="row">浮点 profile \(P\)</th><td>\(L\times K\)</td><td>逐位点类别频率</td><td>加载后提供给模型</td></tr>
       </tbody>
     </table>
   </div>

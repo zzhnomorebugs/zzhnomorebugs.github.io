@@ -20,7 +20,7 @@ date: 2026-10-12
 index_title: "从不完整观测学习：监督、掩码先验与局部到全局重建"
 index_title_en: "Learning from incomplete data: Supervision, mask priors, and local-to-global reconstruction"
 excerpt: "从上下文—查询训练与集成采样出发，逐步理解观测对齐掩码与可识别性边界，再走向局部估计和全局残差修正。结合方法直觉、重建案例与实验对照，讲清楚如何从始终不完整的观测中学习物理场。"
-excerpt_en: "A Chinese walkthrough connecting context–query training and ensemble sampling, observation-aligned mask priors, identifiability limits, and the intuition, method, and results of globally corrected local field estimates."
+excerpt_en: "Starting with context–query training and ensemble sampling, this explanation develops observation-aligned masks and the limits of identifiability, then moves to local estimation and global residual correction. Method intuition, reconstruction examples, and experimental comparisons show how to learn physical fields from observations that are never complete."
 project_image: /images/research/incomplete-learning/local-global-architecture.webp
 papers: [incomplet-data, ocean-imputation-mask, global-local-field-reconstruction]
 project_chapters:
@@ -529,7 +529,7 @@ project_chapters:
     <li><strong>保留真实测量。</strong>输出时把给定观测写回，并仅填充有效域中的缺失位置。</li>
   </ol>
   <p>同一评测样本的各个上下文共用一次近零加噪，每个上下文各自完成一遍局部预测与全域修正。海洋默认的 full-mask 模式只评估一次，使用全部已给定观测；这里的“全部”不意味着获得完整参考场。它也不同于只随机抽取一次子上下文。</p>
-  <p>64×64 下，CHL 与 NANO 使用 32×32、步幅 16 的九个重叠片段；SSS 使用 16×16、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>
+  <p>\(64\times 64\) 下，CHL 与 NANO 使用 \(32\times 32\)、步幅 16 的九个重叠片段；SSS 使用 \(16\times 16\)、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>
 </section>
 
 <section class="retro-chapter" id="incomplete-results">
@@ -541,37 +541,37 @@ project_chapters:
   <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-blocks">
     {% include incomplete-field-animation.html stem="idcd-ns-block" heading="(a) Navier–Stokes · 块状缺失" labels="原始场|模型补全" %}
     {% include incomplete-field-animation.html stem="idcd-advection-four-blocks" heading="(b) 二维平流 · 四块缺失" labels="实际观测|模型补全" %}
-    <figcaption class="retro-figure__caption">图 6 · 块状缺失下的场重建。(a) Navier–Stokes 在九块中缺失一块的设置下，原始场与模型补全同步播放 100 个时间帧（T=0–99）。(b) 二维平流在四块缺失下的实际观测与补全，共 50 帧（T=0–49）；白色为缺失，约 52.7% 的位置有观测。每组共用固定色标，可沿时间观察空间纹理与跨缺失区域的衔接。</figcaption>
+    <figcaption class="retro-figure__caption">图 6 · 块状缺失下的场重建。(a) Navier–Stokes 在九块中缺失一块的设置下，原始场与模型补全同步播放 100 个时间帧（\(T=0,\ldots,99\)）。(b) 二维平流在四块缺失下的实际观测与补全，共 50 帧（\(T=0,\ldots,49\)）；白色为缺失，约 52.7% 的位置有观测。每组共用固定色标，可沿时间观察空间纹理与跨缺失区域的衔接。</figcaption>
   </figure>
   <h3>浅水方程：沿完整时间序列检查补全</h3>
   <p>再看浅水方程在四块缺失下的重建。实际观测与模型补全同步播放整段序列，可以检查场结构随时间的变化，以及缺失区域与周围观测的衔接。</p>
   <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-timeseries">
     {% include incomplete-field-animation.html stem="idcd-shallow-water-four-blocks" heading="浅水方程 · 四块缺失" labels="实际观测|模型补全" %}
-    <figcaption class="retro-figure__caption">图 7 · 浅水方程在四块缺失下的重建，展示一个样本的第一个场通道。左侧为实际观测，约 55.1% 的位置有观测，白色为缺失；右侧为模型补全，保留给定观测。两侧共用固定色标，同步播放全部 50 个物理时间帧（T=0–49），可观察完整序列中的空间结构与局部偏差。</figcaption>
+    <figcaption class="retro-figure__caption">图 7 · 浅水方程在四块缺失下的重建，展示一个样本的第一个场通道。左侧为实际观测，约 55.1% 的位置有观测，白色为缺失；右侧为模型补全，保留给定观测。两侧共用固定色标，同步播放全部 50 个物理时间帧（\(T=0,\ldots,49\)），可观察完整序列中的空间结构与局部偏差。</figcaption>
   </figure>
   <h3>真实海洋遮挡：只在存在参考测量的位置评分</h3>
   <p>真实海洋场本来就没有完整真值。评测把另一幅真实掩码叠加到当前样本支持上，输入与评分位置在方法间共享；只在“原始已观测、现在暂时隐藏”的位置计算 MSE 与 PSNR。</p>
-  <p>因此实验支持对隐藏测量的重建能力，不能直接验证海洋源数据从未观测区域的真实误差。OAMP 在三类真实海洋数据、最高 256×256 的实验中检验观测对齐掩码；以下 64×64 数字来自同一组局部到全局对照，避免跨实验口径比较。</p>
+  <p>因此实验支持对隐藏测量的重建能力，不能直接验证海洋源数据从未观测区域的真实误差。OAMP 在三类真实海洋数据、最高 \(256\times 256\) 的实验中检验观测对齐掩码；以下 \(64\times 64\) 数字来自同一组局部到全局对照，避免跨实验口径比较。</p>
   <div class="retro-results-grid">
     <div><strong>30.2%</strong><span class="retro-result__label">Black Sea CHL</span><p>相对该数据集最低 MSE 外部基线 OAMP 的降幅</p></div>
     <div><strong>28.9%</strong><span class="retro-result__label">Baltic Sea NANO</span><p>相对该数据集最低 MSE 外部基线 OAMP 的降幅</p></div>
     <div><strong>34.5%</strong><span class="retro-result__label">Global Ocean SSS</span><p>相对该数据集最低 MSE 外部基线 MSM 的降幅</p></div>
   </div>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="64乘64海洋重建完整对照">
-    <table class="retro-comparison"><caption>表 3 · 64×64 海洋重建对照</caption>
-      <thead><tr><th scope="col" rowspan="2">方法</th><th scope="col" colspan="2">Black Sea CHL</th><th scope="col" colspan="2">Baltic Sea NANO</th><th scope="col" colspan="2">Global Ocean SSS</th></tr><tr><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ ×10⁻³</th><th scope="col">PSNR ↑ dB</th></tr></thead>
+    <table class="retro-comparison"><caption>表 3 · \(64\times 64\) 海洋重建对照</caption>
+      <thead><tr><th scope="col" rowspan="2">方法</th><th scope="col" colspan="2">Black Sea CHL</th><th scope="col" colspan="2">Baltic Sea NANO</th><th scope="col" colspan="2">Global Ocean SSS</th></tr><tr><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th></tr></thead>
       <tbody>
         <tr><th scope="row">DINEOF</th><td>21.457</td><td>16.89</td><td>37.398</td><td>14.37</td><td>44.451</td><td>13.68</td></tr>
-        <tr><th scope="row">AmbientDiff</th><td>12.204 ± 0.156</td><td>19.17 ± 0.03</td><td>28.304 ± 0.206</td><td>15.72 ± 0.03</td><td>47.458 ± 1.718</td><td>14.07 ± 0.12</td></tr>
-        <tr><th scope="row">DINDiff</th><td>43.830 ± 1.515</td><td>14.77 ± 0.09</td><td>53.153 ± 1.775</td><td>13.22 ± 0.04</td><td>61.082 ± 0.960</td><td>12.73 ± 0.07</td></tr>
-        <tr><th scope="row">MissDiff</th><td>25.636 ± 0.300</td><td>15.92 ± 0.08</td><td>47.818 ± 1.704</td><td>13.29 ± 0.16</td><td>41.935 ± 0.173</td><td>14.01 ± 0.03</td></tr>
-        <tr><th scope="row">MSM</th><td>15.077 ± 0.184</td><td>18.27 ± 0.04</td><td>30.206 ± 1.170</td><td>15.37 ± 0.19</td><td>40.901 ± 0.277</td><td>14.13 ± 0.03</td></tr>
-        <tr><th scope="row">OAMP</th><td>10.263 ± 0.162</td><td>19.84 ± 0.10</td><td>27.220 ± 0.458</td><td>15.60 ± 0.24</td><td>44.082 ± 0.472</td><td>14.04 ± 0.05</td></tr>
-        <tr class="retro-highlight"><th scope="row">局部先验 + 全局残差</th><td>7.164 ± 0.060</td><td>21.79 ± 0.04</td><td>19.345 ± 0.741</td><td>17.37 ± 0.07</td><td>26.798 ± 0.533</td><td>15.93 ± 0.05</td></tr>
+        <tr><th scope="row">AmbientDiff</th><td>\(12.204\pm 0.156\)</td><td>\(19.17\pm 0.03\)</td><td>\(28.304\pm 0.206\)</td><td>\(15.72\pm 0.03\)</td><td>\(47.458\pm 1.718\)</td><td>\(14.07\pm 0.12\)</td></tr>
+        <tr><th scope="row">DINDiff</th><td>\(43.830\pm 1.515\)</td><td>\(14.77\pm 0.09\)</td><td>\(53.153\pm 1.775\)</td><td>\(13.22\pm 0.04\)</td><td>\(61.082\pm 0.960\)</td><td>\(12.73\pm 0.07\)</td></tr>
+        <tr><th scope="row">MissDiff</th><td>\(25.636\pm 0.300\)</td><td>\(15.92\pm 0.08\)</td><td>\(47.818\pm 1.704\)</td><td>\(13.29\pm 0.16\)</td><td>\(41.935\pm 0.173\)</td><td>\(14.01\pm 0.03\)</td></tr>
+        <tr><th scope="row">MSM</th><td>\(15.077\pm 0.184\)</td><td>\(18.27\pm 0.04\)</td><td>\(30.206\pm 1.170\)</td><td>\(15.37\pm 0.19\)</td><td>\(40.901\pm 0.277\)</td><td>\(14.13\pm 0.03\)</td></tr>
+        <tr><th scope="row">OAMP</th><td>\(10.263\pm 0.162\)</td><td>\(19.84\pm 0.10\)</td><td>\(27.220\pm 0.458\)</td><td>\(15.60\pm 0.24\)</td><td>\(44.082\pm 0.472\)</td><td>\(14.04\pm 0.05\)</td></tr>
+        <tr class="retro-highlight"><th scope="row">局部先验 + 全局残差</th><td>\(7.164\pm 0.060\)</td><td>\(21.79\pm 0.04\)</td><td>\(19.345\pm 0.741\)</td><td>\(17.37\pm 0.07\)</td><td>\(26.798\pm 0.533\)</td><td>\(15.93\pm 0.05\)</td></tr>
       </tbody>
     </table>
   </div>
-  <p class="retro-caption">64×64、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
+  <p class="retro-caption">\(64\times 64\)、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
   <h3>观测对齐掩码：三类海洋场的定性对照</h3>
   <p>在相同样本与相同给定观测下，比较 MissDiff 与 OAMP 的重建。每行先展示原始不完整参考，再看两种模型如何补出有效域中的场；重点观察隐藏测量所在区域的空间变化。</p>
   <div class="incomplete-oamp-examples" id="incomplete-oamp-visuals">
@@ -594,14 +594,14 @@ project_chapters:
     <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp" width="1202" height="1202" loading="lazy" alt="Global Ocean SSS同一样本的OAMP，白色为源缺失，预测面板黑红轮廓区分给定观测与隐藏评分位置"></a></figure>
     </div>
   </div>
-  <p class="retro-caption">图 8 · 64×64 海洋重建案例。预测图的黑色轮廓标记给定观测，红色轮廓标记原有观测中暂时隐藏的评分位置；参考图中的白色仍是没有源真值的位置。灰色为固定非观测域。不同产品分别展示，颜色仅在同一行内比较；源缺失位置没有参考值，不能从这组图判定其真实误差。</p>
+  <p class="retro-caption">图 8 · \(64\times 64\) 海洋重建案例。预测图的黑色轮廓标记给定观测，红色轮廓标记原有观测中暂时隐藏的评分位置；参考图中的白色仍是没有源真值的位置。灰色为固定非观测域。不同产品分别展示，颜色仅在同一行内比较；源缺失位置没有参考值，不能从这组图判定其真实误差。</p>
   <h3>局部先验的价值，来自它能被全局模型利用和修正</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="参数匹配的估计器组织对照">
-    <table class="retro-comparison"><caption>表 4 · 参数匹配的估计器组织对照</caption><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE ×10⁻³</th><th scope="col">NANO MSE ×10⁻³</th><th scope="col">SSS MSE ×10⁻³</th></tr></thead><tbody>
-      <tr><th scope="row">Local Prior · 仅局部估计</th><td>15.227 ± 0.103</td><td>30.576 ± 0.479</td><td>32.053 ± 0.276</td></tr>
-      <tr><th scope="row">Full Direct · 全域直接预测</th><td>9.350 ± 0.306</td><td>23.559 ± 0.834</td><td>32.895 ± 0.967</td></tr>
-      <tr><th scope="row">Prior Direct · 先验作为输入</th><td>8.546 ± 0.062</td><td>21.445 ± 0.417</td><td>30.151 ± 0.197</td></tr>
-      <tr class="retro-highlight"><th scope="row">Prior Residual · 先验 + 残差</th><td>7.164 ± 0.060</td><td>19.345 ± 0.741</td><td>26.798 ± 0.533</td></tr>
+    <table class="retro-comparison"><caption>表 4 · 参数匹配的估计器组织对照</caption><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE \(\times 10^{-3}\)</th><th scope="col">NANO MSE \(\times 10^{-3}\)</th><th scope="col">SSS MSE \(\times 10^{-3}\)</th></tr></thead><tbody>
+      <tr><th scope="row">Local Prior · 仅局部估计</th><td>\(15.227\pm 0.103\)</td><td>\(30.576\pm 0.479\)</td><td>\(32.053\pm 0.276\)</td></tr>
+      <tr><th scope="row">Full Direct · 全域直接预测</th><td>\(9.350\pm 0.306\)</td><td>\(23.559\pm 0.834\)</td><td>\(32.895\pm 0.967\)</td></tr>
+      <tr><th scope="row">Prior Direct · 先验作为输入</th><td>\(8.546\pm 0.062\)</td><td>\(21.445\pm 0.417\)</td><td>\(30.151\pm 0.197\)</td></tr>
+      <tr class="retro-highlight"><th scope="row">Prior Residual · 先验 + 残差</th><td>\(7.164\pm 0.060\)</td><td>\(19.345\pm 0.741\)</td><td>\(26.798\pm 0.533\)</td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">相同不完整训练对与查询监督下的参数匹配对照。Full Direct 匹配总参数量；Prior Direct 与 Prior Residual 共享冻结局部预测器和全局骨干。两者的零输出头分别使初始场预测为零与局部先验，所以比较包含残差参数化及其诱导的初始化。</p>
@@ -614,7 +614,7 @@ project_chapters:
     <figure class="retro-figure"><h4>学习到的残差</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp" width="590" height="590" loading="lazy" alt="全域模型对 NANO 局部先验作出的有正负号的残差修正"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>前四幅：归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/field-colorbar.svg" width="276" height="36" loading="lazy" alt="归一化场值色标从负1到1"></div><div class="incomplete-colorbar"><span>残差值</span><img src="{{ base_path }}/images/research/incomplete-learning/residual-colorbar.svg" width="276" height="36" loading="lazy" alt="残差色标从负0.344到0.344，端点之外截断"></div></div>
-  <p class="retro-caption">图 9 · 64×64 NANO 完整输入掩码下的预测分解。黑色与红色轮廓分别标记给定观测和隐藏的可评分位置；灰色为有效域外，参考图中的白色为源数据缺失。预测均在写回给定观测之前展示，因此“全局修正后 = 局部先验 + 学习到的残差”；实际重建输出随后恢复给定观测。</p>
+  <p class="retro-caption">图 9 · \(64\times 64\) NANO 完整输入掩码下的预测分解。黑色与红色轮廓分别标记给定观测和隐藏的可评分位置；灰色为有效域外，参考图中的白色为源数据缺失。预测均在写回给定观测之前展示，因此全局修正后的预测等于局部先验加上学习到的残差；实际重建输出随后恢复给定观测。</p>
   <div class="incomplete-figure-grid">
     <figure class="retro-figure"><h4>OAMP 参数匹配对照 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp" width="545" height="545" loading="lazy" alt="NANO 橙色框区域中参数匹配全域直接模型的预测放大图"></a></figure>
     <figure class="retro-figure"><h4>参考观测 · 橙色框标记放大区域</h4><a class="image-popup incomplete-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp" width="545" height="545" loading="lazy" alt="NANO 原始参考全图，橙色矩形标出两侧的局部放大区域"></a></figure>
@@ -629,7 +629,7 @@ project_chapters:
     <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp" width="600" height="600" loading="lazy" alt="相同Navier–Stokes区域的局部到全局重建，缺失块内保留更明显的涡量结构"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>归一化场值</span><img src="{{ base_path }}/images/research/incomplete-learning/ns-colorbar.svg" width="276" height="36" loading="lazy" alt="Navier–Stokes共同场值色标从负1经白色零到正1"></div></div>
-  <p class="retro-caption">图 11 · 64×64、Block 8/9 的重建细节。左右为中间参考场橙色区域的放大；黑色线为观测块网格，红色虚线标出缺失块。两种预测均恢复给定观测，局部到全局方法使用 K=8 上下文集成。在这个案例中，残差修正保留了更明显的细长涡量结构；图中场值使用 −1 到 1 的共同色标。</p>
+  <p class="retro-caption">图 11 · \(64\times 64\)、Block 8/9 的重建细节。左右为中间参考场橙色区域的放大；黑色线为观测块网格，红色虚线标出缺失块。两种预测均恢复给定观测，局部到全局方法使用 \(K=8\) 上下文集成。在这个案例中，残差修正保留了更明显的细长涡量结构；图中场值使用 −1 到 1 的共同色标。</p>
   <h3>全局修正是否真的会看邻域外的观测？</h3>
   <p>固定一个目标块，只删除所有相关局部片段之外的远端观测。局部模型接收的输入保持相同，所以目标块上的参考场不变；实际全局输出在三个产品上都产生了非零平均平方位移，说明修正器会响应局部构建不可见的证据。</p>
   <p>响应不等于总是获益。进一步按相同删除数量比较距离分组：CHL、NANO 的 Remote Mid 与 Remote Far 删除使平均误差增加，95% 置信区间高于零；SSS 的 Remote Near 删除使误差增加，Remote Far 删除反而降低误差，Remote Mid 的区间跨零。远端证据的作用依赖数据产品与距离范围。</p>

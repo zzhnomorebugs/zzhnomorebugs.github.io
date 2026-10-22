@@ -5,6 +5,7 @@
     <style>
       text{font-family:Arial,sans-serif;fill:#263833}.title{font-size:32px;font-weight:700}
       .label{font-size:22px;font-weight:700}.body{font-size:23px}.note{font-size:20px;fill:#60716b}.accent{fill:#25766c}.formula{font-size:29px;font-weight:700}
+    .math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-weight:400}.math .var{font-style:italic}.math .sup{font-size:70%;baseline-shift:super}
     </style>
   </defs>
   <rect width="1200" height="500" fill="#fafbf8"/>
@@ -17,20 +18,20 @@
   <circle cx="159" cy="283" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
   <circle cx="461" cy="283" r="8" fill="#25766c" stroke="#fff" stroke-width="3"/>
   <circle cx="310" cy="283" r="9" fill="#b77545" stroke="#fff" stroke-width="3"/>
-  <text x="65" y="235" class="label">a = (−1, 0)</text>
-  <text x="65" y="263" class="note">‖a‖² = 1</text>
-  <text x="468" y="235" class="label">b = (1, 0)</text>
-  <text x="468" y="263" class="note">‖b‖² = 1</text>
+  <text x="65" y="235" class="label math"><tspan class="var">a</tspan> = (−1, 0)</text>
+  <text x="65" y="263" class="note math">‖<tspan class="var">a</tspan>‖<tspan class="sup">2</tspan> = 1</text>
+  <text x="468" y="235" class="label math"><tspan class="var">b</tspan> = (1, 0)</text>
+  <text x="468" y="263" class="note math">‖<tspan class="var">b</tspan>‖<tspan class="sup">2</tspan> = 1</text>
   <text x="310" y="324" text-anchor="middle" class="label">Mean = (0, 0)</text>
-  <text x="310" y="355" text-anchor="middle" class="note">‖(a + b) / 2‖² = 0</text>
+  <text x="310" y="355" text-anchor="middle" class="note math">‖(<tspan class="var">a</tspan> + <tspan class="var">b</tspan>) / 2‖<tspan class="sup">2</tspan> = 0</text>
   <text x="310" y="468" text-anchor="middle" class="note">Circle: the set of feasible samples</text>
 
   <rect x="657" y="126" width="495" height="324" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
   <text x="687" y="169" class="label accent">Constraint function</text>
-  <text x="687" y="214" class="formula">R(x) = ‖x‖² − 1</text>
+  <text x="687" y="214" class="formula math"><tspan class="var">R</tspan>(<tspan class="var">x</tspan>) = ‖<tspan class="var">x</tspan>‖<tspan class="sup">2</tspan> − 1</text>
   <path d="M687 238 H1122" stroke="#d5dfd9" stroke-width="2"/>
   <text x="687" y="279" class="body">Both samples are feasible:</text>
-  <text x="687" y="318" class="formula accent">R(a) = R(b) = 0</text>
+  <text x="687" y="318" class="formula accent math"><tspan class="var">R</tspan>(<tspan class="var">a</tspan>) = <tspan class="var">R</tspan>(<tspan class="var">b</tspan>) = 0</text>
   <text x="687" y="367" class="body">The equal-weight mean violates it:</text>
-  <text x="687" y="411" class="formula">R((a + b) / 2) = −1</text>
+  <text x="687" y="411" class="formula math"><tspan class="var">R</tspan>((<tspan class="var">a</tspan> + <tspan class="var">b</tspan>) / 2) = −1</text>
 </svg>

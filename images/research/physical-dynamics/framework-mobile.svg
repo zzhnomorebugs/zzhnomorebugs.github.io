@@ -7,6 +7,7 @@
       .title{font-size:28px;font-weight:700}.label{font-size:19px;fill:#25766c;font-weight:700}.stage{font-size:26px;font-weight:700}
       .body{font-size:22px}.note{font-size:19px;fill:#60716b}.prior{font-size:24px;font-weight:700;fill:#25766c}
       .arrow{fill:none;stroke:#7b9c91;stroke-width:3;marker-end:url(#arrow)}
+    .math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-weight:400}.math .var{font-style:italic}.math .sub{font-size:70%;baseline-shift:sub}
     </style>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#7b9c91" stroke-width="1.5"/></marker>
   </defs>
@@ -15,10 +16,10 @@
   <text x="105" y="47" class="title">让物理先验参与动力学生成</text>
   <g text-anchor="middle">
     <rect x="60" y="88" width="520" height="110" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
-    <text x="320" y="128" class="stage">完整轨迹 / 场 x₀ + 随机噪声</text>
-    <text x="320" y="171" class="note">在扩散时间 t 构造带噪样本</text>
+    <text x="320" y="128" class="stage">完整轨迹 / 场 <tspan class="math"><tspan class="var">x</tspan><tspan class="sub">0</tspan></tspan> + 随机噪声</text>
+    <text x="320" y="171" class="note">在扩散时间 <tspan class="math"><tspan class="var">t</tspan></tspan> 构造带噪样本</text>
     <rect x="60" y="234" width="520" height="86" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
-    <text x="320" y="286" class="stage">带噪状态 xₜ</text>
+    <text x="320" y="286" class="stage">带噪状态 <tspan class="math"><tspan class="var">x</tspan><tspan class="sub var">t</tspan></tspan></text>
     <rect x="60" y="356" width="520" height="110" rx="10" fill="#edf5ef" stroke="#25766c" stroke-width="2"/>
     <text x="320" y="397" class="stage">扩散预测器</text>
     <text x="320" y="439" class="note">结合带噪状态与扩散时间</text>

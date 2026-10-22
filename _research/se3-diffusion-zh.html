@@ -76,7 +76,7 @@ project_chapters:
   \mathrm dx_t&=\left[f(t)x_t-g^2(t)\nabla_x\log q_t(x_t)\right]\mathrm dt+g(t)\,\mathrm d\overline W_t,\\
   \frac{\mathrm dx_t}{\mathrm dt}&=f(t)x_t-\frac12g^2(t)\nabla_x\log q_t(x_t).
   \end{aligned}\tag{4}\]</div>
-  <p>生成时从 \(T\) 向 \(0\) 积分，\(\mathrm dt&lt;0\)，所以负号前的 score 实际把样本推向高密度区域。ODE 的 \(1/2\) 来自 Fokker–Planck 方程中扩散项的贡献。两者在精确 score 等条件下共享各时刻的分布，不要求样本轨迹相同。</p>
+  <p>生成时从 \(T\) 向 \(0\) 积分，\(\mathrm dt&lt;0\)，所以带负号的 score 项实际把样本推向高密度区域。ODE 的 \(1/2\) 来自 Fokker–Planck 方程中扩散项的贡献。两者在精确 score 等条件下共享各时刻的分布，不要求样本轨迹相同。</p>
   <h3>这篇工作的 ODE 聚焦于 VE 加噪</h3>
   <div class="retro-equation" id="se3-eq-5">\[\begin{aligned}
   \mathrm d\mathcal C_t&=\mathbf f(\mathcal C_t,t)\,\mathrm dt+\mathbf G(\mathcal C_t,t)\,\mathrm dW_t,\\
@@ -103,7 +103,7 @@ project_chapters:
   <p class="retro-lede">如果先在距离流形上写逆过程，每一步都要把候选距离拉回合法集合，再找回一组坐标。把这两个操作合起来，才能看清计算代价来自哪里。</p>
   <figure class="retro-figure se3-framework">
     <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/framework.webp"><img src="{{ base_path }}/images/research/se3-diffusion/framework.webp" alt="坐标空间 L、谱坐标代表 N 与距离流形 M 之间的映射，距离的切向更新转换为坐标位移" width="2400" height="870" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 1 · 距离与坐标交替的几何框架。灰色区域是坐标空间 L，蓝色区域表示可行距离，绿色区域表示所选坐标代表；橙色方向在距离侧给出去噪变化，红色方向是转换后的坐标更新。谱坐标用于分析，采样时可以直接维护普通坐标。</figcaption>
+    <figcaption class="retro-figure__caption">图 1 · 距离与坐标交替的几何框架。灰色区域是坐标空间 \(L\)，蓝色区域表示可行距离，绿色区域表示所选坐标代表；橙色方向在距离侧给出去噪变化，红色方向是转换后的坐标更新。谱坐标用于分析，采样时可以直接维护普通坐标。</figcaption>
   </figure>
   <h3>先写出需要投影的理想化更新</h3>
   <p>沿论文的流形描述，设 \(\mathcal B_t^M\) 为流形 Brownian motion。在适当的几何、度量及噪声条件下，用下式表示距离扩散；它不意味着任意坐标加噪都诱导一个各向同性的距离过程。</p>
@@ -385,7 +385,7 @@ project_chapters:
   <p>Human3.6M 实验将姿态表示为 17 个关键点；主对照生成 500 个 eating 类别的姿态。AD 将每个生成样本与参考集合中的最近姿态对齐后比较：</p>
   <div class="retro-equation" id="se3-eq-33">\[\operatorname{AD}=\frac1{|S_g|}\sum_{X\in S_g}\min_{X_r\in S_r}
   \|\operatorname{Align}(X,X_r)-X_r\|_F^2.\tag{33}\]</div>
-  <p>Align 最小化旋转和平移后的结构差异，AD 越低越好。它是生成到参考的单向最近邻匹配，不能单独证明多样性或整个姿态分布都被完整覆盖。</p>
+  <p>\(\operatorname{Align}\) 最小化旋转和平移后的结构差异，AD 越低越好。它是生成到参考的单向最近邻匹配，不能单独证明多样性或整个姿态分布都被完整覆盖。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="人体姿态平均 AD 结果">
     <table class="retro-comparison"><caption>表 3 · eating 类别姿态的平均 AD，越低越好</caption><thead><tr><th scope="col">采样步数</th><th scope="col">LD</th><th scope="col">SDE</th><th scope="col">ODE</th></tr></thead><tbody>
       <tr><th scope="row">100</th><td>5.1739</td><td><strong>2.3737</strong></td><td>2.8978</td></tr>

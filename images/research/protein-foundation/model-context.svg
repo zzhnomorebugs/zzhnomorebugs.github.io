@@ -10,6 +10,7 @@
       .body{font-size:24px;fill:#50615b}
       .label{font-size:23px;fill:#25766c}
       .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .math{font-family:"Cambria Math","Times New Roman",serif;font-style:italic;font-weight:400}
     </style>
   </defs>
   <rect width="1440" height="850" fill="#faf9f4"/>
@@ -22,7 +23,7 @@
   <path class="line" d="M406 220 H545"/>
   <text class="label" x="475" y="192" text-anchor="middle">按列统计</text>
   <rect x="545" y="150" width="350" height="140" rx="16" fill="#e9f3ed" stroke="#a9cfc3" stroke-width="2"/>
-  <text class="heading" x="720" y="202" text-anchor="middle">MSA profile · P</text>
+  <text class="heading" x="720" y="202" text-anchor="middle">MSA profile · <tspan class="math">P</tspan></text>
   <text class="body" x="720" y="248" text-anchor="middle">各位点的氨基酸频率</text>
   <path class="line" d="M720 290 V370"/>
   <text class="label" x="746" y="338">条件注入</text>
@@ -31,7 +32,7 @@
 
   <rect class="card" x="56" y="370" width="350" height="180" rx="16"/>
   <text class="heading" x="231" y="424" text-anchor="middle">当前生成状态</text>
-  <text x="231" y="470" text-anchor="middle" font-size="30" fill="#25766c">xₜ + 时间 t</text>
+  <text x="231" y="470" text-anchor="middle" font-size="30" fill="#25766c"><tspan class="math">x<tspan baseline-shift="sub" font-size="70%">t</tspan></tspan> + 时间 <tspan class="math">t</tspan></text>
   <text class="body" x="231" y="515" text-anchor="middle">每一步重新输入</text>
   <path class="line" d="M406 460 H545"/>
 

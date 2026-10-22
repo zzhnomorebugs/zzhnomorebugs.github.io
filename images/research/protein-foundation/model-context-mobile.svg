@@ -10,6 +10,7 @@
       .body{font-size:23px;fill:#50615b}
       .label{font-size:23px;fill:#25766c}
       .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .math{font-family:"Cambria Math","Times New Roman",serif;font-style:italic;font-weight:400}
     </style>
   </defs>
   <rect width="640" height="1270" fill="#faf9f4"/>
@@ -22,7 +23,7 @@
   <path class="line" d="M320 240 V296"/>
   <text class="label" x="344" y="278">按列统计</text>
   <rect x="76" y="296" width="488" height="105" rx="15" fill="#e9f3ed" stroke="#a9cfc3" stroke-width="2"/>
-  <text class="heading" x="320" y="340" text-anchor="middle">MSA profile · P</text>
+  <text class="heading" x="320" y="340" text-anchor="middle">MSA profile · <tspan class="math">P</tspan></text>
   <text class="body" x="320" y="378" text-anchor="middle">各位点的氨基酸频率</text>
   <path class="line" d="M320 401 V477"/>
   <text class="label" x="344" y="445">条件注入</text>
@@ -30,7 +31,7 @@
   <rect x="76" y="477" width="488" height="210" rx="15" fill="#e9f3ed" stroke="#25766c" stroke-width="2.5"/>
   <text class="heading" x="320" y="524" text-anchor="middle">DiT 生成模型</text>
   <text class="body" x="320" y="566" text-anchor="middle">由 ESM-2 改造</text>
-  <text class="body" x="320" y="608" text-anchor="middle">同时读取当前状态 xₜ 与时间 t</text>
+  <text class="body" x="320" y="608" text-anchor="middle">同时读取当前状态 <tspan class="math">x<tspan baseline-shift="sub" font-size="70%">t</tspan></tspan> 与时间 <tspan class="math">t</tspan></text>
   <text class="body" x="320" y="650" text-anchor="middle">比较不同条件注入实现</text>
   <path class="line" d="M320 687 V750"/>
   <rect x="263" y="713" width="114" height="32" fill="#faf9f4"/>

@@ -53,7 +53,7 @@ project_chapters:
   <div class="retro-support">
     <h3>Task definition and evaluation</h3>
     <p>Given the product graph \(G_P\), learn the conditional distribution \(p(G_R\mid G_P)\). Here, \(G_R\) is the graph representing the reactant set and need not have only one connected component.</p>
-    <p>The primary metric is Top-k Exact Match: whether the reactant set recorded in the dataset appears among the top k predictions. It measures agreement with the recorded answer; a mismatch does not necessarily mean that another synthesis route is chemically infeasible. This page focuses on single-step prediction and does not directly address full multistep route search.</p>
+    <p>The primary metric is Top-\(k\) Exact Match: whether the reactant set recorded in the dataset appears among the top \(k\) predictions. It measures agreement with the recorded answer; a mismatch does not necessarily mean that another synthesis route is chemically infeasible. This page focuses on single-step prediction and does not directly address full multistep route search.</p>
   </div>
 </section>
 
@@ -190,7 +190,7 @@ project_chapters:
       <figcaption class="retro-figure__caption">Figure 6 · Candidate-generation distributions for one specific product. The 95% and 83% in the figure are sampling frequencies for this case, not overall accuracies.</figcaption>
     </figure>
     <p>This case shows that the same chemical structure can produce different candidate distributions under different input permutations. It illustrates how ordering works; overall gains should be assessed through dataset experiments and ablations.</p>
-    <p>Evaluation draws 100 samples for each product, standardizes and deduplicates the generated structures, ranks them by frequency, and then computes Top-k. Values in the main table and scaling ablations differ slightly; this page cites each from its corresponding experiment.</p>
+    <p>Evaluation draws 100 samples for each product, standardizes and deduplicates the generated structures, ranks them by frequency, and then computes Top-\(k\). Values in the main table and scaling ablations differ slightly; this page cites each from its corresponding experiment.</p>
   </div>
 </section>
 

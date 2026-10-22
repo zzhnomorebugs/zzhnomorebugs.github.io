@@ -11,6 +11,7 @@
       .body{font-size:26px;fill:#50615b}
       .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
       .soft{fill:#e9f3ed}
+      .math{font-family:"Cambria Math","Times New Roman",serif;font-style:italic;font-weight:400}
     </style>
   </defs>
   <rect width="640" height="1500" fill="#faf9f4"/>
@@ -69,9 +70,9 @@
   <text class="heading" x="128" y="986">HDF5 存储</text>
   <g aria-hidden="true">
     <rect class="soft" x="74" y="1027" width="88" height="88" rx="10"/>
-    <text x="118" y="1084" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
+    <text class="math" x="118" y="1084" text-anchor="middle" font-size="40" font-weight="700" fill="#25766c">C</text>
     <rect x="174" y="1027" width="60" height="88" rx="10" fill="#f6efd9"/>
-    <text x="204" y="1084" text-anchor="middle" font-size="36" font-weight="700">N</text>
+    <text class="math" x="204" y="1084" text-anchor="middle" font-size="36" font-weight="700">N</text>
   </g>
   <text class="body" x="260" y="1037">整数计数 C</text>
   <text class="body" x="260" y="1080">MSA 条数 N</text>
@@ -83,7 +84,7 @@
   <text class="heading" x="128" y="1260">训练读取</text>
   <g aria-hidden="true">
     <rect class="soft" x="74" y="1301" width="160" height="88" rx="10"/>
-    <text x="154" y="1358" text-anchor="middle" font-size="35" font-weight="700" fill="#25766c">C / N</text>
+    <g role="img" aria-label="C divided by N"><text class="math" x="154" y="1333" text-anchor="middle" font-size="27">C</text><path d="M132 1343 H176" fill="none" stroke="#25766c" stroke-width="1.5"/><text class="math" x="154" y="1373" text-anchor="middle" font-size="27">N</text></g>
   </g>
   <text class="body" x="260" y="1335">读取后计算频率</text>
   <text class="body" x="260" y="1381">profile → 模型</text>

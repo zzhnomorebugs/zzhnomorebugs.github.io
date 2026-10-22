@@ -18,9 +18,9 @@ published: true
 read_time: false
 date: 2026-10-12
 index_title: "物理动力学生成：把对称性与守恒律融入扩散模型"
-index_title_en: "Generating Physical Dynamics under Priors"
+index_title_en: "Generating Physical Dynamics: Bringing Symmetries and Conservation Laws into Diffusion Models"
 excerpt: "生成的轨迹看起来合理，并不意味着它遵循物理规律。从分布对称性与守恒约束出发，解释扩散模型的条件均值为何带来 Jensen gap，以及如何设计训练目标，改善粒子轨迹与物理场的生成。"
-excerpt_en: "A Chinese walkthrough of distributional symmetries, the Jensen gap in physical constraints, and training objectives for diffusion-based generation of particle trajectories and PDE fields."
+excerpt_en: "A plausible-looking trajectory need not obey physical laws. Starting from distributional symmetries and conservation constraints, this project explains why the conditional mean in diffusion models creates a Jensen gap, and how training objectives can improve the generation of particle trajectories and physical fields."
 project_image: /images/publications/generating_under_prior.png
 papers: [generating-under-prior]
 project_chapters:
@@ -249,12 +249,12 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>表 2 · 三体和五弹簧主实验误差</caption>
       <thead><tr><th scope="col">系统</th><th scope="col">指标 ↓</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="3">三体 · 能量相关监督</th><td>轨迹 MSE</td><td>2.4132 ± 0.1208</td><td>1.9880 ± 0.3418</td></tr>
-        <tr><td>速度 MSE</td><td>2.5745 ± 0.0790</td><td>0.8328 ± 0.1042</td></tr>
-        <tr><td>能量误差</td><td>4.3292 ± 0.7235</td><td>0.5465 ± 0.0705</td></tr>
-        <tr><th scope="row" rowspan="3">五弹簧 · 动量约束</th><td>动态 MSE（×10<sup>−2</sup>）</td><td>5.1754 ± 0.0286</td><td>5.0731 ± 0.0406</td></tr>
-        <tr><td>动量误差</td><td>5.3699 ± 0.0462</td><td>0.3898 ± 0.0118</td></tr>
-        <tr><td>能量误差</td><td>1.0618 ± 0.0243</td><td>0.7418 ± 0.0129</td></tr>
+        <tr><th scope="row" rowspan="3">三体 · 能量相关监督</th><td>轨迹 MSE</td><td>\(2.4132\pm 0.1208\)</td><td>\(1.9880\pm 0.3418\)</td></tr>
+        <tr><td>速度 MSE</td><td>\(2.5745\pm 0.0790\)</td><td>\(0.8328\pm 0.1042\)</td></tr>
+        <tr><td>能量误差</td><td>\(4.3292\pm 0.7235\)</td><td>\(0.5465\pm 0.0705\)</td></tr>
+        <tr><th scope="row" rowspan="3">五弹簧 · 动量约束</th><td>动态 MSE（\(\times 10^{-2}\)）</td><td>\(5.1754\pm 0.0286\)</td><td>\(5.0731\pm 0.0406\)</td></tr>
+        <tr><td>动量误差</td><td>\(5.3699\pm 0.0462\)</td><td>\(0.3898\pm 0.0118\)</td></tr>
+        <tr><td>能量误差</td><td>\(1.0618\pm 0.0243\)</td><td>\(0.7418\pm 0.0129\)</td></tr>
       </tbody>
     </table>
   </div>
@@ -278,11 +278,11 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>表 3 · PDE 预测与生成评测</caption>
       <thead><tr><th scope="col">任务与指标 ↓</th><th scope="col">数据集</th><th scope="col">无可行性训练项</th><th scope="col">加入可行性训练项</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="2">预测 RMSE（×10<sup>−2</sup>）</th><td>Advection · 平流</td><td>1.7263 ± 0.0491</td><td>1.6536 ± 0.0677</td></tr>
-        <tr><td>Darcy flow</td><td>2.0648 ± 0.0600</td><td>1.9678 ± 0.0651</td></tr>
-        <tr><th scope="row" rowspan="3">生成场的 PDE 残差 RMSE</th><td>Advection · 平流</td><td>2.398 ± 0.024</td><td>2.305 ± 0.001</td></tr>
-        <tr><td>Burgers</td><td>6.862 ± 0.060</td><td>6.610 ± 0.012</td></tr>
-        <tr><td>Shallow water · 浅水</td><td>8.0153 ± 0.0960</td><td>7.7618 ± 0.0645</td></tr>
+        <tr><th scope="row" rowspan="2">预测 RMSE（\(\times 10^{-2}\)）</th><td>Advection · 平流</td><td>\(1.7263\pm 0.0491\)</td><td>\(1.6536\pm 0.0677\)</td></tr>
+        <tr><td>Darcy flow</td><td>\(2.0648\pm 0.0600\)</td><td>\(1.9678\pm 0.0651\)</td></tr>
+        <tr><th scope="row" rowspan="3">生成场的 PDE 残差 RMSE</th><td>Advection · 平流</td><td>\(2.398\pm 0.024\)</td><td>\(2.305\pm 0.001\)</td></tr>
+        <tr><td>Burgers</td><td>\(6.862\pm 0.060\)</td><td>\(6.610\pm 0.012\)</td></tr>
+        <tr><td>Shallow water · 浅水</td><td>\(8.0153\pm 0.0960\)</td><td>\(7.7618\pm 0.0645\)</td></tr>
       </tbody>
     </table>
   </div>

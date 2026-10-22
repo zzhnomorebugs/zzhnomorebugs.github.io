@@ -7,6 +7,7 @@
       .title{font-size:30px;font-weight:700}.label{font-size:18px;fill:#25766c;font-weight:700;letter-spacing:1px}
       .stage{font-size:25px;font-weight:700}.body{font-size:21px}.note{font-size:18px;fill:#60716b}.prior{font-size:24px;font-weight:700;fill:#25766c}
       .arrow{fill:none;stroke:#7b9c91;stroke-width:3;marker-end:url(#arrow)}
+    .math{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif;font-weight:400}.math .var{font-style:italic}.math .sub{font-size:70%;baseline-shift:sub}
     </style>
     <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9" fill="none" stroke="#7b9c91" stroke-width="1.5"/></marker>
   </defs>
@@ -17,13 +18,13 @@
   <g text-anchor="middle">
     <rect x="60" y="100" width="270" height="172" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
     <text x="195" y="136" class="label">数据与扰动</text>
-    <text x="195" y="181" class="stage">完整轨迹 / 场 x₀</text>
+    <text x="195" y="181" class="stage">完整轨迹 / 场 <tspan class="math"><tspan class="var">x</tspan><tspan class="sub">0</tspan></tspan></text>
     <text x="195" y="218" class="body">加入随机噪声</text>
-    <text x="195" y="247" class="note">扩散时间 t</text>
+    <text x="195" y="247" class="note">扩散时间 <tspan class="math"><tspan class="var">t</tspan></tspan></text>
 
     <rect x="410" y="100" width="270" height="172" rx="10" fill="#fff" stroke="#d5dfd9" stroke-width="2"/>
     <text x="545" y="136" class="label">模型输入</text>
-    <text x="545" y="190" class="stage">带噪状态 xₜ</text>
+    <text x="545" y="190" class="stage">带噪状态 <tspan class="math"><tspan class="var">x</tspan><tspan class="sub var">t</tspan></tspan></text>
     <text x="545" y="233" class="note">整个动力学样本的扰动</text>
 
     <rect x="760" y="100" width="270" height="172" rx="10" fill="#edf5ef" stroke="#25766c" stroke-width="2"/>

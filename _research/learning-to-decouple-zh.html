@@ -18,9 +18,9 @@ published: true
 read_time: false
 date: 2026-10-12
 index_title: "DNS：学习潜在子系统与随时间变化的交互"
-index_title_en: "DNS: Learning to Decouple Complex Systems"
+index_title_en: "DNS: Learning latent subsystems and evolving interactions"
 excerpt: "面对混杂且不规则采样的序列，把整体观测分解为潜在子系统，并用一个受约束的元系统刻画交互。沿着神经受控微分方程、单纯形上的投影与三类实验，理解这种显式分工如何帮助学习复杂动态。"
-excerpt_en: "A Chinese walkthrough of latent subsystem dynamics, an evolving interaction meta-system, and simplex projections, with evidence from trajectory prediction, spring link prediction, and action recognition."
+excerpt_en: "Decompose entangled, irregularly sampled observations into latent subsystems and model their interactions with a constrained meta-system. Neural controlled differential equations, simplex projections, and three experimental tasks explain how this explicit division helps learn complex dynamics."
 project_image: /images/research/learning-to-decouple/framework.webp
 papers: [learning-to-decouple]
 project_chapters:
@@ -63,13 +63,13 @@ project_chapters:
   <h2><span class="retro-chapter__number">02</span> 把子系统的状态与交互的状态分别建模</h2>
   <p class="retro-lede">DNS 的解耦发生在潜在特征空间：多个子系统各自接收控制信号、维护隐藏状态；另一个元系统维护它们之间随时间变化的交互权重。</p>
   <div class="decouple-scheme" aria-label="DNS 的建模流程">
-    <div class="decouple-scheme__input"><span>整体观测</span><strong>c(t<sub>k</sub>)</strong><p>多个可学习映射 p<sub>i</sub>，生成不同的控制信号</p></div>
+    <div class="decouple-scheme__input"><span>整体观测</span><strong>\(c(t_k)\)</strong><p>多个可学习映射 \(p_i\)，生成不同的控制信号</p></div>
     <div class="decouple-scheme__modules">
-      <div><strong>子系统 1</strong><span>x<sub>1</sub>(t) → z<sub>1</sub>(t)</span></div>
-      <div><strong>子系统 2</strong><span>x<sub>2</sub>(t) → z<sub>2</sub>(t)</span></div>
-      <div><strong>子系统 n</strong><span>x<sub>n</sub>(t) → z<sub>n</sub>(t)</span></div>
+      <div><strong>子系统 1</strong><span>\(x_1(t)\to z_1(t)\)</span></div>
+      <div><strong>子系统 2</strong><span>\(x_2(t)\to z_2(t)\)</span></div>
+      <div><strong>子系统 \(n\)</strong><span>\(x_n(t)\to z_n(t)\)</span></div>
     </div>
-    <div class="decouple-scheme__meta"><span>交互元系统</span><strong>A(t)</strong><p>读取潜在状态，更新交互；交互权重参与子系统的状态更新</p></div>
+    <div class="decouple-scheme__meta"><span>交互元系统</span><strong>\(A(t)\)</strong><p>读取潜在状态，更新交互；交互权重参与子系统的状态更新</p></div>
     <p class="decouple-scheme__readout">潜在状态 → 任务读出 → 轨迹预测 / 连接预测 / 动作识别</p>
   </div>
   <h3>第一层分工：不同控制，不同状态</h3>
@@ -87,14 +87,14 @@ project_chapters:
   <p class="retro-lede">DNS 先把各子系统的离散控制信号插值成连续路径，再用路径的变化驱动隐藏状态。交互矩阵决定每个子系统在更新时读取哪些潜在状态。</p>
   <figure class="retro-figure decouple-control-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/framework.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/framework.webp" alt="离散观测形成多条连续控制路径，各路径驱动相应的子系统隐藏状态沿时间变化" width="1412" height="869" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 1 · 观测、控制路径与隐藏状态的关系。离散观测形成不同的连续控制路径，驱动各子系统；模块之间的交互由 A(t) 另外建模。</figcaption>
+    <figcaption class="retro-figure__caption">图 1 · 观测、控制路径与隐藏状态的关系。离散观测形成不同的连续控制路径，驱动各子系统；模块之间的交互由 \(A(t)\) 另外建模。</figcaption>
   </figure>
   <h3>子系统：控制路径驱动状态变化</h3>
   <div class="retro-equation">\[\mathrm{d}z_i(t)=F\!\left([A(t)z(t)]_i\right)\,\mathrm{d}x_i(t).\]</div>
   <p>\([A(t)z(t)]_i\) 是第 \(i\) 个子系统接收到的加权状态，\(F\) 把它映射为向量场，再与控制路径的变化 \(\mathrm{d}x_i(t)\) 相乘。所有子系统共享 \(F\)，各自使用不同的 \(x_i\) 与 \(z_i\)。</p>
   <p>在观测时间戳上得到 \(x_i(t_k)\) 后，三次样条插值提供中间时刻的控制和导数。对可微控制路径，积分形式为：</p>
   <div class="retro-equation">\[z_i(t_1)=z_i(t_0)+\int_{t_0}^{t_1}F\!\left([A(s)z(s)]_i\right)x_i'(s)\,\mathrm{d}s.\]</div>
-  <p>这样，数值求解器沿连续时间推进，不要求相邻观测具有相同时间间隔。面对噪声，还可以将控制路径的三次样条插值替换为自然平滑样条；这一变体记为 DNS<sub>S</sub>。</p>
+  <p>这样，数值求解器沿连续时间推进，不要求相邻观测具有相同时间间隔。面对噪声，还可以将控制路径的三次样条插值替换为自然平滑样条；这一变体记为 \(\mathrm{DNS}_{\mathrm{S}}\)。</p>
   <h3>元系统：交互始终满足约束</h3>
   <p>DNS 将交互矩阵限制在逐行的概率单纯形上：</p>
   <div class="retro-equation">\[\mathcal S=\{A\in\mathbb R^{n\times n}:A\mathbf 1=\mathbf 1,\ A_{ij}\geq0\}.\]</div>
@@ -121,11 +121,11 @@ project_chapters:
   <p class="retro-lede">同样满足非负与归一化，softmax 和 sparsemax 却产生不同的交互结构。前者保留平滑、稠密的权重，后者允许一部分潜在连接变成零。</p>
   <figure class="retro-figure decouple-projection-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/projections.webp"><img src="{{ base_path }}/images/research/learning-to-decouple/projections.webp" alt="几何示意图比较 softmax 与 L2 投影到 1 维单纯形的结果：softmax 在内部，L2 投影可以落到端点" width="1800" height="1721" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 2 · 单纯形上的映射几何。红色为 L2 投影，绿色为 softmax。对两个权重，约束集合是一条线段；softmax 将有限得分映到内部，L2 投影还可以落在边界。</figcaption>
+    <figcaption class="retro-figure__caption">图 2 · 单纯形上的映射几何。红色为 \(L_2\) 投影，绿色为 softmax。对两个权重，约束集合是一条线段；softmax 将有限得分映到内部，\(L_2\) 投影还可以落在边界。</figcaption>
   </figure>
   <div class="retro-two-column">
     <div><h3>DNS：softmax</h3><div class="retro-equation">\[a_j=\frac{\exp(\ell_j)}{\sum_k\exp(\ell_k)}.\]</div><p>有限 logits 对应严格正的权重，适合连续地调整信息分配。它可从熵正则化的优化视角理解，是平滑归一化；对概率向量再应用 softmax，通常仍会改变该向量。</p></div>
-    <div><h3>DNS<sub>G</sub>：sparsemax</h3><div class="retro-equation">\[a=\underset{p\in\Delta}{\arg\min}\ \tfrac12\|p-\ell\|_2^2.\]</div><p>\(\Delta=\{p:p\geq0,\sum_jp_j=1\}\)。这是严格的欧氏投影，已经位于单纯形中的向量保持不变；输出可以包含精确的零，也可能仍然稠密。</p></div>
+    <div><h3>\(\mathrm{DNS}_{\mathrm{G}}\)：sparsemax</h3><div class="retro-equation">\[a=\underset{p\in\Delta}{\arg\min}\ \tfrac12\|p-\ell\|_2^2.\]</div><p>\(\Delta=\{p:p\geq0,\sum_jp_j=1\}\)。这是严格的欧氏投影，已经位于单纯形中的向量保持不变；输出可以包含精确的零，也可能仍然稠密。</p></div>
   </div>
   <h3>为什么这种投影适合神经网络？</h3>
   <p>sparsemax 具有阈值形式的闭式解：</p>
@@ -162,7 +162,7 @@ project_chapters:
   </figure>
   <p>三体案例中，第一个子系统关注整体输入，另外两个分别偏向 x 轴和 y / z 轴。<strong>三个子系统没有分别对应三个天体。</strong>这说明有用的解耦可以是特征层面的分工，预测效果与物理可解释性需要分别评价。</p>
   <h3>弹簧：soft 与 sparse 形成不同的潜在连接</h3>
-  <p>五颗小球的运动由不可见的弹簧连接决定。下图将输入数据中的小球轨迹、DNS 的 soft 交互和 DNS<sub>G</sub> 的 sparse 交互按同一时间索引同步播放，可以直接观察运动与潜在连接的共同变化。</p>
+  <p>五颗小球的运动由不可见的弹簧连接决定。下图将输入数据中的小球轨迹、DNS 的 soft 交互和 \(\mathrm{DNS}_{\mathrm{G}}\) 的 sparse 交互按同一时间索引同步播放，可以直接观察运动与潜在连接的共同变化。</p>
   <figure class="retro-figure decouple-animation">
     <a class="image-popup" href="{{ base_path }}/images/research/learning-to-decouple/spring-evolution.webp">
       <picture>
@@ -181,12 +181,12 @@ project_chapters:
   <h2><span class="retro-chapter__number">06</span> 在三类任务上，显式分工带来了什么？</h2>
   <p class="retro-lede">实验分别评价未来状态、物理连接和序列类别。对照模型接收整体输入，不额外使用物体分组先验；结果反映对应数据集与采样设置下的表现。</p>
   <div class="retro-results-grid">
-    <div><span class="retro-result__value">2.2164</span><span class="retro-result__label">不规则三体 · DNS</span><p class="retro-result__note">预测 MSE（× 10<sup>−2</sup>），越低越好；CT-GRU 为 2.4811。</p></div>
-    <div><span class="retro-result__value">94.25%</span><span class="retro-result__label">不规则弹簧 · DNS<sub>G</sub></span><p class="retro-result__note">Clean 条件下的连接预测准确率；NeuralCDE 为 89.74%。</p></div>
+    <div><span class="retro-result__value">2.2164</span><span class="retro-result__label">不规则三体 · DNS</span><p class="retro-result__note">预测 MSE（\(\times 10^{-2}\)），越低越好；CT-GRU 为 2.4811。</p></div>
+    <div><span class="retro-result__value">94.25%</span><span class="retro-result__label">不规则弹簧 · \(\mathrm{DNS}_{\mathrm{G}}\)</span><p class="retro-result__note">Clean 条件下的连接预测准确率；NeuralCDE 为 89.74%。</p></div>
     <div><span class="retro-result__value">91.35%</span><span class="retro-result__label">不规则动作视频 · DNS</span><p class="retro-result__note">归一化输入的分类准确率；NeuralCDE 为 89.73%。</p></div>
   </div>
   <h3>三体：从历史位置预测未来位置</h3>
-  <p>规则设置给出 8 个历史位置；不规则设置从中保留 6 个时刻，预测之后 3 个位置。每个观测为三个天体的 9 维坐标，表中数值为 MSE（× 10<sup>−2</sup>），越低越好。</p>
+  <p>规则设置给出 8 个历史位置；不规则设置从中保留 6 个时刻，预测之后 3 个位置。每个观测为三个天体的 9 维坐标，表中数值为 MSE（\(\times 10^{-2}\)），越低越好。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="三体轨迹预测 MSE 比较">
     <table class="retro-comparison"><caption>表 1 · 三体轨迹预测 MSE</caption><thead><tr><th scope="col">方法</th><th scope="col">规则采样</th><th scope="col">不规则采样</th></tr></thead><tbody>
       <tr><th scope="row">CT-GRU</th><td>1.8272</td><td>2.4811</td></tr>
@@ -200,25 +200,25 @@ project_chapters:
   <p>输入包含五颗小球的位置和速度，目标是判断两颗小球之间是否有弹簧。Clean 是无额外噪声的数据；Short 25% 指训练与测试都只保留每条序列从起始时刻开始的 25% 片段。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="弹簧连接预测准确率比较">
     <table class="retro-comparison"><caption>表 2 · 弹簧连接预测准确率</caption><thead><tr><th scope="col">方法</th><th scope="col">Clean · 规则</th><th scope="col">Clean · 不规则</th><th scope="col">Short · 25%</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>92.89 ± 0.52</td><td>88.47 ± 0.34</td><td>78.00</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>92.47 ± 0.06</td><td>89.74 ± 0.18</td><td>87.51</td></tr>
-      <tr><th scope="row">RIM</th><td>89.73 ± 0.07</td><td>—</td><td>71.26</td></tr>
-      <tr><th scope="row">DNS</th><td><strong>94.44 ± 0.69</strong></td><td>93.60 ± 1.21</td><td>92.13</td></tr>
-      <tr><th scope="row">DNS<sub>G</sub></th><td>94.31 ± 0.48</td><td><strong>94.25 ± 0.29</strong></td><td><strong>92.31</strong></td></tr>
+      <tr><th scope="row">CT-GRU</th><td>\(92.89\pm 0.52\)</td><td>\(88.47\pm 0.34\)</td><td>78.00</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td>\(92.47\pm 0.06\)</td><td>\(89.74\pm 0.18\)</td><td>87.51</td></tr>
+      <tr><th scope="row">RIM</th><td>\(89.73\pm 0.07\)</td><td>—</td><td>71.26</td></tr>
+      <tr><th scope="row">DNS</th><td><strong>\(94.44\pm 0.69\)</strong></td><td>\(93.60\pm 1.21\)</td><td>92.13</td></tr>
+      <tr><th scope="row">\(\mathrm{DNS}_{\mathrm{G}}\)</th><td>\(94.31\pm 0.48\)</td><td><strong>\(94.25\pm 0.29\)</strong></td><td><strong>92.31</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">连接预测准确率（%）。Short 不是将训练样本数量降到 25%；它缩短了每条输入序列。不同输入条件分别比较，不把它们混成一个统一排名。</p>
   <h3>噪声条件：投影与控制路径需要一起考虑</h3>
-  <p>当训练和测试都加入噪声时，DNS<sub>G</sub> 达到 93.76 ± 0.36%；但仅在测试时加入噪声，它下降到 87.86 ± 0.46%。后一个设置中，DNS 为 89.56 ± 0.42%，使用平滑样条的 DNS<sub>S</sub> 为 92.99 ± 1.30%，CT-GRU 为 92.80 ± 0.53%。</p>
+  <p>当训练和测试都加入噪声时，\(\mathrm{DNS}_{\mathrm{G}}\) 达到 \(93.76\pm 0.36\%\)；但仅在测试时加入噪声，它下降到 \(87.86\pm 0.46\%\)。后一个设置中，DNS 为 \(89.56\pm 0.42\%\)，使用平滑样条的 \(\mathrm{DNS}_{\mathrm{S}}\) 为 \(92.99\pm 1.30\%\)，CT-GRU 为 \(92.80\pm 0.53\%\)。</p>
   <p>这些结果表明，稀疏交互的收益依赖数据条件；控制信号的平滑处理可以缓解噪声影响，也不能把某一变体概括为所有条件下都更好。</p>
   <h3>动作识别：从图像特征到视频类别</h3>
   <p>任务包含拍手、挥手、慢跑三类动作。ResNet18 提供图像特征，序列模型进行动作分类；不规则视频具有不同的观测帧数。</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="人体动作视频分类准确率比较">
     <table class="retro-comparison"><caption>表 3 · 动作视频分类准确率</caption><thead><tr><th scope="col">方法</th><th scope="col">归一化 · 不规则</th><th scope="col">未归一化 · 规则</th><th scope="col">未归一化 · 不规则</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>67.30 ± 6.19</td><td>60.33</td><td>66.67</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>89.73 ± 3.38</td><td>70.33</td><td>59.17</td></tr>
+      <tr><th scope="row">CT-GRU</th><td>\(67.30\pm 6.19\)</td><td>60.33</td><td>66.67</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td>\(89.73\pm 3.38\)</td><td>70.33</td><td>59.17</td></tr>
       <tr><th scope="row">RIM</th><td>—</td><td>55.50</td><td>—</td></tr>
-      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>91.35 ± 3.48</strong></td><td><strong>97.00</strong></td><td><strong>95.33</strong></td></tr>
+      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>\(91.35\pm 3.48\)</strong></td><td><strong>97.00</strong></td><td><strong>95.33</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">分类准确率（%）。归一化与未归一化是不同输入尺度的实验条件；“—”表示该对照未用于不规则设置，不能视为准确率为零。</p>

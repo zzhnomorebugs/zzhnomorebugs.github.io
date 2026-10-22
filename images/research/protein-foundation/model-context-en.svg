@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="850" viewBox="0 0 1440 850" role="img" aria-labelledby="title desc">
+  <title id="title">How MSA conditions guide protein sequence generation</title>
+  <desc id="desc">Column-wise statistics of an aligned MSA produce a profile that conditions a DiT adapted from ESM-2. The model also reads the current generation state and time. Sampling algorithms use its predictions to update the state and repeat. Final candidates undergo structural proxy evaluation. BFN and DFM are compared using their respective states and update rules. This diagram highlights conditioning inside the model; DFM profile initialization is a separate comparison.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M2 2 L9 6 L2 10" fill="none" stroke="#25766c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:Arial,"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;fill:#243a35}
+      .card{fill:#fff;stroke:#d6e3dc;stroke-width:2}
+      .heading{font-size:26px;font-weight:700}
+      .body{font-size:21px;fill:#50615b}
+      .label{font-size:20px;fill:#25766c}
+      .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+      .math{font-family:"Cambria Math","Times New Roman",serif;font-style:italic;font-weight:400}
+    </style>
+  </defs>
+  <rect width="1440" height="850" fill="#faf9f4"/>
+  <text x="56" y="53" font-size="24" letter-spacing="2" fill="#25766c">MODEL CONTEXT</text>
+  <text x="56" y="105" font-size="38" font-weight="700">MSA profiles connect statistics with generation</text>
+
+  <rect class="card" x="56" y="150" width="350" height="140" rx="16"/>
+  <text class="heading" x="231" y="202" text-anchor="middle">Aligned MSA sequences</text>
+  <text class="body" x="231" y="248" text-anchor="middle">Observations at each position</text>
+  <path class="line" d="M406 220 H545"/>
+  <text class="label" x="475" y="192" text-anchor="middle">Column counts</text>
+  <rect x="545" y="150" width="350" height="140" rx="16" fill="#e9f3ed" stroke="#a9cfc3" stroke-width="2"/>
+  <text class="heading" x="720" y="202" text-anchor="middle">MSA profile · <tspan class="math">P</tspan></text>
+  <text class="body" x="720" y="248" text-anchor="middle">Amino acid frequencies by site</text>
+  <path class="line" d="M720 290 V370"/>
+  <text class="label" x="746" y="338">Condition injection</text>
+  <text class="body" x="1045" y="206">Offline preprocessing output</text>
+  <text class="body" x="1045" y="248">conditions the generator</text>
+
+  <rect class="card" x="56" y="370" width="350" height="180" rx="16"/>
+  <text class="heading" x="231" y="424" text-anchor="middle">Current generation state</text>
+  <text x="231" y="470" text-anchor="middle" font-size="30" fill="#25766c"><tspan class="math">x<tspan baseline-shift="sub" font-size="70%">t</tspan></tspan> + time <tspan class="math">t</tspan></text>
+  <text class="body" x="231" y="515" text-anchor="middle">Input again at each step</text>
+  <path class="line" d="M406 460 H545"/>
+
+  <rect x="545" y="370" width="350" height="180" rx="16" fill="#e9f3ed" stroke="#25766c" stroke-width="2.5"/>
+  <text class="heading" x="720" y="424" text-anchor="middle">DiT generator</text>
+  <text class="body" x="720" y="470" text-anchor="middle">Adapted from ESM-2</text>
+  <text class="body" x="720" y="515" text-anchor="middle">Compare conditioning methods</text>
+  <path class="line" d="M895 460 H1034"/>
+  <text class="label" x="964" y="432" text-anchor="middle">Prediction</text>
+
+  <rect class="card" x="1034" y="370" width="350" height="180" rx="16"/>
+  <text class="heading" x="1209" y="424" text-anchor="middle">Sampling update</text>
+  <text class="body" x="1209" y="470" text-anchor="middle">Use the framework update rule</text>
+  <text class="body" x="1209" y="515" text-anchor="middle">Iterate until generation ends</text>
+  <path class="line" d="M1100 550 V610 H231 V550"/>
+  <rect x="467" y="591" width="380" height="38" rx="6" fill="#faf9f4"/>
+  <text class="label" x="657" y="618" text-anchor="middle">Next state → Predict and update</text>
+  <path class="line" d="M1295 550 V650 H720 V690"/>
+  <text class="label" x="1150" y="681">Finish</text>
+
+  <rect class="card" x="545" y="690" width="350" height="110" rx="16"/>
+  <text class="heading" x="720" y="754" text-anchor="middle">Candidate sequences</text>
+  <path class="line" d="M895 745 H1034"/>
+  <rect x="1034" y="690" width="350" height="110" rx="16" fill="#f6efd9" stroke="#dbc695" stroke-width="2"/>
+  <text class="heading" x="1209" y="739" text-anchor="middle">Structural proxies</text>
+  <text class="body" x="1209" y="779" text-anchor="middle">Evaluate generated results</text>
+  <text class="label" x="56" y="720">Compare BFN / DFM</text>
+  <text class="body" x="56" y="763">Each uses its own state and update</text>
+</svg>
