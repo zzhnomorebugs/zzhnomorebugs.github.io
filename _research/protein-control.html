@@ -13,7 +13,7 @@ project_area: "Protein design · Conditional generation"
 project_area_en: "Protein design · Conditional generation"
 order: 1
 # Temporarily hidden from project lists and site output; set to true to restore.
-published: true
+published: false
 read_time: false
 date: 2026-10-22
 index_title: "Controllable protein sequence generation: From a general prior to property guidance"
@@ -70,7 +70,7 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">Figure 1 · The overall division of work in controllable generation. A general prior supplies sequence patterns, target conditions influence generation updates, and independent evaluation checks the generated results.</figcaption>
   </figure>
-  <p>Training a conditional generator directly requires learning both sequence patterns and the influence of property conditions. This project separates those responsibilities and gives each type of data a distinct role: <strong>unconditional generative pretraining can use large protein sequence collections such as <a href="https://www.uniprot.org/help/uniref">UniRef90</a> to learn general sequence patterns; downstream training then freezes the prior and trains only the conditional guidance, or residual model, on a smaller task dataset with property labels.</strong> Unconditional pretraining does not require a downstream property label for every sequence; those labels teach the task-specific correction. The workflow has three stages:</p>
+  <p>Training a conditional generator directly requires learning both sequence patterns and the influence of property conditions. This project separates those responsibilities and gives each type of data a distinct role: <strong>unconditional generative pretraining uses public natural protein sequence collections to learn general sequence patterns; downstream training then freezes the prior and trains only the conditional guidance, or residual model, on a smaller task dataset with property labels.</strong> Unconditional pretraining does not require a downstream property label for every sequence; those labels teach the task-specific correction. The workflow has three stages:</p>
   <ol class="retro-pipeline" aria-label="Three stages from pretraining to conditional generation">
     <li><strong>Pretraining: Learn sequence patterns</strong><span>Learn to predict clean tokens from noisy states using a large protein sequence collection, producing a reusable general generative prior.</span></li>
     <li><strong>Conditional training: Learn to correct predictions</strong><span>Freeze the prior and train the conditional residual on a smaller task dataset with property labels, using the loss on the combined prediction.</span></li>
@@ -91,7 +91,7 @@ project_chapters:
   <div class="retro-equation">\[\underbrace{s_{\mathrm{c}}}_{\text{conditional score}}
     =\underbrace{s_{\mathrm{u}}}_{\text{unconditional score}}
     +\underbrace{\nabla_{x_t}\log p_t(y\mid x_t)}_{\text{conditional correction}}.\]</div>
-  <p>In the model design, this decomposition motivates <strong>adding the prediction outputs of two networks, while learning the prior from large sequence datasets and the guidance from smaller task datasets</strong>. The first term comes from a general-prior network, which can undergo unconditional generative pretraining on a large sequence collection such as UniRef90 and whose <strong>parameters are frozen during downstream training</strong>. The second comes from a conditional-residual network trained only on a smaller task dataset with property labels. It uses the current state, reference sequence, and target property to learn the required correction. The loss acts on the combined prediction and <strong>updates only the second, residual network</strong>. The first network still contributes a prediction at every step, but its weights remain unchanged.</p>
+  <p>In the model design, this decomposition motivates <strong>adding the prediction outputs of two networks, while learning the prior from large sequence datasets and the guidance from smaller task datasets</strong>. The first term comes from a general-prior network, which undergoes unconditional generative pretraining on public natural protein sequence collections and whose <strong>parameters are frozen during downstream training</strong>. The second comes from a conditional-residual network trained only on a smaller task dataset with property labels. It uses the current state, reference sequence, and target property to learn the required correction. The loss acts on the combined prediction and <strong>updates only the second, residual network</strong>. The first network still contributes a prediction at every step, but its weights remain unchanged.</p>
   <p>This division of work draws on the conditional-control intuition behind <a href="#reference-cfg">CFG</a>. The continuous score decomposition above supplies the design motivation; <strong>the quantities actually added in this project are the discrete token logits output by the two networks</strong>. The logit residual is not identified with a continuous score or a classifier gradient.</p>
 
   <h3>3.1 Read the same state, with different responsibilities</h3>
@@ -104,10 +104,10 @@ project_chapters:
     <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance-en.png">
       <picture>
         <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile-en.png" width="846" height="1860">
-        <img src="{{ base_path }}/images/research/protein-control/prior-guidance-en.png" width="1122" height="1402" alt="Large-data priors and small-data guidance: (a) a general prior can undergo unconditional pretraining on large protein sequence collections such as UniRef90, then remain frozen while only the conditional residual is trained on a smaller property-labeled task dataset. (b) Both networks receive the current state; the residual also receives the reference and target property. Their logits are added before softmax and a BFN or DFM state update, then the next prediction step begins." loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/prior-guidance-en.png" width="1122" height="1402" alt="Large-data priors and small-data guidance: (a) a general prior undergoes unconditional pretraining on public natural protein sequence collections, then remains frozen while only the conditional residual is trained on a smaller property-labeled task dataset. (b) Both networks receive the current state; the residual also receives the reference and target property. Their logits are added before softmax and a BFN or DFM state update, then the next prediction step begins." loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">Figure 2 · Large-data priors, small-data guidance. (a) Training: a general prior can undergo unconditional pretraining on large sequence collections such as UniRef90. Downstream training freezes it and trains only the conditional residual on a smaller property-labeled task dataset, with the loss applied to the combined prediction. (b) Each generation step: add the two networks' logits, apply softmax to obtain token probabilities, then update the state with BFN / DFM and repeat. Both models' weights remain fixed during generation.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 2 · Large-data priors, small-data guidance. (a) Training: a general prior undergoes unconditional pretraining on public natural protein sequence collections. Downstream training freezes it and trains only the conditional residual on a smaller property-labeled task dataset, with the loss applied to the combined prediction. (b) Each generation step: add the two networks' logits, apply softmax to obtain token probabilities, then update the state with BFN / DFM and repeat. Both models' weights remain fixed during generation.</figcaption>
   </figure>
 
   <h3>3.2 Add the logits, then obtain clean-token probabilities</h3>
@@ -203,26 +203,39 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="protein-evaluation">
-  <p class="retro-kicker">Residual prediction · Performance relative to the baseline</p>
+  <p class="retro-kicker">Experimental design · Property control and evaluation</p>
   <h2><span class="retro-chapter__number">06</span> Which property tasks benefit from the residual approach?</h2>
-  <p class="retro-lede">The experiments compare residual approaches for BFN and masking-path DFM against their respective single-network baselines for direct conditional prediction. The magnitude of the changes varies across tasks, and improvements must be read alongside evaluation coverage and editing behavior.</p>
-  <p>The baseline already uses protein language model initialization, but does not load this project's generative pretraining weights. The residual approach loads and freezes the generative prior, then trains the conditional residual. This comparison measures the full approach; it does not isolate the individual contributions of generative pretraining, model capacity, and residual parameterization.</p>
-  <h3>Validation curves during conditional training</h3>
+  <p class="retro-lede">The experiments address three questions: how to reuse a generative prior, whether outputs respond to target properties, and which generated results the evaluation can cover. Adaptation approaches are compared within BFN and masking-path DFM separately, with property responses and editing behavior used to interpret the results.</p>
+  <h3>6.1 Four approaches to using the prior</h3>
+  <div class="retro-table-scroll" role="region" aria-label="Comparison of conditional training approaches" tabindex="0">
+    <table class="retro-comparison">
+      <caption>Table 1 · Four conditional training approaches within the same generative framework.</caption>
+      <thead><tr><th scope="col">Approach</th><th scope="col">How the prior is used</th><th scope="col">What is updated downstream</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">baseline · Direct conditional training</th><td>Protein language model initialization, without this project's generative pretraining weights</td><td>All parameters of a single conditional network</td></tr>
+        <tr><th scope="row">pretrain · Full adaptation</th><td>Generative pretraining weights initialize the conditional network</td><td>All parameters, allowing the prior to adapt to the task</td></tr>
+        <tr><th scope="row">finetune · Condition injection</th><td>Generative pretraining weights are loaded and the backbone is frozen</td><td>Only the condition-injection components</td></tr>
+        <tr><th scope="row">residual · Residual adaptation</th><td>A frozen generative prior continues to supply base logits</td><td>A separate conditional-residual network</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>These comparisons examine direct conditional learning, adaptation of an existing generator, and preservation of the prior with a separately learned correction. They compare complete approaches and do not independently isolate the contributions of generative pretraining, model capacity, and residual parameterization.</p>
+  <h3>6.2 Validation curves during conditional training</h3>
   <div class="protein-evidence-grid" aria-label="Observed training diagnostics for the variant-effect task">
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>BFN · Downstream validation loss</h3>
       <p class="protein-plot-axis">Vertical axis: Validation loss</p>
       <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png">
-        <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="BFN validation loss for the variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="641" height="412" loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="BFN validation loss for the ProteinGYM variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="641" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">Training progress →</p>
-      <figcaption class="retro-figure__caption">Figure 5(a) · BFN validation histories for the generative objective on the variant-effect task.</figcaption>
+      <figcaption class="retro-figure__caption">Figure 5(a) · BFN validation histories for the generative objective on the ProteinGYM variant-effect task.</figcaption>
     </figure>
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>DFM · Downstream validation loss</h3>
       <p class="protein-plot-axis">Vertical axis: Validation loss</p>
       <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png">
-        <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="Masking-path DFM validation loss for the variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="617" height="412" loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="Masking-path DFM validation loss for the ProteinGYM variant-effect task, showing baseline, pretrain, finetune, and residual training approaches with gray fluctuation bands." width="617" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">Training progress →</p>
       <figcaption class="retro-figure__caption">Figure 5(b) · Masking-path DFM validation histories for the generative objective on the same task.</figcaption>
@@ -234,13 +247,74 @@ project_chapters:
     <span><i class="protein-line-finetune" aria-hidden="true"></i>finetune</span>
     <span><i class="protein-line-residual" aria-hidden="true"></i>residual</span>
   </div>
-  <p class="retro-caption">The four approaches are direct conditional training (baseline), training all parameters after loading generative pretraining weights (pretrain), training only condition injection with the backbone frozen (finetune), and residual training with a frozen prior (residual). The gray bands show the fluctuation ranges in the logs, not confidence intervals across random seeds. Validation loss measures fit to the generative objective, rather than property-control error.</p>
-  <h3>Approximate comparative results for property control</h3>
+  <p class="retro-caption">The four approaches are defined in Table 1. The gray bands show the fluctuation ranges in the logs, not confidence intervals across random seeds. Validation loss measures fit to the generative objective, rather than property-control error.</p>
+  <h3>6.3 From generated candidates to property evaluation</h3>
+  <figure class="retro-figure protein-evaluation-flow" aria-labelledby="protein-evaluation-caption">
+    <ol class="retro-pipeline" aria-label="Candidate sequence evaluation workflow">
+      <li><strong>Condition and generate</strong><span>Reference sequence and target property<br>Propose candidate variants</span></li>
+      <li><strong>Check generation behavior</strong><span>Edit count and sequence length<br>Predicted structure quality</span></li>
+      <li><strong>Evaluate property response</strong><span>Error and ranking relative to the target<br>Coverage of evaluable results</span></li>
+    </ol>
+    <div class="protein-evaluation-evidence">
+      <div><strong>ProteinGYM · Independent predictor</strong><p>Validate the predictor on held-out data, then assess whether the predicted variant effects of generated sequences follow the target.</p></div>
+      <div><strong>Binding and thermal stability · Experimental lookup</strong><p>When predictor generalization is insufficient, match existing experimental measurements under each task's rules and record the evaluation coverage.</p></div>
+    </div>
+    <figcaption id="protein-evaluation-caption" class="retro-figure__caption">Figure 6 · Candidate evaluation workflow. Property response, generation behavior, and evaluation coverage jointly determine the conclusions. Predictor scores and lookup of existing measurements provide different types of evidence.</figcaption>
+  </figure>
+  <p>Error measures distance from the target, while rank correlation tests whether the target ordering is preserved. Evaluation coverage indicates how much of the generated output those metrics represent. Low error must be interpreted alongside coverage, and structural similarity cannot substitute for property control. ProteinGYM evaluation still relies on a predictor; predictions on generated sequences do not constitute new experimental validation.</p>
+  <h3 id="protein-evaluator-training">6.4 Property evaluators: How does training affect predictive performance?</h3>
+  <p>A property evaluator predicts properties for candidate sequences, so its predictive ability must first be checked on held-out data. The following ProteinGYM histories compare two evaluator training schemes, a separate comparison from the generator adaptation approaches in Table 1.</p>
+  <div class="protein-evidence-grid protein-evaluator-grid" aria-label="ProteinGYM property evaluator training and validation curves">
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>Validation rank correlation</h4>
+      <p class="protein-plot-axis">Vertical axis: Spearman correlation ↑</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-ranking.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-ranking.png" alt="Scheme A has higher validation rank correlation but still fluctuates later in training and drops at the end of the recorded run; Scheme B has a weaker ranking signal." width="783" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 7(a) · Validation ranking signals and late-stage fluctuations.</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>Validation prediction error</h4>
+      <p class="protein-plot-axis">Vertical axis: Validation error ↓</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-validation.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-validation.png" alt="Scheme A's validation error decreases overall, with small local increases including at the end; Scheme B shows limited improvement." width="784" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 7(b) · Overall validation error trends and local increases.</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>Training loss</h4>
+      <p class="protein-plot-axis">Vertical axis: Training loss (log scale) ↓</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-training.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-training.png" alt="Training loss on a logarithmic vertical axis: Scheme A decreases overall with persistent fluctuations, while Scheme B remains on a plateau." width="784" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">Training progress →</p>
+      <figcaption class="retro-figure__caption">Figure 7(c) · Changes and persistent fluctuations during fitting.</figcaption>
+    </figure>
+  </div>
+  <div class="protein-plot-legend" aria-label="Legend shared by all three evaluator plots">
+    <span><i class="protein-line-evaluator-a" aria-hidden="true"></i>Scheme A</span>
+    <span><i class="protein-line-evaluator-b" aria-hidden="true"></i>Scheme B</span>
+  </div>
+  <p>The two training schemes show markedly different learning behavior: Scheme A develops a clearer validation ranking signal with an overall decrease in validation error, while Scheme B has a weaker ranking signal and limited error improvement. Evaluator training therefore affects the quality of property scores; the evaluator itself needs scrutiny before its scores can be trusted.</p>
+  <p>Scheme A still fluctuates later in training, including a drop in rank correlation at the end of the recorded run. A falling training loss must be read alongside validation behavior; it does not by itself establish reliable generalization. These histories diagnose evaluator learning and cannot substitute for independent testing or experimental validation of generated sequences.</p>
+  <h3>6.5 Approximate relative results for property control</h3>
+  <p>All three results below compare residual against the baseline within the same framework; both DFM comparisons use the masking path.</p>
   <div class="retro-results-grid" aria-label="Representative approximate relative changes">
-    <div><strong>About 3%–4%</strong><span class="retro-result__label">BFN · Variant effect</span><p>Relative increase in Spearman rank correlation, with mean absolute error essentially unchanged.</p></div>
-    <div><strong>About 6%</strong><span class="retro-result__label">DFM · Variant effect</span><p>Relative reduction in RMSE within a comparison using the same masking path.</p></div>
+    <div><strong>About 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span><p>Relative increase in Spearman rank correlation, with mean absolute error essentially unchanged.</p></div>
+    <div><strong>About 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span><p>Relative reduction in RMSE within a comparison using the same masking path.</p></div>
     <div><strong>36.1%</strong><span class="retro-result__label">DFM · Binding property</span><p>Relative reduction in MSE on evaluable edits, with essentially comparable coverage.</p></div>
   </div>
+  <h4>ProteinGYM: Do outputs follow a changing target?</h4>
+  <p>After grouping target variant effects into five ordered bins, the mean predicted scores of generated sequences increase monotonically with the target across the completed approaches. This shows a directional target response, which is not unique to residual adaptation; error and correlation comparisons are still needed to assess its quality. For BFN, residual adaptation primarily improves ranking while mean absolute error remains largely unchanged. For masking-path DFM, it improves both error and correlation.</p>
+  <p>The target is a variant-effect signal standardized within each assay, rather than a single physical property. The current models do not explicitly distinguish different assay contexts that share a reference sequence. The results therefore support a target response under the available inputs, rather than precise functional predictions for every assay context.</p>
+  <h4>Binding properties: Read gains alongside coverage and the comparison scope</h4>
+  <p>Masking-path DFM residual and baseline use the same test targets and evaluation rules, achieving the MSE reduction above with comparable evaluation coverage. However, across all four approaches, full adaptation after generative pretraining outperforms residual adaptation on this task. Residual adaptation is not the best approach for every task.</p>
+  <p>The target conditions are held out, while generated edits are matched against the full table of existing experimental measurements. For multi-edit sequences, errors are aggregated from measurements of individual edits that can be looked up. These are not measurements of the binding properties of the complete combined sequence, nor does every generated edit necessarily belong to the test split.</p>
+  <h3>6.6 Editing behavior and the limits of thermal-stability evaluation</h3>
+  <p>The BFN baseline on the binding-property task frequently falls back to the reference sequence. High sequence identity may therefore indicate a lack of editing rather than better conditional control. Too few results can be evaluated to use this baseline for a meaningful relative-gain calculation. Zero-edit, single-edit, and multi-edit behavior must be checked together.</p>
+  <p>Thermal stability uses stricter experimental lookup: candidates must match the reference length, contain exactly one substitution, and uniquely match an existing experimental record in the test split. Current coverage is insufficient to rank the approaches reliably, while multi-edit candidates lack measured labels for the full combination. The available evidence therefore does not yet support a claim of improved thermal-stability control.</p>
 </section>
 
 <section class="retro-chapter" id="protein-outlook">

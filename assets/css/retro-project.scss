@@ -135,8 +135,43 @@
 .protein-plot-legend .protein-line-pretrain { border-color: #9467bd; }
 .protein-plot-legend .protein-line-finetune { border-color: #ff7f0e; }
 .protein-plot-legend .protein-line-residual { border-color: #2ca02c; }
+.protein-plot-legend .protein-line-evaluator-a { border-color: #1f77b4; }
+.protein-plot-legend .protein-line-evaluator-b { border-color: #ff7f0e; }
+.protein-evaluator-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.4rem; }
+.protein-project #protein-evaluation .protein-source-plot h4 { margin: 0 0 0.6rem; font-size: 0.84rem; text-align: left; }
+.protein-project #protein-evaluator-training { scroll-margin-top: 145px; }
+.protein-project .protein-evaluation-flow {
+  padding: 1.25rem 1.4rem;
+  border: 1px solid var(--retro-line);
+  border-radius: 3px;
+}
+.protein-evaluation-flow .retro-pipeline { margin: 0 0 1.5rem !important; gap: 2rem; }
+.protein-evaluation-flow .retro-pipeline > li { position: relative; }
+.protein-evaluation-flow .retro-pipeline > li:not(:last-child)::after {
+  content: "→";
+  position: absolute;
+  right: -1.5rem;
+  top: 2.4rem;
+  color: var(--retro-accent);
+}
+.protein-evaluation-evidence {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  text-align: left;
+  font-size: 0.8rem;
+}
+.protein-evaluation-evidence > div { min-width: 0; padding: 1rem; background: var(--retro-accent-soft); }
+.protein-evaluation-evidence strong { display: block; margin-bottom: 0.4rem; }
+.protein-evaluation-evidence p { margin: 0; }
+.protein-project .retro-comparison tbody th { white-space: normal; min-width: 150px; background: none; }
+.protein-project #protein-evaluation h4 { margin: 1.6rem 0 0.65rem; font-size: 0.95rem; line-height: 1.6; }
 @media (max-width: 740px) {
   .protein-evidence-grid { grid-template-columns: 1fr; gap: 1.7rem; }
+  .protein-project .protein-evaluation-flow { padding: 1rem; }
+  .protein-evaluation-flow .retro-pipeline { gap: 2rem; }
+  .protein-evaluation-flow .retro-pipeline > li:not(:last-child)::after { content: "↓"; right: 50%; top: auto; bottom: -1.7rem; transform: translateX(50%); }
+  .protein-evaluation-evidence { grid-template-columns: 1fr; gap: 0.8rem; }
 }
 .retro-hero__subtitle {
   max-width: 920px;

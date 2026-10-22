@@ -13,7 +13,7 @@ project_area: "蛋白质设计 · 条件生成"
 project_area_en: "Protein design · Conditional generation"
 order: 1
 # 暂时隐藏项目列表入口及页面输出；恢复展示时改回 true。
-published: true
+published: false
 read_time: false
 date: 2026-10-22
 index_title: "蛋白质序列可控生成：从通用先验到性质引导"
@@ -71,7 +71,7 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">图 1 · 可控生成的整体分工。通用先验提供序列规律，目标条件参与生成更新；独立评估用于检验生成结果。</figcaption>
   </figure>
-  <p>直接训练一个条件生成器，需要同时学习序列规律与性质条件的影响。本项目把这两项职责显式分开，也让两类数据各司其职：<strong>无条件生成预训练可以使用 <a href="https://www.uniprot.org/help/uniref">UniRef90</a> 等大规模蛋白质序列集，学习通用序列规律；下游再冻结先验，只在较小的带性质标签任务集上训练条件引导，也就是残差模型。</strong>无条件阶段不要求每条序列都配有下游性质标签，性质标签则用于学习任务特定的修正。整个流程分为三个阶段：</p>
+  <p>直接训练一个条件生成器，需要同时学习序列规律与性质条件的影响。本项目把这两项职责显式分开，也让两类数据各司其职：<strong>无条件生成预训练使用公开天然蛋白序列集，学习通用序列规律；下游再冻结先验，只在较小的带性质标签任务集上训练条件引导，也就是残差模型。</strong>无条件阶段不要求每条序列都配有下游性质标签，性质标签则用于学习任务特定的修正。整个流程分为三个阶段：</p>
   <ol class="retro-pipeline" aria-label="从预训练到条件生成的三个阶段">
     <li><strong>预训练：学会序列规律</strong><span>用大规模蛋白质序列集学习从带噪状态预测干净 token，得到可复用的通用生成先验。</span></li>
     <li><strong>条件训练：学会修正预测</strong><span>冻结先验，在较小的带性质标签任务集上，用组合预测的损失训练条件残差。</span></li>
@@ -92,7 +92,7 @@ project_chapters:
   <div class="retro-equation">\[\underbrace{s_{\mathrm{c}}}_{\text{conditional score}}
     =\underbrace{s_{\mathrm{u}}}_{\text{unconditional score}}
     +\underbrace{\nabla_{x_t}\log p_t(y\mid x_t)}_{\text{条件修正}}.\]</div>
-  <p>把这一分解落实到模型设计，就是<strong>将两个网络的预测输出相加，并把“大数据学先验、小数据学引导”的职责分开</strong>。前一项由通用先验网络提供，可利用 UniRef90 这类大规模序列集做无条件生成预训练，<strong>在下游训练时冻结参数</strong>；后一项由条件残差网络提供，只在较小的带性质标签任务集上训练，结合当前状态、参考序列与目标性质，学习需要补充的修正。训练损失作用于相加后的预测，<strong>只更新后一个残差网络</strong>；前一个先验网络仍参与每一步预测，但权重不变。</p>
+  <p>把这一分解落实到模型设计，就是<strong>将两个网络的预测输出相加，并把“大数据学先验、小数据学引导”的职责分开</strong>。前一项由通用先验网络提供，利用公开天然蛋白序列集做无条件生成预训练，<strong>在下游训练时冻结参数</strong>；后一项由条件残差网络提供，只在较小的带性质标签任务集上训练，结合当前状态、参考序列与目标性质，学习需要补充的修正。训练损失作用于相加后的预测，<strong>只更新后一个残差网络</strong>；前一个先验网络仍参与每一步预测，但权重不变。</p>
   <p>这种分工借鉴了 <a href="#reference-cfg">CFG</a> 的条件控制直觉。上面的连续 score 分解提供设计动机；<strong>本项目实际相加的是两个网络输出的离散 token logits</strong>，并不把 logits 残差等同于连续 score 或分类器梯度。</p>
 
   <h3>3.1 两路模型读取同一状态，承担不同职责</h3>
@@ -105,10 +105,10 @@ project_chapters:
     <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance.png">
       <picture>
         <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile.png" width="845" height="1862">
-        <img src="{{ base_path }}/images/research/protein-control/prior-guidance.png" width="1122" height="1402" alt="大数据学先验，小数据学引导：（a）通用先验可在 UniRef90 等大规模蛋白质序列集上无条件预训练，下游冻结先验，只在较小的性质标签数据集上训练条件残差。（b）生成时当前状态进入两路网络，参考序列与目标性质额外进入残差；两路 logits 相加，经 softmax 和 BFN 或 DFM 更新得到下一状态，再进入下一轮预测。" loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/prior-guidance.png" width="1122" height="1402" alt="大数据学先验，小数据学引导：（a）通用先验在公开天然蛋白序列集上无条件预训练，下游冻结先验，只在较小的性质标签数据集上训练条件残差。（b）生成时当前状态进入两路网络，参考序列与目标性质额外进入残差；两路 logits 相加，经 softmax 和 BFN 或 DFM 更新得到下一状态，再进入下一轮预测。" loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">图 2 · 大数据学先验，小数据学引导。（a）训练分工：通用先验可在 UniRef90 等大规模序列集上做无条件预训练，下游冻结后，只用较小的带性质标签任务集训练条件残差；损失作用于两路合成的预测。（b）每一步生成：两路网络的 logits 相加，经 softmax 得到 token 概率，再由 BFN / DFM 更新当前状态并进入下一轮；生成时两路权重均固定。</figcaption>
+    <figcaption class="retro-figure__caption">图 2 · 大数据学先验，小数据学引导。（a）训练分工：通用先验在公开天然蛋白序列集上做无条件预训练，下游冻结后，只用较小的带性质标签任务集训练条件残差；损失作用于两路合成的预测。（b）每一步生成：两路网络的 logits 相加，经 softmax 得到 token 概率，再由 BFN / DFM 更新当前状态并进入下一轮；生成时两路权重均固定。</figcaption>
   </figure>
 
   <h3>3.2 在 logits 上相加，再变成干净 token 概率</h3>
@@ -204,26 +204,39 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="protein-evaluation">
-  <p class="retro-kicker">Residual prediction · Performance relative to the baseline</p>
+  <p class="retro-kicker">Experimental design · Property control and evaluation</p>
   <h2><span class="retro-chapter__number">06</span> 残差方案在哪些性质任务上带来改善？</h2>
-  <p class="retro-lede">实验聚焦 BFN 和掩码路径 DFM 的残差方案，与各自的单网络直接条件预测 baseline 比较。不同任务呈现不同幅度的变化，提升需要结合评估覆盖与编辑行为解读。</p>
-  <p>这里的 baseline 已使用蛋白质语言模型初始化，但不加载本项目的生成预训练权重；residual 则加载并冻结生成先验，再训练条件残差。该比较反映完整方案的效果，尚不能单独分离生成预训练、模型容量与残差参数化的贡献。</p>
-  <h3>条件训练的验证曲线</h3>
+  <p class="retro-lede">实验围绕三个问题展开：怎样复用生成先验，输出是否随目标性质变化，以及评估能覆盖哪些生成结果。下面分别在 BFN 和掩码路径 DFM 内比较适配方案，再结合性质响应与编辑行为解释结果。</p>
+  <h3>6.1 四种方案，比较不同的先验使用方式</h3>
+  <div class="retro-table-scroll" role="region" aria-label="条件训练方案对照" tabindex="0">
+    <table class="retro-comparison">
+      <caption>表 1 · 同一生成框架内的四种条件训练方案。</caption>
+      <thead><tr><th scope="col">方案</th><th scope="col">先验如何参与</th><th scope="col">下游更新什么</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">baseline · 直接条件训练</th><td>使用蛋白质语言模型初始化，不加载本项目的生成预训练权重</td><td>单个条件网络的全部参数</td></tr>
+        <tr><th scope="row">pretrain · 全量适配</th><td>加载生成预训练权重，作为条件网络的起点</td><td>全部参数，允许先验随任务调整</td></tr>
+        <tr><th scope="row">finetune · 条件注入</th><td>加载生成预训练权重并冻结骨干</td><td>仅条件注入部分</td></tr>
+        <tr><th scope="row">residual · 残差适配</th><td>冻结的生成先验持续提供基础 logits</td><td>独立的条件残差网络</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>这些对照比较“直接学习条件生成”“适配已有生成器”与“保留先验、另学修正”。它们反映完整方案的效果，尚不能单独分离生成预训练、模型容量与残差参数化的贡献。</p>
+  <h3>6.2 条件训练的验证曲线</h3>
   <div class="protein-evidence-grid" aria-label="变异效应任务的真实训练诊断">
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>BFN · 下游验证损失</h3>
       <p class="protein-plot-axis">纵轴：验证 loss</p>
       <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png">
-        <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="变异效应任务 BFN 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="641" height="412" loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="ProteinGYM 变异效应任务 BFN 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="641" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
-      <figcaption class="retro-figure__caption">图 5(a) · BFN 在变异效应任务上的生成目标验证记录。</figcaption>
+      <figcaption class="retro-figure__caption">图 5(a) · BFN 在 ProteinGYM 变异效应任务上的生成目标验证记录。</figcaption>
     </figure>
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>DFM · 下游验证损失</h3>
       <p class="protein-plot-axis">纵轴：验证 loss</p>
       <a class="image-popup" href="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png">
-        <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="变异效应任务掩码路径 DFM 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="617" height="412" loading="lazy">
+        <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="ProteinGYM 变异效应任务掩码路径 DFM 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="617" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
       <figcaption class="retro-figure__caption">图 5(b) · 掩码路径 DFM 在同一任务上的生成目标验证记录。</figcaption>
@@ -235,13 +248,74 @@ project_chapters:
     <span><i class="protein-line-finetune" aria-hidden="true"></i>finetune</span>
     <span><i class="protein-line-residual" aria-hidden="true"></i>residual</span>
   </div>
-  <p class="retro-caption">四条路线分别为直接条件训练（baseline）、加载生成预训练后全量训练（pretrain）、冻结骨干仅训练条件注入（finetune），以及冻结先验的残差训练（residual）。灰带表示日志中的波动范围，不代表跨随机种子的置信区间。验证 loss 反映生成目标的拟合，不等同于性质控制误差。</p>
-  <h3>性质控制的近似对照结果</h3>
+  <p class="retro-caption">四条路线对应表 1。灰带表示日志中的波动范围，不代表跨随机种子的置信区间。验证 loss 反映生成目标的拟合，不等同于性质控制误差。</p>
+  <h3>6.3 从生成候选到性质评估</h3>
+  <figure class="retro-figure protein-evaluation-flow" aria-labelledby="protein-evaluation-caption">
+    <ol class="retro-pipeline" aria-label="候选序列评估流程">
+      <li><strong>给定条件并生成</strong><span>参考序列与目标性质<br>提出候选变体</span></li>
+      <li><strong>检查生成行为</strong><span>编辑数量与序列长度<br>预测结构质量</span></li>
+      <li><strong>评估性质响应</strong><span>与目标的误差及排序<br>可评估结果的覆盖</span></li>
+    </ol>
+    <div class="protein-evaluation-evidence">
+      <div><strong>ProteinGYM · 独立预测器</strong><p>先在留出数据上检验预测器，再评估生成序列的预测变异效应是否跟随目标。</p></div>
+      <div><strong>结合性质与热稳定性 · 实验查表</strong><p>预测器的泛化信号不足时，按各任务规则匹配已有实验测量，并记录能评估的范围。</p></div>
+    </div>
+    <figcaption id="protein-evaluation-caption" class="retro-figure__caption">图 6 · 候选的评估流程。性质响应、生成行为与评估覆盖共同决定结论；预测器评分和已有实验查表提供不同类型的证据。</figcaption>
+  </figure>
+  <p>误差衡量结果离目标有多远，秩相关检验目标排序是否被保留；可评估覆盖则回答这些指标代表了多少生成结果。低误差不能脱离覆盖解释，结构相似性也不能替代性质控制。ProteinGYM 的评价仍依赖预测器，生成序列上的预测不等同于新的实验验证。</p>
+  <h3 id="protein-evaluator-training">6.4 性质评估器：训练方案会怎样影响预测能力？</h3>
+  <p>性质评估器负责为候选序列预测性质，其预测能力需要先在留出数据上检验。下面展示 ProteinGYM 上两种评估器训练方案的记录；它们与表 1 中的生成器适配路线属于不同的比较。</p>
+  <div class="protein-evidence-grid protein-evaluator-grid" aria-label="ProteinGYM 性质评估器的训练与验证曲线">
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>验证排序相关性</h4>
+      <p class="protein-plot-axis">纵轴：Spearman 秩相关 ↑</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-ranking.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-ranking.png" alt="方案 A 的验证排序相关性较高但后段仍有波动，记录末尾回落；方案 B 的排序信号较弱" width="783" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">训练推进 →</p>
+      <figcaption class="retro-figure__caption">图 7(a) · 验证集上的排序信号与后段波动。</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>验证预测误差</h4>
+      <p class="protein-plot-axis">纵轴：验证误差 ↓</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-validation.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-validation.png" alt="方案 A 的验证误差整体下降，局部及末尾有小幅回升；方案 B 的误差改善有限" width="784" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">训练推进 →</p>
+      <figcaption class="retro-figure__caption">图 7(b) · 验证误差的整体变化与局部回升。</figcaption>
+    </figure>
+    <figure class="retro-figure protein-figure protein-source-plot">
+      <h4>训练损失</h4>
+      <p class="protein-plot-axis">纵轴：训练 loss（对数尺度）↓</p>
+      <a class="image-popup" href="{{ base_path }}/images/research/protein-control/evaluator-training.png">
+        <img src="{{ base_path }}/images/research/protein-control/evaluator-training.png" alt="对数纵轴上的训练损失：方案 A 整体降低但持续波动，方案 B 长期处于平台" width="784" height="549" loading="lazy">
+      </a>
+      <p class="protein-plot-direction">训练推进 →</p>
+      <figcaption class="retro-figure__caption">图 7(c) · 拟合过程中的变化与持续波动。</figcaption>
+    </figure>
+  </div>
+  <div class="protein-plot-legend" aria-label="三张评估器曲线共用的图例">
+    <span><i class="protein-line-evaluator-a" aria-hidden="true"></i>方案 A</span>
+    <span><i class="protein-line-evaluator-b" aria-hidden="true"></i>方案 B</span>
+  </div>
+  <p>两种训练方案呈现出明显不同的学习表现：方案 A 形成了更清晰的验证排序信号，验证误差整体下降；方案 B 的排序信号较弱，误差改善有限。这说明评估器的训练方案会影响性质评分的质量，不能把评估器本身当作无需检验的可靠环节。</p>
+  <p>方案 A 在后段仍有波动，记录末尾的排序表现也出现回落。训练损失下降必须结合验证表现解读，不能单凭拟合误差降低判定泛化可靠。这些记录用于诊断评估器的学习情况，不能替代独立测试或生成序列的实验验证。</p>
+  <h3>6.5 性质控制的近似对照结果</h3>
+  <p>下面三项均为 residual 相对同一框架 baseline 的变化；DFM 对照均使用掩码路径。</p>
   <div class="retro-results-grid" aria-label="代表性的近似相对变化">
-    <div><strong>约 3%–4%</strong><span class="retro-result__label">BFN · 变异效应</span><p>Spearman 秩相关的相对增幅，平均绝对误差基本持平。</p></div>
-    <div><strong>约 6%</strong><span class="retro-result__label">DFM · 变异效应</span><p>RMSE 的相对降幅，属于同一掩码路径下的对照。</p></div>
+    <div><strong>约 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span><p>Spearman 秩相关的相对增幅，平均绝对误差基本持平。</p></div>
+    <div><strong>约 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span><p>RMSE 的相对降幅，属于同一掩码路径下的对照。</p></div>
     <div><strong>36.1%</strong><span class="retro-result__label">DFM · 结合性质</span><p>可评估编辑上的 MSE 相对降幅，覆盖水平基本相当。</p></div>
   </div>
+  <h4>ProteinGYM：目标改变时，输出是否跟随？</h4>
+  <p>将目标变异效应由低到高分成五档后，已完成各方案的生成序列预测均值均随目标单调上升。这说明模型能响应目标方向；这一现象并非残差方案独有，还需要用误差和相关性比较响应质量。残差方案在 BFN 中主要改善排序，平均绝对误差基本持平；在掩码路径 DFM 中则同时改善误差与相关性。</p>
+  <p>这里的目标是按实验标准化的变异效应信号，并非单一物理性质。当前模型未显式区分共享参考序列的不同实验背景，因此结果支持当前输入条件下的目标响应，不能解读成对每种实验背景的精确功能预测。</p>
+  <h4>结合性质：改善需要与覆盖和对照范围一起看</h4>
+  <p>掩码路径 DFM 的 residual 与 baseline 使用同一批测试目标和同一评估规则，在可评估覆盖基本相当时取得上述 MSE 降幅。但完整四方案对照中，生成预训练后的全量适配优于残差适配；残差并非在所有任务上都最优。</p>
+  <p>留出的是目标条件，生成编辑仍在完整的已有实验表中查找。多编辑序列的误差由其中可查单点编辑的测量值汇总，不能当作整条组合序列的实测结合性质，也不意味着所有生成编辑都来自测试集。</p>
+  <h3>6.6 编辑行为与热稳定性的评估边界</h3>
+  <p>结合性质任务中的 BFN baseline 大量回退到参考序列。此时较高的序列一致率可能只表示“没有编辑”，不足以说明条件控制更好；可评估结果过少，也不适合用它计算相对收益。因此需要同时检查零编辑、单编辑与多编辑行为。</p>
+  <p>热稳定性采用更严格的实验查表：候选须与参考等长、仅有一个替换，并能唯一匹配已有测试实验记录。当前覆盖不足以可靠排列各方案的优劣；多编辑候选也缺少真实组合标签。现有证据因此还不能支持热稳定性控制改善的结论。</p>
 </section>
 
 <section class="retro-chapter" id="protein-outlook">
