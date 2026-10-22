@@ -159,24 +159,96 @@ project_chapters:
 </section>
 
 <section class="retro-chapter" id="retro-results">
-  <p class="retro-kicker">Evidence</p>
-  <h2><span class="retro-chapter__number">06</span> What does atom ordering improve?</h2>
-  <p class="retro-lede">First examine predictions under actual inference conditions, then use ordering ablations and an Oracle comparison to understand where the gains come from.</p>
-  <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Main-experiment Top-1 results on USPTO-50k and USPTO-Full">
-    <table class="retro-comparison">
-      <caption>Table 2 · Main-experiment Top-1 results on USPTO-50k and USPTO-Full</caption>
-      <thead><tr><th scope="col">Method / condition</th><th scope="col">USPTO-50k</th><th scope="col">USPTO-Full</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">NAG2G</th><td>55.1%</td><td>49.7%</td></tr>
-        <tr><th scope="row">R-SMILES</th><td>56.3%</td><td>48.9%</td></tr>
-        <tr><th scope="row">RSGPT (large-scale pretraining)</th><td>63.4%</td><td>59.2%</td></tr>
-        <tr><th scope="row">RETRO · Predicted reaction centers</th><td><strong>61.2%</strong></td><td><strong>51.3%</strong></td></tr>
-        <tr><th scope="row">RETRO · Ground-truth reaction centers (Oracle)</th><td>71.1%</td><td>63.4%</td></tr>
-      </tbody>
-    </table>
+  <div class="retro-results__heading">
+    <h2><span class="retro-chapter__number">06</span> What does atom ordering improve?</h2>
+    <p class="retro-kicker">Evidence</p>
   </div>
-  <p class="retro-caption">Top-1 Exact Match with unknown reaction classes. The listed methods are representative baselines. Oracle uses additional ground-truth center information for internal diagnosis only. The main 50k model has 8M parameters; the high-performing Full result uses a 65M model.</p>
-  <p>On USPTO-50k, the predicted-center result improves over RetroBridge (50.8%) by <strong>10.4 percentage points</strong> and over EditRetro (60.8%) by <strong>0.4 percentage points</strong>. A gap to RSGPT remains; the value of this work lies in using structural priors to improve generation and learning efficiency.</p>
+  <p class="retro-lede">Compare actual-inference predictions first, then examine ordering ablations and the Oracle setting.</p>
+  <div class="retro-benchmarks">
+    <div class="retro-benchmarks__panel">
+      <div class="retro-table-scroll" tabindex="0" role="region" aria-label="USPTO-50k complete benchmark results">
+        <table class="retro-comparison retro-benchmark" id="retro-benchmark-uspto-50k">
+          <caption>Table 2 · USPTO-50k Top-k Exact Match Accuracy (%)</caption>
+          <thead><tr><th scope="col">Method / condition</th><th scope="col">Top-1</th><th scope="col">Top-3</th><th scope="col">Top-5</th><th scope="col">Top-10</th></tr></thead>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">LLM-based</th></tr>
+            <tr><th scope="row">RSGPT</th><td>63.4</td><td>84.2</td><td>89.2</td><td>93.0</td></tr>
+            <tr><th scope="row">RSGPT (×20)</th><td>77.0</td><td>90.9</td><td>94.3</td><td>96.7</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Template-based</th></tr>
+            <tr><th scope="row">RetroSim</th><td>37.3</td><td>54.7</td><td>63.6</td><td>74.1</td></tr>
+            <tr><th scope="row">NeuralSym</th><td>44.4</td><td>65.3</td><td>72.4</td><td>78.9</td></tr>
+            <tr><th scope="row">GLN</th><td>52.5</td><td>69.0</td><td>75.6</td><td>83.7</td></tr>
+            <tr><th scope="row">LocalRetro</th><td>53.4</td><td>77.5</td><td>85.9</td><td>92.4</td></tr>
+            <tr><th scope="row">RetroComposer</th><td>54.5</td><td>77.2</td><td>83.2</td><td>87.7</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Semi-template-based</th></tr>
+            <tr><th scope="row">G2G</th><td>48.9</td><td>67.6</td><td>72.5</td><td>75.5</td></tr>
+            <tr><th scope="row">RetroXpert</th><td>50.4</td><td>61.1</td><td>62.3</td><td>63.4</td></tr>
+            <tr><th scope="row">RetroPrime</th><td>51.4</td><td>70.8</td><td>74.0</td><td>76.1</td></tr>
+            <tr><th scope="row">G²Retro</th><td>54.1</td><td>74.1</td><td>81.2</td><td>86.7</td></tr>
+            <tr><th scope="row">SemiRetro</th><td>54.9</td><td>75.3</td><td>80.4</td><td>84.1</td></tr>
+            <tr><th scope="row">Graph2Edits</th><td>55.1</td><td>77.3</td><td>83.4</td><td>89.4</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Template-free</th></tr>
+            <tr><th scope="row">SCROP</th><td>43.7</td><td>60.0</td><td>65.2</td><td>68.7</td></tr>
+            <tr><th scope="row">MEGAN</th><td>48.1</td><td>70.7</td><td>78.4</td><td>86.1</td></tr>
+            <tr><th scope="row">Graph2SMILES</th><td>52.9</td><td>66.5</td><td>70.0</td><td>72.9</td></tr>
+            <tr><th scope="row">Retroformer</th><td>53.2</td><td>71.1</td><td>76.6</td><td>82.1</td></tr>
+            <tr><th scope="row">RetroBridge</th><td>50.8</td><td>74.1</td><td>80.6</td><td>85.6</td></tr>
+            <tr><th scope="row">Ualign</th><td>53.6</td><td>77.6</td><td>84.6</td><td>90.3</td></tr>
+            <tr><th scope="row">NAG2G</th><td>55.1</td><td>76.9</td><td>83.4</td><td>89.9</td></tr>
+            <tr><th scope="row">R-SMILES</th><td>56.3</td><td>79.2</td><td>86.2</td><td>91.0</td></tr>
+            <tr><th scope="row">EditRetro</th><td>60.8</td><td>80.6</td><td>86.0</td><td>90.3</td></tr>
+            <tr><th scope="row">RetroProdFlow</th><td>50.0</td><td>74.3</td><td>81.2</td><td>85.8</td></tr>
+            <tr><th scope="row">RetroSynFlow</th><td>60.0</td><td>77.9</td><td>82.7</td><td>85.3</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">RETRO</th></tr>
+            <tr class="retro-highlight"><th scope="row">RETRO · Predicted RC</th><td>61.2</td><td>81.5</td><td>86.2</td><td>89.2</td></tr>
+            <tr><th scope="row">RETRO · Oracle RC</th><td>71.1</td><td>90.8</td><td>94.5</td><td>96.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="retro-benchmarks__panel">
+      <div class="retro-table-scroll" tabindex="0" role="region" aria-label="USPTO-Full complete benchmark results">
+        <table class="retro-comparison retro-benchmark" id="retro-benchmark-uspto-full">
+          <caption>Table 3 · USPTO-Full Top-k Exact Match Accuracy (%)</caption>
+          <thead><tr><th scope="col">Method / condition</th><th scope="col">Top-1</th><th scope="col">Top-3</th><th scope="col">Top-5</th><th scope="col">Top-10</th></tr></thead>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">LLM-based</th></tr>
+            <tr><th scope="row">RSGPT</th><td>59.2</td><td>74.2</td><td>78.2</td><td>82.1</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Template-based</th></tr>
+            <tr><th scope="row">RetroSim</th><td>32.8</td><td>–</td><td>–</td><td>56.1</td></tr>
+            <tr><th scope="row">GLN</th><td>39.3</td><td>–</td><td>–</td><td>63.7</td></tr>
+            <tr><th scope="row">LocalRetro</th><td>39.1</td><td>53.3</td><td>58.4</td><td>63.7</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Semi-template-based</th></tr>
+            <tr><th scope="row">RetroPrime</th><td>44.1</td><td>59.1</td><td>62.8</td><td>68.5</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">Template-free</th></tr>
+            <tr><th scope="row">R-SMILES</th><td>48.9</td><td>66.6</td><td>72.0</td><td>76.4</td></tr>
+            <tr><th scope="row">NAG2G</th><td>49.7</td><td>64.6</td><td>69.3</td><td>74.0</td></tr>
+          </tbody>
+          <tbody>
+            <tr class="retro-benchmark__group"><th colspan="5" scope="rowgroup">RETRO</th></tr>
+            <tr class="retro-highlight"><th scope="row">RETRO · Predicted RC</th><td>51.3</td><td>67.8</td><td>72.3</td><td>75.8</td></tr>
+            <tr><th scope="row">RETRO · Oracle RC</th><td>63.4</td><td>77.6</td><td>80.9</td><td>83.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="retro-caption retro-benchmarks__notes">Both tables report Top-k Exact Match in percent with unknown reaction classes. RSGPT (×20) uses test-time augmentation and is listed separately from standard RSGPT; “–” denotes an unreported result. RETRO with predicted centers is used for comparison under actual inference conditions; Oracle uses additional ground-truth center information for internal diagnosis only. The main 50k model has 8M parameters; the high-performing Full result uses a 65M model.</p>
+      <p class="retro-benchmarks__summary">On USPTO-50k, the predicted-center result improves over RetroBridge (50.8%) by <strong>10.4 percentage points</strong> and over EditRetro (60.8%) by <strong>0.4 percentage points</strong>. A gap to RSGPT remains; the value of this work lies in using structural priors to improve generation and learning efficiency.</p>
+    </div>
+  </div>
   <h3>To what extent can structural guidance substitute for model scale?</h3>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/scaling.webp"><img src="{{ base_path }}/images/research/retro/scaling.webp" alt="Scaling experiments on USPTO-Full from 280K to 65M parameters, comparing Top-1, Top-3, and Top-5 with canonical ordering, predicted-center ordering, and Oracle-center ordering" width="1779" height="530" loading="lazy"></a>

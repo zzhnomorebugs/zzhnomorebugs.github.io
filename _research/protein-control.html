@@ -299,19 +299,38 @@ project_chapters:
   </div>
   <p>The two training schemes show markedly different learning behavior: Scheme A develops a clearer validation ranking signal with an overall decrease in validation error, while Scheme B has a weaker ranking signal and limited error improvement. Evaluator training therefore affects the quality of property scores; the evaluator itself needs scrutiny before its scores can be trusted.</p>
   <p>Scheme A still fluctuates later in training, including a drop in rank correlation at the end of the recorded run. A falling training loss must be read alongside validation behavior; it does not by itself establish reliable generalization. These histories diagnose evaluator learning and cannot substitute for independent testing or experimental validation of generated sequences.</p>
-  <h3>6.5 Approximate relative results for property control</h3>
-  <p>All three results below compare residual against the baseline within the same framework; both DFM comparisons use the masking path.</p>
-  <div class="retro-results-grid" aria-label="Representative approximate relative changes">
-    <div><strong>About 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span><p>Relative increase in Spearman rank correlation, with mean absolute error essentially unchanged.</p></div>
-    <div><strong>About 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span><p>Relative reduction in RMSE within a comparison using the same masking path.</p></div>
-    <div><strong>36.1%</strong><span class="retro-result__label">DFM · Binding property</span><p>Relative reduction in MSE on evaluable edits, with essentially comparable coverage.</p></div>
+  <h3 id="protein-property-results">6.5 Approximate relative results</h3>
+  <p>Comparison: residual vs. the same-framework baseline; both DFM comparisons use the masking path.</p>
+  <div class="retro-results-grid protein-property-results" aria-label="Representative approximate relative changes and metric definitions">
+    <div>
+      <strong>About 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span>
+      <p>Relative increase in Spearman correlation</p>
+      <dl class="protein-result-terms">
+        <div><dt>Spearman</dt><dd>Ranking agreement between targets and evaluated scores.</dd></div>
+        <div><dt>DMS scores</dt><dd>Variant effects standardized within each assay.</dd></div>
+        <div><dt>Boundary</dt><dd>Mean absolute error essentially unchanged.</dd></div>
+      </dl>
+    </div>
+    <div>
+      <strong>About 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span>
+      <p>Relative reduction in RMSE</p>
+      <dl class="protein-result-terms">
+        <div><dt>RMSE</dt><dd>Root mean squared error between evaluated scores and targets.</dd></div>
+        <div><dt>Meaning</dt><dd>Closer to the requested standardized phenotype level.</dd></div>
+        <div><dt>Evaluation</dt><dd>Independent evaluator scores, not new experiments.</dd></div>
+      </dl>
+    </div>
+    <div>
+      <strong>36.1%</strong><span class="retro-result__label">DFM · Binding property</span>
+      <p>Relative MSE reduction on evaluable edits</p>
+      <dl class="protein-result-terms">
+        <div><dt>MSE</dt><dd>Mean squared binding-profile target error; equal weight per evaluable sequence.</dd></div>
+        <div><dt>Binding profile</dt><dd>\(\log K_a\); larger values mean stronger binding under the same conditions.</dd></div>
+        <div><dt>Scope</dt><dd>Comparable coverage; single-edit lookup ≠ measured multi-edit sequences.</dd></div>
+      </dl>
+    </div>
   </div>
-  <h4>ProteinGYM: Do outputs follow a changing target?</h4>
-  <p>After grouping target variant effects into five ordered bins, the mean predicted scores of generated sequences increase monotonically with the target across the completed approaches. This shows a directional target response, which is not unique to residual adaptation; error and correlation comparisons are still needed to assess its quality. For BFN, residual adaptation primarily improves ranking while mean absolute error remains largely unchanged. For masking-path DFM, it improves both error and correlation.</p>
-  <p>The target is a variant-effect signal standardized within each assay, rather than a single physical property. The current models do not explicitly distinguish different assay contexts that share a reference sequence. The results therefore support a target response under the available inputs, rather than precise functional predictions for every assay context.</p>
-  <h4>Binding properties: Read gains alongside coverage and the comparison scope</h4>
-  <p>Masking-path DFM residual and baseline use the same test targets and evaluation rules, achieving the MSE reduction above with comparable evaluation coverage. However, across all four approaches, full adaptation after generative pretraining outperforms residual adaptation on this task. Residual adaptation is not the best approach for every task.</p>
-  <p>The target conditions are held out, while generated edits are matched against the full table of existing experimental measurements. For multi-edit sequences, errors are aggregated from measurements of individual edits that can be looked up. These are not measurements of the binding properties of the complete combined sequence, nor does every generated edit necessarily belong to the test split.</p>
+  <p class="retro-caption">Four-way comparison: full adaptation after generative pretraining outperforms residual adaptation on the binding task.</p>
   <h3>6.6 Editing behavior and the limits of thermal-stability evaluation</h3>
   <p>The BFN baseline on the binding-property task frequently falls back to the reference sequence. High sequence identity may therefore indicate a lack of editing rather than better conditional control. Too few results can be evaluated to use this baseline for a meaningful relative-gain calculation. Zero-edit, single-edit, and multi-edit behavior must be checked together.</p>
   <p>Thermal stability uses stricter experimental lookup: candidates must match the reference length, contain exactly one substitution, and uniquely match an existing experimental record in the test split. Current coverage is insufficient to rank the approaches reliably, while multi-edit candidates lack measured labels for the full combination. The available evidence therefore does not yet support a claim of improved thermal-stability control.</p>

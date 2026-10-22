@@ -300,19 +300,38 @@ project_chapters:
   </div>
   <p>两种训练方案呈现出明显不同的学习表现：方案 A 形成了更清晰的验证排序信号，验证误差整体下降；方案 B 的排序信号较弱，误差改善有限。这说明评估器的训练方案会影响性质评分的质量，不能把评估器本身当作无需检验的可靠环节。</p>
   <p>方案 A 在后段仍有波动，记录末尾的排序表现也出现回落。训练损失下降必须结合验证表现解读，不能单凭拟合误差降低判定泛化可靠。这些记录用于诊断评估器的学习情况，不能替代独立测试或生成序列的实验验证。</p>
-  <h3>6.5 性质控制的近似对照结果</h3>
-  <p>下面三项均为 residual 相对同一框架 baseline 的变化；DFM 对照均使用掩码路径。</p>
-  <div class="retro-results-grid" aria-label="代表性的近似相对变化">
-    <div><strong>约 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span><p>Spearman 秩相关的相对增幅，平均绝对误差基本持平。</p></div>
-    <div><strong>约 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span><p>RMSE 的相对降幅，属于同一掩码路径下的对照。</p></div>
-    <div><strong>36.1%</strong><span class="retro-result__label">DFM · 结合性质</span><p>可评估编辑上的 MSE 相对降幅，覆盖水平基本相当。</p></div>
+  <h3 id="protein-property-results">6.5 性质控制的近似对照结果</h3>
+  <p>对照：residual vs. 同框架 baseline；DFM 均为掩码路径。</p>
+  <div class="retro-results-grid protein-property-results" aria-label="代表性的近似相对变化与指标定义">
+    <div>
+      <strong>约 3%–4%</strong><span class="retro-result__label">BFN · ProteinGYM</span>
+      <p>Spearman 秩相关相对提升</p>
+      <dl class="protein-result-terms">
+        <div><dt>Spearman</dt><dd>目标与评估分数的排序一致性。</dd></div>
+        <div><dt>DMS 分数</dt><dd>实验内标准化的变异效应。</dd></div>
+        <div><dt>边界</dt><dd>平均绝对误差基本持平。</dd></div>
+      </dl>
+    </div>
+    <div>
+      <strong>约 6%</strong><span class="retro-result__label">DFM · ProteinGYM</span>
+      <p>RMSE 相对下降</p>
+      <dl class="protein-result-terms">
+        <div><dt>RMSE</dt><dd>评估分数与目标的均方根误差。</dd></div>
+        <div><dt>含义</dt><dd>更接近指定的标准化表型水平。</dd></div>
+        <div><dt>评估</dt><dd>独立评估器评分，非新实验验证。</dd></div>
+      </dl>
+    </div>
+    <div>
+      <strong>36.1%</strong><span class="retro-result__label">DFM · 结合性质</span>
+      <p>可评估编辑的 MSE 相对下降</p>
+      <dl class="protein-result-terms">
+        <div><dt>MSE</dt><dd>结合谱目标的均方误差，按序列等权。</dd></div>
+        <div><dt>结合谱</dt><dd>\(\log K_a\)；同条件下，值越大结合越强。</dd></div>
+        <div><dt>范围</dt><dd>覆盖基本相当；单点查表 ≠ 组合序列实测。</dd></div>
+      </dl>
+    </div>
   </div>
-  <h4>ProteinGYM：目标改变时，输出是否跟随？</h4>
-  <p>将目标变异效应由低到高分成五档后，已完成各方案的生成序列预测均值均随目标单调上升。这说明模型能响应目标方向；这一现象并非残差方案独有，还需要用误差和相关性比较响应质量。残差方案在 BFN 中主要改善排序，平均绝对误差基本持平；在掩码路径 DFM 中则同时改善误差与相关性。</p>
-  <p>这里的目标是按实验标准化的变异效应信号，并非单一物理性质。当前模型未显式区分共享参考序列的不同实验背景，因此结果支持当前输入条件下的目标响应，不能解读成对每种实验背景的精确功能预测。</p>
-  <h4>结合性质：改善需要与覆盖和对照范围一起看</h4>
-  <p>掩码路径 DFM 的 residual 与 baseline 使用同一批测试目标和同一评估规则，在可评估覆盖基本相当时取得上述 MSE 降幅。但完整四方案对照中，生成预训练后的全量适配优于残差适配；残差并非在所有任务上都最优。</p>
-  <p>留出的是目标条件，生成编辑仍在完整的已有实验表中查找。多编辑序列的误差由其中可查单点编辑的测量值汇总，不能当作整条组合序列的实测结合性质，也不意味着所有生成编辑都来自测试集。</p>
+  <p class="retro-caption">四方案对照：结合任务中，生成预训练后的全量适配优于残差适配。</p>
   <h3>6.6 编辑行为与热稳定性的评估边界</h3>
   <p>结合性质任务中的 BFN baseline 大量回退到参考序列。此时较高的序列一致率可能只表示“没有编辑”，不足以说明条件控制更好；可评估结果过少，也不适合用它计算相对收益。因此需要同时检查零编辑、单编辑与多编辑行为。</p>
   <p>热稳定性采用更严格的实验查表：候选须与参考等长、仅有一个替换，并能唯一匹配已有测试实验记录。当前覆盖不足以可靠排列各方案的优劣；多编辑候选也缺少真实组合标签。现有证据因此还不能支持热稳定性控制改善的结论。</p>
