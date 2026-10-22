@@ -88,8 +88,14 @@
   padding-top: 1.1rem;
   border-top: 2px solid var(--retro-accent);
 }
+.protein-project .protein-methods h4 {
+  margin: 0 0 0.65rem;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
 .protein-project .protein-figure > a { padding: 0; overflow: hidden; }
 .protein-project .protein-figure img { width: 100%; max-height: none; }
+.protein-project .protein-generated-figure { max-width: 920px; margin-left: auto; margin-right: auto; }
 .protein-project .protein-noise-figure img { max-height: none; }
 .protein-project .protein-next-steps li + li { margin-top: 0.85rem; }
 .protein-project .protein-dynamics .retro-equation { margin: 0.65rem 0; padding: 0; }

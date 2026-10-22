@@ -91,14 +91,71 @@ project_chapters:
   <p class="retro-kicker">Distributional priors</p>
   <h2><span class="retro-chapter__number">03</span> Keep coordinate transformations and model predictions consistent</h2>
   <p class="retro-lede">Physical content can be separated from its representation: observing the same particle motion from a different direction still describes the same system.</p>
-  <p>If a distribution is invariant under a group transformation \(G\), satisfying \(q_t(Gx)=q_t(x)\), the score must transform according to the corresponding rule. For a rigid transformation with rotation matrix \(Q\) and global translation \(b\):</p>
-  <div class="retro-equation">\[s(Qx+b,t)=Q\,s(x,t).\]</div>
-  <p>When the input rotates, the score vectors rotate with it; a global translation should not add a translation to this vector field. In a joint position–velocity representation, translation acts only on positions, while rotation acts on both positions and velocities. Relabeling particles should reorder the outputs accordingly; the conditioning connection graph in the five-spring system must be reordered as well.</p>
+  <p>Three questions connect distributional symmetry to model design: does noising preserve the symmetries of clean data, how should the score transform, and how do predictions at one representative of each equivalence class extend to the whole class?</p>
+  <div class="retro-callout">
+    <strong>Represent global translation classes with centered coordinates</strong>
+    <p>For the theoretical analysis, global translation can be removed by working in a centered Euclidean subspace \(E\). Subtracting one mean center, computed over all positions in the entire trajectory, preserves the center's motion over physical time. The same displacement is subtracted at every frame, and velocities remain unchanged.</p>
+    <p>The following theorems describe rotations and particle permutations in this modeled space. Noise also lies in \(E\): orthogonally projecting a standard Gaussian onto \(E\) produces isotropic Gaussian noise on that subspace.</p>
+  </div>
+
+  <div class="retro-support" id="physical-theorem-1">
+    <h3>Theorem 1 · Isotropic noising preserves orthogonal symmetries</h3>
+    <p><strong>Assumptions.</strong> Let \(E\) be a finite-dimensional Euclidean space on which a group \(\mathcal G\) acts through orthogonal operators \(Q\). Suppose the clean random variable satisfies \(QX_0\overset{d}{=}X_0\) for every \(Q\in\mathcal G\), and let</p>
+    <div class="retro-equation">\[
+      X_t=\alpha_tX_0+\sigma_t\epsilon,\qquad
+      \epsilon\sim\mathcal N_E(0,I_E),\quad
+      \epsilon\perp\!\!\!\perp X_0,\quad \sigma_t>0.
+    \]</div>
+    <p>Here \(\alpha_t\) is a scalar, \(I_E\) is the identity on this space, and \(\overset{d}{=}\) denotes equality in distribution. Densities are defined relative to volume measure on \(E\); “ambient score” below likewise means the gradient in the modeled space \(E\). Rotations, particle permutations, and their compositions can all be represented by such orthogonal actions.</p>
+    <p><strong>Conclusion.</strong> \(X_t\) has a positive smooth density \(q_t\) on \(E\), and its density and score satisfy</p>
+    <div class="retro-equation">\[
+      q_t(Qx)=q_t(x),\qquad
+      s_t(Qx)=Q\,s_t(x),\qquad s_t=\nabla_E\log q_t.
+    \]</div>
+  </div>
+  <p><strong>Proof.</strong> Isotropic Gaussian noise satisfies \(Q\epsilon\overset{d}{=}\epsilon\). Together with independence, this gives</p>
+  <div class="retro-equation">\[
+    QX_t=\alpha_tQX_0+\sigma_tQ\epsilon
+    \overset{d}{=}\alpha_tX_0+\sigma_t\epsilon=X_t.
+  \]</div>
+  <p>Orthogonal transformations preserve volume, so equality in distribution implies equality of densities. Differentiating \(\log q_t(Qx)=\log q_t(x)\) then gives \(Q^\top s_t(Qx)=s_t(x)\), establishing score equivariance.</p>
+  <p>Intuitively, rotating the input should rotate its denoising direction; relabeling particles should reorder the output in the same way. In a joint position–velocity representation, rotation acts on both components. Conditional generation also requires transforming the condition: the five-spring connection graph must follow the particle permutation. With a condition held fixed, only symmetries preserving that condition can be required.</p>
+
+  <h3>From group orbits to representatives: the ECM intuition</h3>
+  <p>Samples related by symmetry transformations belong to the same orbit:</p>
+  <div class="retro-equation">\[[x]=\{Qx:Q\in\mathcal G\}.\]</div>
+  <p>Choosing one representative per orbit describes the same intrinsic structures with fewer representations. Here ECM denotes this set of representatives. The model predicts <strong>the ambient score evaluated at each representative</strong>, with the gradient taken in the modeled space \(E\). A measurable choice of representatives is sufficient for the result below; a globally smooth selection map is not required.</p>
+  <div class="retro-support" id="physical-theorem-2">
+    <h3>Theorem 2 · Extending an equivariant score from orbit representatives</h3>
+    <p><strong>Assumptions.</strong> Use the same orthogonal group action and fix \(t\). Let \(q_t\) be a positive \(C^1\) density on \(E\) with \(q_t(Qx)=q_t(x)\). Let a measurable map \(\varphi\) choose the same representative for every point on an orbit, with \(\varphi(x)\in[x]\), and let \(\nu_t\) be the distribution of \(\varphi(X_t)\). Suppose the model is exactly equivariant:</p>
+    <div class="retro-equation">\[s_\theta(Qx,t)=Q\,s_\theta(x,t)\qquad(Q\in\mathcal G),\]</div>
+    <p>For \(\nu_t\)-almost every representative \(z\), suppose it predicts the <strong>ambient score</strong>:</p>
+    <div class="retro-equation">\[
+      s_\theta(z,t)=s_t(z)
+      =\left.\nabla_E\log q_t(x)\right|_{x=z}.
+    \]</div>
+    <p><strong>Conclusion.</strong> \(s_\theta(x,t)=s_t(x)\) for \(q_t\)-almost every \(x\). More generally, the prediction error has exactly the same length along an orbit:</p>
+    <div class="retro-equation">\[
+      \|s_\theta(x,t)-s_t(x)\|^2
+      =\|s_\theta(\varphi(x),t)-s_t(\varphi(x))\|^2.
+    \]</div>
+  </div>
+  <p><strong>Proof.</strong> Set \(z=\varphi(x)\) and choose a group action with \(x=Qz\). Equivariance of both the model and the true score gives</p>
+  <div class="retro-equation">\[
+    s_\theta(x,t)-s_t(x)
+    =Q\bigl(s_\theta(z,t)-s_t(z)\bigr).
+  \]</div>
+  <p>Orthogonal transformations preserve vector lengths, so zero error at a representative gives zero error on its whole orbit. “Almost every representative” is measured by \(\nu_t\) and transfers to the ambient space through the law of \(\varphi(X_t)\).</p>
+  <div class="retro-callout"><strong>Predictions at representatives determine the whole orbit</strong><p>An exactly equivariant model extends ambient score predictions at representatives to every symmetry-related representation. ECM provides a theoretical basis for sharing information across representations of the same structure. The project uses training objectives and symmetry augmentation to exploit this structure, while generation follows reverse diffusion.</p></div>
+
   <div class="retro-support">
-    <h3>Understanding the equivalence class manifold (ECM) through group orbits</h3>
-    <p>Samples related by these symmetry transformations form an equivalence class:</p>
-    <div class="retro-equation">\[[x]=\{Gx:G\in\mathcal G\}.\]</div>
-    <p>After choosing a representative, the model can focus on a trajectory's intrinsic structure; predictions that follow the corresponding equivariance rules can extend to other representations on the same orbit. ECM provides a theoretical perspective here. The experimental pipeline does not add a generation module that progressively projects onto ECM.</p>
+    <h3>Equivariance of noise and data predictions</h3>
+    <p>Under the orthogonal actions in Theorem 1, the noise predictor \(\epsilon^*=-\sigma_t s_t\) inherits score equivariance. For \(\alpha_t\ne0\), the optimal data predictor also satisfies</p>
+    <div class="retro-equation">\[
+      D_t^*(x)=\frac{x+\sigma_t^2s_t(x)}{\alpha_t},
+      \qquad D_t^*(Qx)=Q\,D_t^*(x).
+    \]</div>
+    <p>Both optimal predictors therefore respect rotation and permutation symmetries. The choice between noise matching and data matching depends on the structure of the data and empirical performance.</p>
   </div>
   <h3>How do theoretical requirements become training choices?</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Diffusion modeling choices for the two data types">

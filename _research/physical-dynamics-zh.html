@@ -91,14 +91,70 @@ project_chapters:
   <p class="retro-kicker">Distributional priors</p>
   <h2><span class="retro-chapter__number">03</span> 让坐标变换与模型预测保持一致</h2>
   <p class="retro-lede">物理内容与表示方式可以分开：同一段粒子运动换一个观察方向，仍然描述同一个系统。</p>
-  <p>若分布在群变换 \(G\) 下满足 \(q_t(Gx)=q_t(x)\)，score 的变化就受到相应规则约束。以刚体变换为例，旋转矩阵 \(Q\) 与整体平移 \(b\) 给出：</p>
-  <div class="retro-equation">\[s(Qx+b,t)=Q\,s(x,t).\]</div>
-  <p>旋转输入时，score 的向量方向一起旋转；整体平移不应给这个向量场增加一个平移量。对于位置与速度联合表示，平移只作用于位置，旋转同时作用于位置和速度。粒子重新编号时，输出也应相应重排；五弹簧的条件连接图需要同步重排。</p>
+  <p>对称性首先约束样本分布，再通过 score 约束去噪预测。理解这一联系，需要回答三个问题：加噪如何保留干净数据的对称性？score 应当怎样随输入变换？代表元上的预测如何延拓到整类等价样本？</p>
+  <div class="retro-callout">
+    <strong>用中心化坐标表示整体平移等价类</strong>
+    <p>在理论分析中，可先去掉整体平移，在中心化的欧氏子空间 \(E\) 上讨论旋转与粒子置换。例如，从整段轨迹的全部位置中减去同一个平均中心，保留质心随物理时间的运动；速度不做平移。</p>
+    <p>密度和梯度都定义在建模空间 \(E\) 上。各向同性噪声也取自 \(E\)，可由标准高斯正交投影得到。以下定理均在这一空间中表述。</p>
+  </div>
+
+  <div class="retro-support" id="physical-theorem-1">
+    <h3>Theorem 1 · 各向同性加噪保留正交对称性</h3>
+    <p><strong>条件。</strong>设 \(E\) 是有限维欧氏空间，群 \(\mathcal G\) 在 \(E\) 上由正交算子 \(Q\) 作用，且干净随机变量满足 \(QX_0\overset{d}{=}X_0\)（对所有 \(Q\in\mathcal G\)）。令</p>
+    <div class="retro-equation">\[
+      X_t=\alpha_tX_0+\sigma_t\epsilon,\qquad
+      \epsilon\sim\mathcal N_E(0,I_E),\quad
+      \epsilon\perp\!\!\!\perp X_0,\quad \sigma_t>0.
+    \]</div>
+    <p>这里 \(\alpha_t\) 是标量，\(I_E\) 是该空间上的恒等算子；\(\overset{d}{=}\) 表示分布相同。密度相对于 \(E\) 上的体积测度定义，后文的“原空间 score”也指建模空间 \(E\) 中的梯度。旋转、粒子置换及它们的组合都可以属于这样的正交作用。</p>
+    <p><strong>结论。</strong>\(X_t\) 在 \(E\) 上具有正的光滑密度 \(q_t\)，且其分布和 score 分别满足</p>
+    <div class="retro-equation">\[
+      q_t(Qx)=q_t(x),\qquad
+      s_t(Qx)=Q\,s_t(x),\qquad s_t=\nabla_E\log q_t.
+    \]</div>
+  </div>
+  <p><strong>证明。</strong>各向同性高斯满足 \(Q\epsilon\overset{d}{=}\epsilon\)，结合独立性，有</p>
+  <div class="retro-equation">\[
+    QX_t=\alpha_tQX_0+\sigma_tQ\epsilon
+    \overset{d}{=}\alpha_tX_0+\sigma_t\epsilon=X_t.
+  \]</div>
+  <p>正交变换保持体积，因此分布相同给出密度相同。再对 \(\log q_t(Qx)=\log q_t(x)\) 求导，得到 \(Q^\top s_t(Qx)=s_t(x)\)，即所述 score 等变关系。</p>
+  <p>直观地说，旋转输入时，去噪方向也应一起旋转；重新编号粒子时，输出按相同方式重排。对于位置与速度联合表示，旋转同时作用于两者。条件生成还要求条件同步变换：例如五弹簧连接图必须随粒子置换；固定一个条件时，只能要求保持该条件不变的对称性。</p>
+  <h3>从群轨道到代表元：ECM 的直觉</h3>
+  <p>把能通过对称变换互相得到的样本放在同一条轨道上：</p>
+  <div class="retro-equation">\[[x]=\{Qx:Q\in\mathcal G\}.\]</div>
+  <p>从每条轨道选一个代表元，就能用较少的表示描述相同的内在结构。ECM 在这里表示这样的代表元集合。模型预测的是<strong>建模空间 \(E\) 中的 score 在代表元处的值</strong>，再通过等变性得到同一轨道上其他点的预测。这个过程只需要可测的代表元选择，无须假定代表元集合处处光滑或选择映射全局可微。</p>
+  <div class="retro-support" id="physical-theorem-2">
+    <h3>Theorem 2 · 等变 score 从轨道代表元延拓</h3>
+    <p><strong>条件。</strong>沿用上述正交群作用并固定 \(t\)。设 \(q_t\) 是 \(E\) 上正的 \(C^1\) 密度，且 \(q_t(Qx)=q_t(x)\)。令可测映射 \(\varphi\) 为每条轨道选取同一个代表元，满足 \(\varphi(x)\in[x]\)，并以 \(\nu_t\) 表示 \(\varphi(X_t)\) 的分布。假设模型严格满足</p>
+    <div class="retro-equation">\[s_\theta(Qx,t)=Q\,s_\theta(x,t)\qquad(Q\in\mathcal G),\]</div>
+    <p>且对 \(\nu_t\)-几乎所有代表元 \(z\)，模型预测的是<strong>原空间 score</strong>：</p>
+    <div class="retro-equation">\[
+      s_\theta(z,t)=s_t(z)
+      =\left.\nabla_E\log q_t(x)\right|_{x=z}.
+    \]</div>
+    <p><strong>结论。</strong>对 \(q_t\)-几乎所有 \(x\)，有 \(s_\theta(x,t)=s_t(x)\)。更一般地，同一轨道上预测误差的长度完全相同：</p>
+    <div class="retro-equation">\[
+      \|s_\theta(x,t)-s_t(x)\|^2
+      =\|s_\theta(\varphi(x),t)-s_t(\varphi(x))\|^2.
+    \]</div>
+  </div>
+  <p><strong>证明。</strong>令 \(z=\varphi(x)\)，选取使 \(x=Qz\) 的群作用。模型与真实 score 都等变，因此</p>
+  <div class="retro-equation">\[
+    s_\theta(x,t)-s_t(x)
+    =Q\bigl(s_\theta(z,t)-s_t(z)\bigr).
+  \]</div>
+  <p>正交变换不改变向量长度；代表元处的误差为零，整条轨道上的误差就为零。“几乎所有代表元”由 \(\nu_t\) 衡量，再通过 \(\varphi(X_t)\) 的分布传回原空间。</p>
+  <div class="retro-callout"><strong>代表元上的预测决定整条轨道</strong><p>严格等变的模型通过群作用共享同一结构在不同表示下的 score 预测。ECM 为这种共享提供理论依据；该项目在训练中利用对称性，生成仍沿反向扩散过程进行。</p></div>
+
   <div class="retro-support">
-    <h3>从群轨道理解等价类流形（ECM）</h3>
-    <p>把可以通过这些对称变换互相得到的样本看作一个等价类：</p>
-    <div class="retro-equation">\[[x]=\{Gx:G\in\mathcal G\}.\]</div>
-    <p>选择代表元后，模型可以把注意力放在轨迹的内在结构上；满足相应等变规则的预测能够延伸到同一轨道的其他表示。ECM 在这里提供理论视角，实验流程并没有增加一个逐步投影到 ECM 的生成模块。</p>
+    <h3>噪声预测与数据预测的等变性</h3>
+    <p>在 Theorem 1 的正交作用下，噪声预测 \(\epsilon^*=-\sigma_t s_t\) 继承 score 的等变性。对于 \(\alpha_t\ne0\)，最优数据预测也满足</p>
+    <div class="retro-equation">\[
+      D_t^*(x)=\frac{x+\sigma_t^2s_t(x)}{\alpha_t},
+      \qquad D_t^*(Qx)=Q\,D_t^*(x).
+    \]</div>
+    <p>两种最优预测器都具有旋转与置换等变性。具体采用 noise matching 还是 data matching，取决于数据结构与实验表现。</p>
   </div>
   <h3>理论要求，如何落实为训练设计？</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="两类数据的扩散建模选择">

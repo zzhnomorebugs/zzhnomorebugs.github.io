@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1270" viewBox="0 0 640 1270" role="img" aria-labelledby="title desc">
+  <title id="title">MSA 条件如何参与蛋白质序列生成</title>
+  <desc id="desc">MSA 按列统计为 profile，作为条件进入由 ESM-2 改造的 DiT。当前生成状态和时间一并输入模型，模型预测用于采样更新，下一状态重新进入模型。生成结束后，候选序列接受结构代理评估。BFN 与 DFM 各用相应状态和更新规则。图示仅突出模型内条件注入；DFM 的 profile 初始化属于另一项对照。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M2 2 L9 6 L2 10" fill="none" stroke="#25766c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;fill:#243a35}
+      .card{fill:#fff;stroke:#d6e3dc;stroke-width:2}
+      .heading{font-size:29px;font-weight:700}
+      .body{font-size:23px;fill:#50615b}
+      .label{font-size:23px;fill:#25766c}
+      .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="640" height="1270" fill="#faf9f4"/>
+  <text x="38" y="48" font-size="23" letter-spacing="2" fill="#25766c">MODEL CONTEXT</text>
+  <text x="38" y="96" font-size="33" font-weight="700">MSA 如何成为生成条件</text>
+
+  <rect class="card" x="76" y="135" width="488" height="105" rx="15"/>
+  <text class="heading" x="320" y="179" text-anchor="middle">MSA 对齐序列</text>
+  <text class="body" x="320" y="217" text-anchor="middle">同一位点上的多条观测</text>
+  <path class="line" d="M320 240 V296"/>
+  <text class="label" x="344" y="278">按列统计</text>
+  <rect x="76" y="296" width="488" height="105" rx="15" fill="#e9f3ed" stroke="#a9cfc3" stroke-width="2"/>
+  <text class="heading" x="320" y="340" text-anchor="middle">MSA profile · P</text>
+  <text class="body" x="320" y="378" text-anchor="middle">各位点的氨基酸频率</text>
+  <path class="line" d="M320 401 V477"/>
+  <text class="label" x="344" y="445">条件注入</text>
+
+  <rect x="76" y="477" width="488" height="210" rx="15" fill="#e9f3ed" stroke="#25766c" stroke-width="2.5"/>
+  <text class="heading" x="320" y="524" text-anchor="middle">DiT 生成模型</text>
+  <text class="body" x="320" y="566" text-anchor="middle">由 ESM-2 改造</text>
+  <text class="body" x="320" y="608" text-anchor="middle">同时读取当前状态 xₜ 与时间 t</text>
+  <text class="body" x="320" y="650" text-anchor="middle">比较不同条件注入实现</text>
+  <path class="line" d="M320 687 V750"/>
+  <rect x="263" y="713" width="114" height="32" fill="#faf9f4"/>
+  <text class="label" x="320" y="738" text-anchor="middle">模型预测</text>
+
+  <rect class="card" x="76" y="750" width="488" height="116" rx="15"/>
+  <text class="heading" x="320" y="795" text-anchor="middle">采样更新</text>
+  <text class="body" x="320" y="837" text-anchor="middle">按对应框架推进到下一状态</text>
+  <path class="line" d="M564 805 H603 V558 H564"/>
+  <text class="label" x="584" y="744" transform="rotate(-90 584 744)">下一状态，重新预测</text>
+  <path class="line" d="M320 866 V935"/>
+  <text class="label" x="344" y="908">生成结束</text>
+
+  <rect class="card" x="76" y="935" width="488" height="82" rx="15"/>
+  <text class="heading" x="320" y="987" text-anchor="middle">候选蛋白质序列</text>
+  <path class="line" d="M320 1017 V1065"/>
+  <rect x="76" y="1065" width="488" height="90" rx="15" fill="#f6efd9" stroke="#dbc695" stroke-width="2"/>
+  <text class="heading" x="320" y="1121" text-anchor="middle">结构代理评估</text>
+  <text class="label" x="320" y="1201" text-anchor="middle">比较框架：BFN / DFM</text>
+  <text class="body" x="320" y="1239" text-anchor="middle">各用相应状态与更新规则</text>
+</svg>

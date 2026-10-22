@@ -71,6 +71,7 @@
 .physical-project .physical-metric-table th[scope="row"] { white-space: normal; }
 .physical-project .physical-case-label { color: var(--retro-accent); font-size: 0.73rem; }
 .physical-project .physical-summary { font-size: 1.05rem; }
+.physical-project [id^="physical-theorem-"] { scroll-margin-top: 128px; }
 @media (max-width: 740px) {
   .physical-project .physical-evidence { grid-template-columns: 1fr; gap: 1.4rem; }
   .physical-project .physical-evidence figure { max-width: 620px; width: 100%; margin: 0 auto; }

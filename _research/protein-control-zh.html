@@ -15,11 +15,11 @@ order: 1
 # 暂时隐藏项目列表入口及页面输出；恢复展示时改回 true。
 published: false
 read_time: false
-date: 2026-10-12
+date: 2026-10-22
 index_title: "蛋白质序列可控生成：从通用先验到性质引导"
 index_title_en: "Controllable protein sequence generation"
-excerpt: "从 diffusion 的 classifier-free guidance 出发，理解通用序列先验与条件残差的分工。围绕 BFN 与 DFM 的 residual prediction，讲解模型训练、预训练趋势和性质控制的阶段性结果。"
-excerpt_en: "A Chinese walkthrough connecting classifier-free guidance to explicit residual prediction for BFN and DFM protein generation, with anonymized training trends and approximate relative results."
+excerpt: "围绕“先学序列规律，再学条件修正”展开：从条件 score 分解理解设计动机，逐步拆解两路输入、logits 残差、下游训练与条件生成，再说明 BFN / DFM 如何把预测变成状态更新。"
+excerpt_en: "Learn sequence patterns first, then learn a conditional correction: follow the two model inputs, logit residual, downstream training, and generation loop, before seeing how BFN and DFM turn predictions into state updates."
 project_image: /images/research/protein-control/framework.svg
 project_references: [cfg, bfn, dfm]
 project_chapters:
@@ -28,7 +28,7 @@ project_chapters:
   - id: protein-prior
     label: 设计
   - id: protein-flow
-    label: 方法
+    label: 残差拆解
   - id: protein-dynamics
     label: BFN / DFM
   - id: protein-pretraining
@@ -50,7 +50,7 @@ project_chapters:
     <li><strong>生成：带条件的逐步更新</strong><span>在序列先验的约束下，逐步调整氨基酸类别的预测。</span></li>
     <li><strong>输出：候选变体</strong><span>通过独立评估筛选，供后续实验验证。</span></li>
   </ol>
-  <p>生成模型需要同时处理两类要求：序列本身应当合理，生成结果也应当响应目标条件。以参考序列为起点时，还需要控制编辑幅度，避免为了追求目标性质而破坏原有序列与结构。</p>
+  <p>生成模型需要同时处理两类要求：序列本身应当合理，生成结果也应当响应目标条件。相对于参考序列提出变体时，还需要关注编辑幅度，避免为了追求目标性质而破坏原有序列与结构。</p>
   <div class="retro-callout"><strong>项目的核心问题</strong><p>通用蛋白质序列先验，能否为不同性质任务提供可复用的生成基础，并通过条件适配提出具有目标倾向的候选？</p></div>
   <div class="retro-two-column">
     <div><h3>目标条件表达什么？</h3><p>条件可以表达变异效应、稳定性变化或结合性质。模型学习目标条件与序列变化之间的关系，而不同任务仍需要各自的标签定义和评估方法。</p></div>
@@ -71,8 +71,13 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">图 1 · 可控生成的整体分工。通用先验提供序列规律，目标条件参与生成更新；独立评估用于检验生成结果。</figcaption>
   </figure>
-  <p>无条件预训练首先学习噪声状态与真实蛋白质序列之间的关系。进入下游任务后，模型额外接收性质条件，学习在相同的生成框架下如何调整预测。</p>
-  <p>对于以参考序列为起点的编辑任务，可以把目标概括为学习条件分布：</p>
+  <p>直接训练一个条件生成器，需要同时学习序列规律与性质条件的影响。本项目把这两项职责显式分开，也让两类数据各司其职：<strong>无条件生成预训练可以使用 <a href="https://www.uniprot.org/help/uniref">UniRef90</a> 等大规模蛋白质序列集，学习通用序列规律；下游再冻结先验，只在较小的带性质标签任务集上训练条件引导，也就是残差模型。</strong>无条件阶段不要求每条序列都配有下游性质标签，性质标签则用于学习任务特定的修正。整个流程分为三个阶段：</p>
+  <ol class="retro-pipeline" aria-label="从预训练到条件生成的三个阶段">
+    <li><strong>预训练：学会序列规律</strong><span>用大规模蛋白质序列集学习从带噪状态预测干净 token，得到可复用的通用生成先验。</span></li>
+    <li><strong>条件训练：学会修正预测</strong><span>冻结先验，在较小的带性质标签任务集上，用组合预测的损失训练条件残差。</span></li>
+    <li><strong>条件生成：反复预测与更新</strong><span>固定两路模型，在给定条件下逐步更新生成状态，最终得到候选序列。</span></li>
+  </ol>
+  <p>对于以参考序列为条件的编辑任务，可以把目标概括为学习条件分布：</p>
   <div class="retro-equation">\[p_\theta(x\mid x_{\mathrm{ref}},y).\]</div>
   <p>其中，\(x_{\mathrm{ref}}\) 是参考序列，\(y\) 是目标性质，\(x\) 是候选序列。这一写法表达任务目标，不意味着模型已经保证每个候选都满足条件。</p>
 </section>
@@ -80,21 +85,60 @@ project_chapters:
 <section class="retro-chapter" id="protein-flow">
   <span id="protein-transfer" aria-hidden="true"></span>
   <p class="retro-kicker">From conditional score decomposition to residual prediction</p>
-  <h2><span class="retro-chapter__number">03</span> 一个模型学习序列语言，一个模型学习条件遵循</h2>
-  <p class="retro-lede">从连续 diffusion 的条件控制出发，conditional score 可以分解为 unconditional score 与条件修正：前者描述序列本身的规律，后者描述目标条件带来的方向。</p>
+  <h2><span class="retro-chapter__number">03</span> 把条件生成拆成：先验预测、残差修正与状态更新</h2>
+  <p class="retro-lede">每一步生成都先回答“当前各位点可能是什么氨基酸”，再依据目标条件调整这些预测。下面依次说明两路模型看什么、输出如何合并、残差怎样学到，以及预测怎样进入生成循环。</p>
+  <h3>分工的动机：条件 score = 无条件 score + 条件修正</h3>
+  <p>对连续带噪变量 \(x_t\)，由贝叶斯公式取对数并对 \(x_t\) 求梯度，可把条件 score 写成下式。这里暂用 \(y\) 表示条件，用于解释分解直觉：</p>
   <div class="retro-equation">\[\underbrace{s_{\mathrm{c}}}_{\text{conditional score}}
     =\underbrace{s_{\mathrm{u}}}_{\text{unconditional score}}
     +\underbrace{\nabla_{x_t}\log p_t(y\mid x_t)}_{\text{条件修正}}.\]</div>
-  <p>这种分解为 <a href="#reference-cfg">CFG</a> 提供了理解条件控制的视角，也启发了项目中两个模型的分工：</p>
+  <p>把这一分解落实到模型设计，就是<strong>将两个网络的预测输出相加，并把“大数据学先验、小数据学引导”的职责分开</strong>。前一项由通用先验网络提供，可利用 UniRef90 这类大规模序列集做无条件生成预训练，<strong>在下游训练时冻结参数</strong>；后一项由条件残差网络提供，只在较小的带性质标签任务集上训练，结合当前状态、参考序列与目标性质，学习需要补充的修正。训练损失作用于相加后的预测，<strong>只更新后一个残差网络</strong>；前一个先验网络仍参与每一步预测，但权重不变。</p>
+  <p>这种分工借鉴了 <a href="#reference-cfg">CFG</a> 的条件控制直觉。上面的连续 score 分解提供设计动机；<strong>本项目实际相加的是两个网络输出的离散 token logits</strong>，并不把 logits 残差等同于连续 score 或分类器梯度。</p>
+
+  <h3>3.1 两路模型读取同一状态，承担不同职责</h3>
+  <p>用 \(s_t\) 统一表示生成时刻 \(t\) 的当前状态。对于 BFN，它是每个位点的类别概率信念；对于 DFM，它是带噪的离散 token 序列。\(s_t\) 是正在更新的对象，参考序列 \(x_{\mathrm{ref}}\) 和目标性质 \(y\) 则是本次生成的条件。</p>
   <div class="retro-two-column protein-methods">
-    <div><h3>通用模型：学习蛋白质序列语言</h3><p>先通过无条件预训练学习氨基酸组合与序列规律；进入下游任务后固定权重，持续提供通用生成先验。</p></div>
-    <div><h3>残差模型：学习遵循目标条件</h3><p>读取当前状态、参考序列和目标性质，学习需要补充的条件修正，引导候选朝目标方向变化。</p></div>
+    <div><h4>通用先验：给出基础预测</h4><p>读取 \(s_t\) 与时间 \(t\)，输出 \(\ell_{\mathrm{prior}}\)：在当前信息下，每个位点各氨基酸类别的基础分数。下游训练固定它的权重，以复用预训练学到的序列规律。</p></div>
+    <div><h4>条件残差：给出预测修正</h4><p>读取相同的 \(s_t,t\)，并结合 \(x_{\mathrm{ref}},y\)，输出 \(r_\phi\)：针对各位点、各类别的分数修正。参考序列提供相对编辑的上下文，目标性质指定调整方向。</p></div>
   </div>
-  <p>在离散蛋白质序列中，两部分实际组合在 token logits 上：</p>
-  <div class="retro-equation">\[\ell_{\mathrm{cond}}
-    =\operatorname{stopgrad}(\ell_{\mathrm{prior}})+r_\phi.\]</div>
-  <p>训练损失作用于组合后的预测，只更新残差模型。连续 score 的分解是设计动机，实际残差并非直接计算分类器梯度。</p>
-  <p>组合预测随后交给各自的生成规则：<a href="#reference-bfn">BFN</a> 更新氨基酸类别的概率信念，<a href="#reference-dfm">DFM</a> 更新离散 token 序列。两者都复用固定的序列先验，由残差承担条件适配。</p>
+  <figure class="retro-figure protein-figure protein-generated-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance.png">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile.png" width="845" height="1862">
+        <img src="{{ base_path }}/images/research/protein-control/prior-guidance.png" width="1122" height="1402" alt="大数据学先验，小数据学引导：（a）通用先验可在 UniRef90 等大规模蛋白质序列集上无条件预训练，下游冻结先验，只在较小的性质标签数据集上训练条件残差。（b）生成时当前状态进入两路网络，参考序列与目标性质额外进入残差；两路 logits 相加，经 softmax 和 BFN 或 DFM 更新得到下一状态，再进入下一轮预测。" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 2 · 大数据学先验，小数据学引导。（a）训练分工：通用先验可在 UniRef90 等大规模序列集上做无条件预训练，下游冻结后，只用较小的带性质标签任务集训练条件残差；损失作用于两路合成的预测。（b）每一步生成：两路网络的 logits 相加，经 softmax 得到 token 概率，再由 BFN / DFM 更新当前状态并进入下一轮；生成时两路权重均固定。</figcaption>
+  </figure>
+
+  <h3>3.2 在 logits 上相加，再变成干净 token 概率</h3>
+  <p>logits 是归一化之前的类别分数。对长度为 \(L\)、类别数为 \(K\) 的序列，两路输出都可看作 \(L\times K\) 的分数表；先在对应元素上相加，再对每个位点的类别维度做 softmax：</p>
+  <div class="retro-equation">\[\begin{aligned}
+    \ell_{\mathrm{cond}}&=\operatorname{stopgrad}\!\left(\ell_{\mathrm{prior}}(s_t,t)\right)
+      +r_\phi(s_t,t,x_{\mathrm{ref}},y),\\
+    q_i(k)&=\operatorname{softmax}(\ell_{\mathrm{cond},i})_k.
+  \end{aligned}\]</div>
+  <p>其中 \(i\) 表示位点，\(k\) 表示氨基酸类别。\(q_i(k)\) 是模型对该位点<strong>干净 token</strong> 的预测概率；它还需要交给生成规则，才会决定下一步如何更新状态。逐位点归一化也不意味着忽略位点之间的关系：两路预测都利用序列上下文。</p>
+  <div class="retro-callout"><strong>残差具体“修正”了什么？</strong><p>用抽象类别 \(\alpha,\beta\) 举例：先验可能更偏好 \(\alpha\)，而当前条件需要提高 \(\beta\) 的相对倾向，残差便可以提高 \(\beta\) 相对于其他类别的分数。softmax 将修正后的分数重新归一化。残差为零时，预测退回通用先验；残差本身既不是概率，也不是一条已经选定的突变指令。</p></div>
+
+  <h3>3.3 用组合预测训练，只让残差模型学习</h3>
+  <p>先验完成预训练后，下游只训练条件残差。这里使用的是较小的任务数据集：真实序列配有参考上下文与性质标签，学习信号集中在目标条件所需的修正上。一次训练可以按以下顺序理解：</p>
+  <ol>
+    <li><strong>构造训练输入。</strong>以真实序列 \(x\) 为干净目标，采样时间 \(t\)，按所用框架构造对应的带噪状态 \(s_t\)；同时提供参考序列与该训练样本对应的性质条件。</li>
+    <li><strong>计算两路输出。</strong>冻结的先验提供基础 logits，残差模型结合状态与条件给出修正，两者按图 2 合成预测 \(q\)。</li>
+    <li><strong>用真实序列监督组合结果。</strong>沿用对应 BFN / DFM 框架的生成训练目标，让组合预测学习恢复干净序列。两种框架的具体损失不同，但条件适配都作用于组合预测。</li>
+    <li><strong>只更新残差参数 \(\phi\)。</strong>\(\operatorname{stopgrad}\) 表示下游损失不通过先验分支更新其权重。残差通过“加上修正后，整体预测是否更好”得到学习信号。</li>
+  </ol>
+  <p>因此，训练数据不需要额外提供一份“正确残差”标签；残差从组合预测的训练目标中学到条件修正。性质条件负责告诉模型应恢复哪类序列，性质控制是否有效则要在生成候选后单独评估。</p>
+
+  <h3>3.4 固定模型，反复执行预测与状态更新</h3>
+  <p>生成时给定参考序列和希望达到的性质，不再提供待恢复的真实目标序列。两路模型都固定权重，按“初始化 → 两路预测 → 合成分布 → 更新状态”的循环提出候选：</p>
+  <ol>
+    <li><strong>初始化生成状态。</strong>起点由所选路径决定。以下一章介绍的基础路径为例，BFN 从均匀类别概率信念开始，DFM-abs 从掩码 token 开始，DFM-uni 从均匀随机 token 开始。参考序列提供相对编辑的条件，需与当前生成状态区分。</li>
+    <li><strong>预测、修正、更新。</strong>在当前 \(s_t,t\) 上重新计算两路 logits，合成 \(q\)。<a href="#reference-bfn">BFN</a> 用它构造消息并更新概率信念；<a href="#reference-dfm">DFM</a> 用它构造跃迁速率并更新离散 token。</li>
+    <li><strong>进入下一步，直至得到候选。</strong>新的状态再次送入两路模型，条件在整个过程中持续参与预测。最终序列再交给独立评估，检查性质响应、编辑行为与结构合理性。</li>
+  </ol>
+  <div class="retro-callout"><strong>固定的是模型权重，变化的是每一步预测</strong><p>先验与残差都会随当前状态和时间重新输出预测；残差不是只在生成开始时加一次。下一章进一步展开图 2 中的“状态更新”：同一个干净 token 预测，如何分别驱动 BFN 的概率信念与 DFM 的离散跃迁。</p></div>
 </section>
 
 <section class="retro-chapter protein-dynamics" id="protein-dynamics">
@@ -107,7 +151,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/noise-settings.svg" alt="三种加噪设置的输入对照：BFN 将带噪消息转为每个位点的概率向量；DFM-abs 将部分 token 变为 MASK；DFM-uni 将部分 token 替换为均匀采样的随机类别。两种 DFM 输入均为离散 token。" width="1400" height="890" loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">图 2 · 三种设置的带噪输入。图中箭头表示从干净序列构造训练输入；生成则从低信息状态逐步恢复序列。BFN 读取概率向量，两种 DFM 读取离散 token。</figcaption>
+    <figcaption class="retro-figure__caption">图 3 · 三种设置的带噪输入。图中箭头表示从干净序列构造训练输入；生成则从低信息状态逐步恢复序列。BFN 读取概率向量，两种 DFM 读取离散 token。</figcaption>
   </figure>
   <div class="retro-two-column protein-methods">
     <div>
@@ -127,7 +171,7 @@ project_chapters:
       <p class="retro-caption"><a href="#reference-dfm">DFM</a> 用干净 token 后验构造离散跃迁，推动概率分布沿设定路径从噪声状态走向序列。</p>
     </div>
   </div>
-  <div class="retro-callout"><strong>残差改变预测分布，生成框架决定如何更新</strong><p>两者都能使用 \(q=\operatorname{softmax}(\ell_{\mathrm{prior}}+r_\phi)\) 作为干净 token 预测。BFN 用它产生消息并更新信念，DFM 用它构造跳变速率；前一页的条件残差因此可以沿用相同的分工。</p></div>
+  <div class="retro-callout"><strong>残差改变预测分布，生成框架决定如何更新</strong><p>两者都能使用 \(q=\operatorname{softmax}(\ell_{\mathrm{prior}}+r_\phi)\) 作为干净 token 预测。BFN 用它产生消息并更新信念，DFM 用它构造跳变速率；第 3 章的条件残差因此可以沿用相同的分工。</p></div>
 </section>
 
 <section class="retro-chapter" id="protein-pretraining">
@@ -142,7 +186,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/pretraining-bfn.png" alt="BFN 预训练验证 loss 曲线，包含不同训练记录，整体早期下降，较长记录后段仍有波动" width="1929" height="1094" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
-      <figcaption class="retro-figure__caption">图 3(a) · BFN 的验证记录。不同线条对应不同预训练记录。</figcaption>
+      <figcaption class="retro-figure__caption">图 4(a) · BFN 的验证记录。不同线条对应不同预训练记录。</figcaption>
     </figure>
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>DFM · 掩码路径预训练</h3>
@@ -151,7 +195,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/pretraining-dfm.png" alt="掩码路径 DFM 预训练验证 loss 曲线，不同训练记录总体下降并继续缓慢改善" width="1459" height="791" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
-      <figcaption class="retro-figure__caption">图 3(b) · DFM 的验证记录。</figcaption>
+      <figcaption class="retro-figure__caption">图 4(b) · DFM 的验证记录。</figcaption>
     </figure>
   </div>
   <p>两条路线都出现了阶段性下降：BFN 后段仍存在波动，DFM 掩码路径在较缓的变化中继续改善。现有记录支持开展下游方法探索，但不足以声称基础模型已经充分训练。</p>
@@ -173,7 +217,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/variant-validation-bfn.png" alt="变异效应任务 BFN 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="641" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
-      <figcaption class="retro-figure__caption">图 4(a) · BFN 在变异效应任务上的生成目标验证记录。</figcaption>
+      <figcaption class="retro-figure__caption">图 5(a) · BFN 在变异效应任务上的生成目标验证记录。</figcaption>
     </figure>
     <figure class="retro-figure protein-figure protein-source-plot">
       <h3>DFM · 下游验证损失</h3>
@@ -182,7 +226,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/variant-validation-dfm.png" alt="变异效应任务掩码路径 DFM 的验证损失，包含 baseline、pretrain、finetune 与 residual 四条训练路线及灰色波动带" width="617" height="412" loading="lazy">
       </a>
       <p class="protein-plot-direction">训练推进 →</p>
-      <figcaption class="retro-figure__caption">图 4(b) · 掩码路径 DFM 在同一任务上的生成目标验证记录。</figcaption>
+      <figcaption class="retro-figure__caption">图 5(b) · 掩码路径 DFM 在同一任务上的生成目标验证记录。</figcaption>
     </figure>
   </div>
   <div class="protein-plot-legend" aria-label="两图共用图例">

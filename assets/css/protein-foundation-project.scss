@@ -13,6 +13,44 @@
   .pf-role-grid > div { padding-top: 1rem; border-top: 2px solid var(--retro-accent); }
   .pf-pipeline-figure > a { padding: 0; overflow: hidden; }
   .pf-pipeline-figure img { width: 100%; max-height: none; }
+  .pf-key-results { margin: 1.7rem 0 2.5rem; }
+  .pf-route { display: block; margin: 2rem 0; }
+  .pf-route-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.4rem;
+    width: 100%;
+    margin: 0;
+    padding: 0 !important;
+    list-style: none;
+  }
+  .pf-route-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pf-route-grid > li {
+    position: relative;
+    min-width: 0;
+    margin: 0;
+    padding: 1.15rem 0.85rem;
+    border-top: 3px solid var(--retro-accent);
+    background: var(--retro-accent-soft);
+    text-align: center;
+  }
+  .pf-route-grid > li + li { margin: 0; }
+  .pf-route-grid > li + li::before {
+    content: "→";
+    position: absolute;
+    top: 45%;
+    left: -1.3rem;
+    color: var(--retro-accent);
+    font-size: 0.9rem;
+  }
+  .pf-stage-label { display: block; color: var(--retro-accent); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em; }
+  .pf-route-grid strong { display: block; margin: 0.65rem 0; font-size: 0.84rem; }
+  .pf-route-grid p { margin: 0; color: var(--retro-muted); font-size: 0.75rem; }
+  .pf-stage-note { display: block; margin-top: 0.85rem; padding-top: 0.7rem; border-top: 1px solid var(--retro-line); color: var(--retro-accent); font-size: 0.65rem; }
+  .pf-decisions { margin: 2rem 0; }
+  .pf-decisions article { padding: 1.2rem 0; border-top: 1px solid var(--retro-line); }
+  .pf-decisions article h3 { margin-top: 0.4rem; }
+  .pf-decisions article p:last-child { margin-bottom: 0; }
 
   .pf-profile-demo {
     display: block;
@@ -62,8 +100,16 @@
   .pf-references p { font-size: 0.76rem; }
 }
 
+@media (min-width: 741px) and (max-width: 900px) {
+  .protein-foundation-project .pf-route-grid { grid-template-columns: 1fr; gap: 1.6rem; }
+  .protein-foundation-project .pf-route-grid > li + li::before { content: "↓"; top: -1.55rem; left: calc(50% - 0.4rem); }
+}
+
 @media (max-width: 740px) {
   .protein-foundation-project {
+    .pf-route-grid { grid-template-columns: 1fr; gap: 1.6rem; }
+    .pf-route-grid > li + li::before { content: "↓"; top: -1.55rem; left: calc(50% - 0.4rem); }
+    .pf-route-grid strong { font-size: 0.9rem; }
     .pf-profile-demo { padding: 1.1rem; }
     .pf-profile-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .pf-demo-panel + .pf-demo-panel { padding-top: 1.2rem; border-top: 1px solid var(--retro-line); }

@@ -14,50 +14,76 @@ project_area: "上海人工智能实验室 · 训练与数据工程"
 order: 1
 published: false
 read_time: false
-date: 2026-10-18
+date: 2026-10-22
 index_title: "蛋白质序列生成：从大规模 MSA 处理到模型训练"
-excerpt: "围绕三千多万条蛋白质序列，建立从 MSA 定位、并行预处理到 HDF5 整数计数存储的数据链路。通过 tokenizer 效率对比与 150M 模型的短程训练筛选配置，最终完成 150M 和 650M 模型各一版训练。"
+excerpt: "以 MSA 为条件生成蛋白质序列，重点打通三千多万条序列背后的数据与训练链路：用索引和并行处理减少预处理开销，以整数计数压缩存储，再通过短程对照推进 150M / 650M 模型的完整训练。"
 project_image: /images/research/protein-foundation/pipeline.svg
 project_chapters:
   - id: foundation-goal
-    label: 项目目标
+    label: 目标与成果
   - id: foundation-profile
-    label: MSA 与 profile
+    label: 模型与条件
   - id: foundation-preprocessing
-    label: 索引与预处理
+    label: 数据处理
   - id: foundation-storage
-    label: 计数存储
+    label: 存储设计
   - id: foundation-training
-    label: 训练与对照
+    label: 训练落地
   - id: foundation-summary
-    label: 工程总结
+    label: 贡献总结
 ---
 
 {% include base_path %}
 
 <section class="retro-chapter" id="foundation-goal">
   <p class="retro-kicker">Protein generation at scale</p>
-  <h2><span class="retro-chapter__number">01</span> 让大规模序列数据成为可训练的生成条件</h2>
-  <p class="retro-lede">项目希望训练能够生成蛋白质序列的模型，为后续的候选筛选与目标性质研究提供基础。实习工作的重点是把生成方法落实到可运行的训练流程，并解决大规模数据的预处理、存储和供给问题。</p>
-  <ol class="retro-pipeline" aria-label="蛋白质序列生成项目的任务流程">
-    <li><strong>输入：蛋白质序列与 MSA</strong><span>从多序列比对中提取逐位点的氨基酸分布，为生成提供条件。</span></li>
-    <li><strong>训练：学习序列生成规律</strong><span>先做短程对照，再确定模块与配置，投入完整训练。</span></li>
-    <li><strong>输出：待筛选的候选序列</strong><span>通过后续评估与筛选，研究具有目标性质的序列。</span></li>
-  </ol>
-  <p>这项工作在上海人工智能实验室开展。面对三千多万条序列，仅把算法接入模型还不够：如果每次查找 MSA 都重复扫描原始数据，或把中间表示全部展开保存，预处理与存储本身就会成为训练的限制。</p>
-  <div class="retro-two-column pf-role-grid">
-    <div><h3>数据工程</h3><p>建立记录位置索引，组织多服务器分块处理，对比 tokenizer 处理方式，并将 MSA profile 改为紧凑的整数计数存储。</p></div>
-    <div><h3>训练与实验</h3><p>实现和比较时间条件的注入方式，开展采样算法与超参数对照，在前期 150M 实验的基础上完成 150M、650M 两种规模的最终训练。</p></div>
+  <h2><span class="retro-chapter__number">01</span> 让千万级 MSA 数据真正支撑生成模型训练</h2>
+  <p class="retro-lede">这项上海人工智能实验室的工作，以多序列比对（MSA）为条件训练蛋白质序列生成模型。核心工程任务是把三千多万条序列对应的数据处理、存储、供给与模型实验接成一条可运行的训练链路。</p>
+  <div class="retro-results-grid pf-key-results" aria-label="项目已完成的三项工程结果">
+    <div><strong>一百余 GB</strong><span class="retro-result__label">最终预处理产物</span><p>朴素方案初始估算为十余 TB；通过统计表示与存储类型调整，形成紧凑的 HDF5 数据。</p></div>
+    <div><strong>约 40%</strong><span class="retro-result__label">tokenizer 环节提速</span><p>多种处理方式计时比较后，相较默认方式提升该预处理环节的速度。</p></div>
+    <div><strong>150M / 650M</strong><span class="retro-result__label">两种规模完成训练</span><p>先用 150M 模型开展短程配置对照，最终两种规模各完成一版训练。</p></div>
   </div>
+  <figure class="pf-route" aria-labelledby="pf-route-caption">
+    <ol class="pf-route-grid">
+      <li><span class="pf-stage-label">01 · 条件</span><strong>MSA → profile</strong><p>将同源序列的逐位点频率作为模型条件。</p><span class="pf-stage-note">定义模型的条件输入</span></li>
+      <li><span class="pf-stage-label">02 · 数据</span><strong>索引 → 统计 → 存储</strong><p>定位目标记录，并行计算，以整数计数保存。</p><span class="pf-stage-note">重点：处理得动、存得下</span></li>
+      <li><span class="pf-stage-label">03 · 训练</span><strong>短程对照 → 完整训练</strong><p>筛选模块配置，检查供数，完成两种规模训练。</p><span class="pf-stage-note">重点：让数据进入训练</span></li>
+      <li><span class="pf-stage-label">04 · 生成</span><strong>采样 → 候选评估</strong><p>比较迭代更新设置，评估生成序列的结构代理指标。</p><span class="pf-stage-note">检验生成结果</span></li>
+    </ol>
+    <figcaption class="retro-figure__caption" id="pf-route-caption">图 1 · 项目全流程。MSA 条件连接数据处理与生成模型；数据工程和训练实验共同支撑候选生成。</figcaption>
+  </figure>
+  <div class="retro-callout"><strong>贯穿项目的工程思路：把可复用的工作移到训练之前</strong><p>记录位置只索引一次，MSA 统计离线完成，训练时再恢复 profile。模型侧先做短程对照，再投入完整训练，让数据准备与模型迭代各自有清楚的边界。</p></div>
 </section>
 
 <section class="retro-chapter" id="foundation-profile">
-  <p class="retro-kicker">From aligned sequences to a profile</p>
-  <h2><span class="retro-chapter__number">02</span> 把多条对齐序列，汇总成每个位点的频率</h2>
-  <p class="retro-lede">MSA（Multiple Sequence Alignment，多序列比对）把相关序列放到共同的对齐位置上。沿同一列统计氨基酸类别，就能得到这个位点在输入 MSA 中的变化与保守程度。</p>
-  <p>设参与统计的 MSA 有 \(N\) 条序列，长度为 \(L\)，类别数为 \(K\)。将每个位点的类别转为 one-hot，沿序列条数这一维相加，再除以 \(N\)：</p>
-  <div class="retro-equation">\[C_{j,a}=\sum_{m=1}^{N}\mathbf{1}\!\left[x^{(m)}_j=a\right],\qquad P_{j,a}=\frac{C_{j,a}}{N}.\]</div>
-  <p>\(C\in\mathbb{N}_0^{L\times K}\) 保存整数计数，\(P\in[0,1]^{L\times K}\) 是 profile。类别表及对齐处理规则需要在预处理和训练读取时保持一致。</p>
+  <p class="retro-kicker">From MSA conditions to sequence generation</p>
+  <h2><span class="retro-chapter__number">02</span> 模型如何利用 MSA，生成新的蛋白质序列？</h2>
+  <p class="retro-lede">MSA 将相关序列对齐。沿同一列统计氨基酸频率，得到 profile，告诉模型“这个位点在已有序列中常见哪些类别”。生成模型结合这一条件、当前状态与时间信息，逐步提出候选序列。</p>
+  <figure class="retro-figure pf-pipeline-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-foundation/model-context.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-foundation/model-context-mobile.svg" width="640" height="1270">
+        <img src="{{ base_path }}/images/research/protein-foundation/model-context.svg" alt="MSA 经按列统计得到 profile 条件，与当前生成状态和时间共同输入由 ESM-2 改造的 DiT；模型预测交给采样规则更新状态，迭代后得到候选序列并进行结构代理评估。" width="1440" height="850" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">图 2 · 模型内条件注入的概念接口。数据工程产出的 profile 在这里进入模型；BFN / DFM 采用各自的状态与更新规则。DFM 的 profile 初始化是另一项对照，未画入这条注入路径。</figcaption>
+  </figure>
+  <h3>模型设计：围绕骨干、条件与采样开展对照</h3>
+  <p>模型侧将 ESM-2 Transformer 改造为扩散 Transformer（DiT），并在共享的 650M 架构上比较贝叶斯流网络（BFN）与离散流匹配（DFM）。MSA 条件的使用方式也是研究对象，包括加性 profile 嵌入、Perceiver 交叉注意力，以及 DFM 的 profile 初始化策略。</p>
+  <div class="retro-table-scroll">
+    <table class="retro-comparison">
+      <caption>表 1 · 模型侧的设计与对照分工</caption>
+      <thead><tr><th scope="col">设计维度</th><th scope="col">比较内容</th><th scope="col">要回答的问题</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">生成框架</th><td>共享 650M 架构上的 BFN / DFM</td><td>不同生成框架如何完成序列建模？</td></tr>
+        <tr><th scope="row">MSA 条件</th><td>加性嵌入、交叉注意力；DFM 的 profile 初始化</td><td>逐位点统计应怎样参与生成？</td></tr>
+        <tr><th scope="row">时间与采样</th><td>time embedding 注入；采样算法与超参数</td><td>如何筛选训练实现，并考察生成阶段的更新设置？</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <h3>数据接口：profile 是怎样得到的？</h3>
+  <p>以下用四条示意序列解释模型所需的统计量。第二个位点中 C、T 各出现两次，因此两类频率均为 0.5。</p>
   <figure class="pf-profile-demo" aria-labelledby="pf-profile-caption">
     <div class="pf-profile-grid">
       <div class="pf-demo-panel">
@@ -91,27 +117,16 @@ project_chapters:
         <p class="pf-demo-note">加载后转为模型所需的浮点频率。</p>
       </div>
     </div>
-    <figcaption class="retro-figure__caption" id="pf-profile-caption">图 1 · MSA 到 profile 的示意。只列出非零类别；未显示的类别计数为零。示例用于解释统计过程，不是实验候选序列。</figcaption>
+    <figcaption class="retro-figure__caption" id="pf-profile-caption">图 3 · MSA 到 profile 的示意。只列出非零类别；未显示的类别计数为零。示例用于解释统计过程，不是实验候选序列。</figcaption>
   </figure>
-  <p>示例中，第一个位点的 A 频率为 1，表示这几条输入序列在该位点完全保守；第二个位点的 C、T 各占一半，生成时仍需要结合条件与序列上下文作出选择。profile 提供的是逐位点频率，不能独自表达不同位点之间的协同关系，也不把生成结果硬性限定为逐列复制。</p>
+  <div class="retro-equation">\[C_{j,a}=\sum_{m=1}^{N}\mathbf{1}[x^{(m)}_j=a],\qquad P_{j,a}=\frac{C_{j,a}}{N}.\]</div>
+  <p>\(N\) 为参与统计的序列条数，\(j\) 为位点，\(a\) 为类别；序列长度为 \(L\)，类别数为 \(K\)，因此计数与 profile 均为 \(L\times K\) 数组。profile 仅记录逐位点频率，不能独自表达位点间的协同关系；生成仍依赖模型的序列上下文。<strong>训练需要的是 \(P\)，离线保存 \(C,N\) 就足以在加载时恢复它。</strong>这一接口决定了后面的存储设计。</p>
 </section>
 
 <section class="retro-chapter" id="foundation-preprocessing">
   <p class="retro-kicker">Index once, process in parallel</p>
-  <h2><span class="retro-chapter__number">03</span> 先知道数据在哪里，再并行计算 profile</h2>
-  <p class="retro-lede">大规模预处理的第一步是减少重复查找。为目标蛋白质找到对应的 MSA，不应每次都从原始数据的第一条记录开始逐条匹配。</p>
-  <h3>位置索引：把查找与解析分开</h3>
-  <p>预处理先建立“记录标识 → 存储位置”的索引。处理某个目标时，先查到对应位置，再读取并解析该记录的 MSA。这样，扫描原始数据的工作可以在建立索引时完成，后续按目标提取时复用定位结果。</p>
-  <div class="pf-code-block">
-    <p class="pf-code-label">位置索引的数据流 · 伪代码</p>
-    <pre><code>position = record_index[target_id]
-msa_record = read_record_at(position)
-aligned_tokens = tokenize(msa_record)
-counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
-  </div>
-  <p>这里的 position 是记录位置的抽象表示；关键是避免重复从头扫描。索引负责定位，解析和 tokenizer 负责把取出的记录转为可统计的序列，两者分别优化。</p>
-  <h3>分块处理：把独立目标分配给多个 CPU 节点</h3>
-  <p>将目标记录分成若干块，在多台 CPU 服务器上同时处理。每个任务负责定位、读取、解析与 profile 计数，使庞大的语料可以并行完成预处理，再形成训练可读取的 HDF5 产物。</p>
+  <h2><span class="retro-chapter__number">03</span> 数据处理：减少重复查找，分摊统计计算</h2>
+  <p class="retro-lede">profile 的计算本身很直接，规模放大后，重复定位、解析和 token 转换都会累积成开销。数据链路按“先定位，再计算”的顺序拆分优化。</p>
   <figure class="retro-figure pf-pipeline-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/protein-foundation/pipeline.svg">
       <picture>
@@ -119,35 +134,39 @@ counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
         <img src="{{ base_path }}/images/research/protein-foundation/pipeline.svg" alt="原始 MSA 先建立记录位置索引，再分块交给多个 CPU 节点解析与统计；HDF5 保存整数计数 C 和 MSA 条数 N，训练读取时用 C 除以 N 恢复 profile。" width="1440" height="650" loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">图 2 · 从原始 MSA 到训练输入的数据链路。位置索引减少重复查找，并行任务承担解析与统计；训练阶段复用预处理结果。</figcaption>
+    <figcaption class="retro-figure__caption">图 4 · 从原始 MSA 到训练输入的数据链路。位置索引减少重复查找，并行任务承担解析与统计；训练阶段复用预处理结果。</figcaption>
   </figure>
-  <h3>tokenizer：用计时对比选择处理方式</h3>
-  <p>定位提速之后，序列解析和 token 转换仍会被重复执行数千万次。因此，对多种 tokenizer 处理方式分别计时、列表比较，选择效率更高的实现。最终相较默认处理方式，获得了约 <strong>40% 的提速</strong>，这一结果对应预处理中的 tokenizer 环节。</p>
+  <div class="pf-decisions">
+    <article><p class="pf-stage-label">瓶颈 1 · 重复查找</p><h3>建立“记录标识 → 存储位置”索引</h3><p>每次提取目标 MSA 都从头扫描，会反复访问无关记录。先扫描建立位置索引，之后按目标标识直接定位，再读取与解析，复用已有的查找结果。</p></article>
+    <article><p class="pf-stage-label">瓶颈 2 · 统计任务量大</p><h3>按目标分块，交给多个 CPU 节点</h3><p>各目标的 MSA 统计可以分别进行。把记录分成若干块，让多台 CPU 服务器承担定位、解析、tokenize 与按列计数，形成训练可读取的预处理产物。</p></article>
+    <article><p class="pf-stage-label">瓶颈 3 · token 转换反复执行</p><h3>用计时对照选择 tokenizer 处理方式</h3><p>对多种实现分别计时比较，选择效率更高的方式。相较默认处理方式，<strong>tokenizer 环节提速约 40%</strong>；这一数字对应局部预处理环节。</p></article>
+  </div>
+  <div class="pf-code-block">
+    <p class="pf-code-label">单个目标的离线处理 · 伪代码</p>
+    <pre><code>position = record_index[target_id]
+msa_record = read_record_at(position)
+aligned_tokens = tokenize(msa_record)
+counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
+  </div>
+  <p>位置索引解决“读哪里”，分块并行解决“谁来算”，tokenizer 对照减少单条记录的转换开销。完成计算后，还要解决另一个规模问题：这些统计量应当以什么形式长期保存？</p>
 </section>
 
 <section class="retro-chapter" id="foundation-storage">
   <p class="retro-kicker">Store counts, normalize on load</p>
-  <h2><span class="retro-chapter__number">04</span> 保存整数计数，把频率计算留到加载时</h2>
-  <p class="retro-lede">profile 的分子本来就是整数。既然频率可以由计数与 MSA 条数恢复，就不必把每个位点、每个类别的频率长期保存为浮点数。</p>
-  <ol class="retro-pipeline" aria-label="profile 的存储与恢复过程">
-    <li><strong>统计：MSA → C 与 N</strong><span>沿 MSA 深度方向累加 one-hot，得到逐位点类别计数。</span></li>
-    <li><strong>落盘：HDF5 整数表示</strong><span>保存紧凑整数计数，并保留恢复频率所需的 MSA 条数。</span></li>
-    <li><strong>加载：C / N → profile</strong><span>转为浮点并归一化，交给模型作为生成条件。</span></li>
-  </ol>
-  <div class="pf-code-block">
-    <p class="pf-code-label">存储与加载的数据流 · 伪代码</p>
-    <pre><code># 离线预处理：C 的形状为 [L, K]
-C = sum(one_hot(msa_tokens), axis="msa_depth")
-save_h5(integer_counts=C, msa_count=N)
-
-# 训练加载：只在使用时恢复频率
-C, N = load_h5(record_id)
-profile = to_float(C) / N</code></pre>
+  <h2><span class="retro-chapter__number">04</span> 存储设计：保存整数计数，使用时恢复频率</h2>
+  <p class="retro-lede">既然模型使用的 profile 可以由计数和分母恢复，就可以让磁盘保存紧凑的 \(C,N\)，把浮点归一化留到训练加载时。这把模型需要的统计信息与长期存储形式分开。</p>
+  <div class="pf-storage-comparison" aria-label="预处理产物的容量变化">
+    <div><span class="pf-storage-label">朴素方案 · 初始容量估算</span><strong>十余 TB</strong><p>未经优化的数据表示与处理方案。</p></div>
+    <span class="pf-storage-arrow" aria-hidden="true">→</span>
+    <div><span class="pf-storage-label">优化后 · 实际产物规模</span><strong>一百余 GB</strong><p>完成预处理后的紧凑 HDF5 数据。</p></div>
   </div>
-  <p>这里保存的是精确计数，而不是把小数概率截断成整数。只要整数类型的范围能够覆盖最大计数，读取后的 \(C/N\) 就能恢复对应的经验频率。位宽因此应由 MSA 深度与计数范围决定。</p>
+  <div class="retro-two-column pf-role-grid">
+    <div><h3>第一层：聚合 MSA 深度</h3><p>沿 \(N\) 条序列统计，将逻辑上的 \(N\times L\times K\) 类别指示量汇总为 \(L\times K\) 计数。模型使用逐位点 profile 时，无需持久化完整 one-hot 展开。</p></div>
+    <div><h3>第二层：选择紧凑整数表示</h3><p>计数天然是整数。在相同 \(L\times K\) 形状下，以能覆盖计数范围的紧凑整数类型存储，减少每个元素所占的字节数；读取时再转成浮点数。</p></div>
+  </div>
   <div class="retro-table-scroll">
     <table class="retro-comparison">
-      <caption>表 1 · MSA、整数计数与浮点 profile 的表示区别</caption>
+      <caption>表 2 · MSA、整数计数与浮点 profile 的表示区别</caption>
       <thead><tr><th scope="col">表示</th><th scope="col">逻辑形状</th><th scope="col">保留的信息</th><th scope="col">在流程中的用途</th></tr></thead>
       <tbody>
         <tr><th scope="row">对齐后的 MSA token</th><td>\(N\times L\)</td><td>每条序列各个位点的类别</td><td>离线统计的输入</td></tr>
@@ -157,56 +176,61 @@ profile = to_float(C) / N</code></pre>
       </tbody>
     </table>
   </div>
-  <p>聚合去掉了 MSA 深度这一维；在相同的 \(L\times K\) 形状下，紧凑整数表示又减少了每个元素所占的字节数。这是两层不同的空间优化：前者改变保存的统计表示，后者改变统计量的存储类型。</p>
-  <div class="pf-storage-comparison" aria-label="预处理产物的容量变化">
-    <div><span class="pf-storage-label">朴素方案 · 初始容量估算</span><strong>十余 TB</strong><p>未经优化的数据表示与处理方案。</p></div>
-    <span class="pf-storage-arrow" aria-hidden="true">→</span>
-    <div><span class="pf-storage-label">优化后 · 实际产物规模</span><strong>一百余 GB</strong><p>完成预处理后的紧凑 HDF5 数据。</p></div>
+  <div class="pf-code-block">
+    <p class="pf-code-label">离线保存与训练加载 · 伪代码</p>
+    <pre><code># 离线：保存整数计数及分母
+save_h5(integer_counts=C, msa_count=N)
+
+# 训练：读取后恢复模型需要的频率
+C, N = load_h5(record_id)
+profile = to_float(C) / N</code></pre>
   </div>
-  <p class="retro-caption">十余 TB 为朴素方案的初始容量估算，一百余 GB 为最终 HDF5 产物规模；空间收益来自表示方式与存储类型的共同调整。</p>
+  <p>这里保留的是精确计数。整数位宽需要覆盖最大计数，类别表与对齐处理规则也必须前后一致。上述容量变化来自表示方式与存储类型的共同调整：前者为初始估算，后者为实际产物规模。</p>
+  <div class="retro-callout"><strong>对训练的意义</strong><p>解析、token 转换和按列计数都在离线阶段完成。训练侧读取计数并归一化即可使用 profile，避免每次访问样本都重复计算同一统计量。</p></div>
 </section>
 
 <section class="retro-chapter" id="foundation-training">
-  <p class="retro-kicker">Compare before the full training run</p>
-  <h2><span class="retro-chapter__number">05</span> 用短程实验筛选模块，再投入完整训练</h2>
-  <p class="retro-lede">训练一版较大的生成模型需要较多资源。前期先用 150M 模型运行短程实验，在其余训练设置一致的条件下，对比相同步数下的 loss，再确定后续使用的模块与配置。</p>
-  <h3>训练侧：比较 time embedding 如何进入网络</h3>
-  <p>时间变量描述当前的噪声阶段，time embedding 将这一信息编码后注入网络。即使骨干与训练目标相同，时间条件进入网络的方式也会影响模型学习去噪的过程，因此将它作为可替换模块进行对照。</p>
+  <p class="retro-kicker">From controlled runs to full training</p>
+  <h2><span class="retro-chapter__number">05</span> 训练落地：先筛选配置，再投入完整训练</h2>
+  <p class="retro-lede">数据准备完成后，训练还需要同时解决两件事：用对照实验筛选模型实现，并检查数据读取是否能持续供给计算。先用 150M 模型开展短程实验，再推进两种规模的完整训练。</p>
+  <figure class="pf-route" aria-labelledby="pf-training-caption">
+    <ol class="pf-route-grid pf-route-grid--three">
+      <li><span class="pf-stage-label">01 · 短程对照</span><strong>150M 模型</strong><p>其余训练设置一致，在相同步数下比较候选模块的 loss。</p></li>
+      <li><span class="pf-stage-label">02 · 训练准备</span><strong>配置与供数检查</strong><p>选择模块配置，检查 worker 并发、读取效率与 GPU 利用情况。</p></li>
+      <li><span class="pf-stage-label">03 · 完整训练</span><strong>150M + 650M</strong><p>最终完成两种参数规模的模型各一版训练。</p></li>
+    </ol>
+    <figcaption class="retro-figure__caption" id="pf-training-caption">图 5 · 从配置对照到完整训练。短程实验用于筛选实现，供数检查连接离线数据与实际训练。</figcaption>
+  </figure>
+  <h3>训练侧：比较时间条件如何进入网络</h3>
+  <p>时间变量描述当前噪声阶段，time embedding 把它编码后注入网络。固定其余训练设置，替换时间条件的注入实现，在相同步数下观察 loss 与收敛趋势，辅助选择训练配置。</p>
   <div class="retro-equation">\[e_t=\operatorname{TimeEmbed}(t),\qquad \widehat{x}=f_\theta(x_t,e_t,P).\]</div>
-  <p>上式概括模型接收的三类信息：当前状态 \(x_t\)、时间条件 \(e_t\) 和 MSA profile \(P\)。实验改变时间条件的注入实现，其余设置保持一致，在同一步数上观察 loss 与收敛趋势。比较限于相同训练目标与 loss 定义下的配置。</p>
-  <h3>采样侧：算法与超参数单独对照</h3>
-  <p>训练完成后，还需要通过迭代更新生成序列。因此，另行比较 diffusion 采样算法及其超参数，研究生成过程中的更新方式与控制选项。训练 loss 用于判断训练配置，采样算法的表现则需要在生成阶段考察。</p>
-  <div class="retro-table-scroll">
-    <table class="retro-comparison">
-      <caption>表 2 · 实验分工：训练配置筛选与采样研究</caption>
-      <thead><tr><th scope="col">对照方向</th><th scope="col">实际比较的内容</th><th scope="col">判断依据与作用</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">时间条件注入</th><td>time embedding 进入网络的实现方式</td><td>其余设置一致，比较相同步数下的 loss，辅助筛选训练配置</td></tr>
-        <tr><th scope="row">采样算法</th><td>生成阶段的迭代更新算法</td><td>研究采样过程，不能由训练 loss 直接判断生成质量</td></tr>
-        <tr><th scope="row">采样超参数</th><td>采样过程中的参数控制</td><td>配合算法对照，研究参数设置对生成过程的影响</td></tr>
-      </tbody>
-    </table>
+  <p>上式概括当前生成状态 \(x_t\)、时间条件 \(e_t\) 与 MSA profile \(P\) 三类输入。loss 对照限定在相同训练目标与定义下。</p>
+  <h3>供数侧：检查并发设置，而不只增加 worker</h3>
+  <p>训练过程中曾遇到 worker 数较大时出错、读取效率下降，以及 GPU 利用率无法充分提升的问题。因此，存储容量和运行时供数要分别考察：离线产物减少重复计算，并发读取仍需结合实际运行表现调整。</p>
+  <p>数据访问、CPU 处理和模型计算共同决定训练进度。最终完成 150M、650M 两种规模的训练，是这条数据与模型链路的落地结果。</p>
+  <div class="retro-support">
+    <h3>生成侧：采样算法另做对照</h3>
+    <p>模型训练之后，还需选择怎样迭代生成序列。采样研究比较 BFN 的 Langevin、ODE、SDE 方法，以及采样步数与起始时间等设置。训练 loss 回答配置是否在学习，生成阶段的评估则用于考察候选表现。</p>
+    <p>项目使用 pLDDT、pTM 与共进化接触质量等结构代理指标评估候选。这些指标提供结构层面的预测证据，功能与真实实验效果仍需进一步验证。</p>
   </div>
-  <h3>供数效率：更多 worker 不等于更高吞吐</h3>
-  <p>训练中还遇到过数据加载 worker 数较大时出错、读取效率下降，以及 GPU 利用率无法充分提升的问题。这说明数据已能放入磁盘，并不代表它能持续跟上模型的计算速度；读取并发也需要结合实际供数效率来调整。</p>
-  <p>数据访问、CPU 处理和模型计算共同决定训练进度。预处理阶段把解析、token 转换与 profile 计数提前完成，让训练可以直接读取计数并归一化，减少反复计算同一统计量的工作。</p>
-  <ol class="retro-pipeline" aria-label="从短程对照到最终训练">
-    <li><strong>150M：短程对照</strong><span>在相同训练设置下比较候选模块的收敛表现。</span></li>
-    <li><strong>确定模块与数据流程</strong><span>结合配置对照与数据处理优化，形成完整训练方案。</span></li>
-    <li><strong>150M + 650M：最终训练</strong><span>完成两种参数规模的模型各一版训练。</span></li>
-  </ol>
 </section>
 
 <section class="retro-chapter" id="foundation-summary">
   <p class="retro-kicker">Engineering contributions</p>
-  <h2><span class="retro-chapter__number">06</span> 把数据处理与实验流程，接到最终模型训练</h2>
-  <p class="retro-lede">这项工作的主要贡献集中在生成模型的工程实现：使大规模 MSA 能够被定位、统计、紧凑保存并送入训练，再通过充分的前期对照减少完整训练中的反复试错。</p>
-  <div class="retro-results-grid">
-    <div><strong>一百余 GB</strong><span class="retro-result__label">最终预处理产物</span><p>朴素方案的初始容量估算为十余 TB；以整数计数及分母保存 profile 所需信息。</p></div>
-    <div><strong>约 40%</strong><span class="retro-result__label">tokenizer 环节提速</span><p>对多种处理方式计时比较，相较默认处理方式提升预处理效率。</p></div>
-    <div><strong>150M / 650M</strong><span class="retro-result__label">最终训练规模</span><p>前期使用 150M 做短程配置对照，最终两种规模各完成一版训练。</p></div>
+  <h2><span class="retro-chapter__number">06</span> 将模型设计接到可运行的大规模训练链路</h2>
+  <p class="retro-lede">模型设计确定如何利用 MSA 条件，工程实现则让这些条件能够被大规模地计算、保存和送入训练。项目重点在于把两者连接起来，并用前期对照支持完整训练。</p>
+  <div class="retro-table-scroll">
+    <table class="retro-comparison">
+      <caption>表 3 · 从具体问题到已完成工作</caption>
+      <thead><tr><th scope="col">问题</th><th scope="col">关键改动</th><th scope="col">对应结果</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">数据处理开销</th><td>位置索引、分块并行与 tokenizer 计时筛选</td><td>减少重复查找；tokenizer 环节提速约 40%</td></tr>
+        <tr><th scope="row">统计表示占空间</th><td>MSA 聚合为整数计数，HDF5 保存，加载时归一化</td><td>最终产物一百余 GB；朴素方案初始估算十余 TB</td></tr>
+        <tr><th scope="row">完整训练试错成本</th><td>150M 短程配置对照，结合运行时供数检查</td><td>完成 150M、650M 各一版最终训练</td></tr>
+      </tbody>
+    </table>
   </div>
-  <p>贯穿其中的做法是：把反复查找改为位置索引，把独立统计分给多个 CPU 节点，把可恢复的浮点频率改为整数计数存储，再将训练与采样的不同选择放到各自的对照流程中。由此，大规模数据处理与模型实验形成一条能够实际运行的链路，为后续候选生成与性质筛选提供基础。</p>
+  <p>这条链路的关键接口是 profile：离线阶段保存足以恢复它的统计量，训练阶段按需读取，生成阶段由模型结合条件与上下文提出候选。围绕这一接口，数据处理、存储设计和模型实验形成了清楚的分工。</p>
   <div class="retro-support pf-references">
     <h3>实现概念参考</h3>
     <p>位置索引的通用思路可参见 <a href="https://www.htslib.org/doc/faidx.html" target="_blank" rel="noopener noreferrer">HTSlib 的 FASTA / FASTQ 索引说明</a>；HDF5 数组形状与存储类型的接口可参见 <a href="https://docs.h5py.org/en/stable/high/dataset.html" target="_blank" rel="noopener noreferrer">h5py Dataset 文档</a>。</p>

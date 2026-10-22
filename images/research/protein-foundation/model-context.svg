@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="850" viewBox="0 0 1440 850" role="img" aria-labelledby="title desc">
+  <title id="title">MSA 条件如何参与蛋白质序列生成</title>
+  <desc id="desc">对齐的 MSA 按列统计得到 profile，作为条件送入由 ESM-2 改造的 DiT。模型同时读取当前生成状态与时间，输出预测，采样算法据此更新状态并重复计算。最终候选序列接受结构代理评估。BFN 与 DFM 是比较的生成框架，各自使用相应的状态与更新规则。图示仅突出模型内条件注入；DFM 的 profile 初始化属于另一项对照。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M2 2 L9 6 L2 10" fill="none" stroke="#25766c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+    <style>
+      text{font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;fill:#243a35}
+      .card{fill:#fff;stroke:#d6e3dc;stroke-width:2}
+      .heading{font-size:29px;font-weight:700}
+      .body{font-size:24px;fill:#50615b}
+      .label{font-size:23px;fill:#25766c}
+      .line{fill:none;stroke:#25766c;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1440" height="850" fill="#faf9f4"/>
+  <text x="56" y="53" font-size="24" letter-spacing="2" fill="#25766c">MODEL CONTEXT</text>
+  <text x="56" y="105" font-size="38" font-weight="700">MSA profile 连接离线统计与条件生成</text>
+
+  <rect class="card" x="56" y="150" width="350" height="140" rx="16"/>
+  <text class="heading" x="231" y="202" text-anchor="middle">MSA 对齐序列</text>
+  <text class="body" x="231" y="248" text-anchor="middle">同一位点上的多条观测</text>
+  <path class="line" d="M406 220 H545"/>
+  <text class="label" x="475" y="192" text-anchor="middle">按列统计</text>
+  <rect x="545" y="150" width="350" height="140" rx="16" fill="#e9f3ed" stroke="#a9cfc3" stroke-width="2"/>
+  <text class="heading" x="720" y="202" text-anchor="middle">MSA profile · P</text>
+  <text class="body" x="720" y="248" text-anchor="middle">各位点的氨基酸频率</text>
+  <path class="line" d="M720 290 V370"/>
+  <text class="label" x="746" y="338">条件注入</text>
+  <text class="body" x="1045" y="206">离线预处理的产物</text>
+  <text class="body" x="1045" y="248">成为模型的生成条件</text>
+
+  <rect class="card" x="56" y="370" width="350" height="180" rx="16"/>
+  <text class="heading" x="231" y="424" text-anchor="middle">当前生成状态</text>
+  <text x="231" y="470" text-anchor="middle" font-size="30" fill="#25766c">xₜ + 时间 t</text>
+  <text class="body" x="231" y="515" text-anchor="middle">每一步重新输入</text>
+  <path class="line" d="M406 460 H545"/>
+
+  <rect x="545" y="370" width="350" height="180" rx="16" fill="#e9f3ed" stroke="#25766c" stroke-width="2.5"/>
+  <text class="heading" x="720" y="424" text-anchor="middle">DiT 生成模型</text>
+  <text class="body" x="720" y="470" text-anchor="middle">由 ESM-2 改造</text>
+  <text class="body" x="720" y="515" text-anchor="middle">比较不同条件注入实现</text>
+  <path class="line" d="M895 460 H1034"/>
+  <text class="label" x="964" y="432" text-anchor="middle">模型预测</text>
+
+  <rect class="card" x="1034" y="370" width="350" height="180" rx="16"/>
+  <text class="heading" x="1209" y="424" text-anchor="middle">采样更新</text>
+  <text class="body" x="1209" y="470" text-anchor="middle">按对应框架推进状态</text>
+  <text class="body" x="1209" y="515" text-anchor="middle">重复迭代，直至输出</text>
+  <path class="line" d="M1100 550 V610 H231 V550"/>
+  <rect x="467" y="591" width="380" height="38" rx="6" fill="#faf9f4"/>
+  <text class="label" x="657" y="618" text-anchor="middle">下一状态 → 再次预测与更新</text>
+  <path class="line" d="M1295 550 V650 H720 V690"/>
+  <text class="label" x="1150" y="681">生成结束</text>
+
+  <rect class="card" x="545" y="690" width="350" height="110" rx="16"/>
+  <text class="heading" x="720" y="754" text-anchor="middle">候选蛋白质序列</text>
+  <path class="line" d="M895 745 H1034"/>
+  <rect x="1034" y="690" width="350" height="110" rx="16" fill="#f6efd9" stroke="#dbc695" stroke-width="2"/>
+  <text class="heading" x="1209" y="739" text-anchor="middle">结构代理评估</text>
+  <text class="body" x="1209" y="779" text-anchor="middle">检验生成结果</text>
+  <text class="label" x="56" y="720">比较框架：BFN / DFM</text>
+  <text class="body" x="56" y="763">各用相应状态与更新规则</text>
+</svg>
