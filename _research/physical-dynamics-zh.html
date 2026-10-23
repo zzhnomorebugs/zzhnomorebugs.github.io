@@ -219,34 +219,41 @@ project_chapters:
   <div class="retro-equation">\[P_\ell=\sum_{k=1}^{K}m_kV_{\ell,k},\qquad \bar P=\frac1L\sum_{\ell=1}^{L}P_\ell.\]</div>
   <div class="retro-equation">\[\mathcal L_P=\mathbb E\!\left[w(t)\sum_{\ell=1}^{L}\|\hat P_\ell-\bar{\hat P}\|^2\right].\]</div>
   <p>约束要求一条轨迹的总动量保持恒定，不要求所有样本都具有同一个动量值。该残差对速度是线性的，因此适合直接用于去噪输出；五弹簧主实验采用这一类训练项。</p>
-  <h3 id="physical-energy">三体能量守恒：训练时具体怎么加？</h3>
-  <p>三颗等质量粒子（质量 \(m\)）的能量由速度平方与距离倒数组成。每对粒子只计一次：</p>
-  <div class="retro-equation">\[E_\ell=\frac m2\sum_{k=1}^{3}\sum_{d=1}^{3}V_{\ell,k,d}^{\,2}-Gm^2\sum_{i&lt;j}\frac1{r_{\ell,ij}},\qquad r_{\ell,ij}=\|C_{\ell,i}-C_{\ell,j}\|.\]</div>
-  <p>主实验采用<strong>可约非线性方案</strong>：将这两类量分别对齐干净轨迹的真值，再与噪声预测联合训练。</p>
-  <div class="physical-energy-flow" role="group" aria-label="三体能量监督的训练流程">
-    <ol class="physical-energy-steps">
-      <li><span class="physical-energy-label">01 · 整段加噪</span><strong>位置与速度一起输入</strong><div class="retro-equation">\[x_0=(C,V)\]
-        \[x_t=\alpha_t x_0+\sigma_t\epsilon\]</div></li>
-      <li><span class="physical-energy-label">02 · GRU 去噪</span><strong>预测加入的噪声</strong><div class="retro-equation">\[\hat\epsilon=\epsilon_\theta(x_t,t)\]
-        \[\mathcal L_\epsilon=\|\hat\epsilon-\epsilon\|^2\]</div></li>
-      <li><span class="physical-energy-label">03 · 还原干净估计</span><strong>得到预测位置与速度</strong><div class="retro-equation">\[\hat x_0=\frac{x_t-\sigma_t\hat\epsilon}{\alpha_t}\]
-        \[\hat x_0=(\hat C,\hat V)\]</div></li>
-    </ol>
-    <div class="physical-energy-connector" aria-hidden="true">↓</div>
-    <p class="physical-energy-branch-label">04 · 从预测中计算两类量，与同一训练样本逐帧对齐</p>
-    <div class="physical-energy-branches">
-      <div><strong>势能分支 · 距离倒数</strong><div class="retro-equation">\[\hat r_{\ell,ij}=\|\hat C_{\ell,i}-\hat C_{\ell,j}\|\]
-        \[\mathcal L_r=\sum_{\ell,i\ne j}\left(\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right)^2\]</div></div>
-      <div><strong>动能分支 · 速度分量平方</strong><div class="retro-equation">\[\hat V_{\ell,k,d}\longmapsto\hat V_{\ell,k,d}^{\,2}\]
-        \[\mathcal L_v=\sum_{\ell,k,d}\left(\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right)^2\]</div></div>
+  <h3 id="physical-energy">三体：从能量守恒式拆解到 loss</h3>
+  <p>三颗等质量粒子（质量 \(m\)），每对粒子只计一次。下面沿<strong>守恒式 → 能量组成量 → 分项误差 → 训练损失</strong>展开。</p>
+  <div class="physical-energy-flow" role="group" aria-label="从三体能量守恒公式推导分项损失">
+    <div class="physical-energy-stage"><span class="physical-energy-label">01 · 写出守恒式</span>
+      <div class="retro-equation">\[E_\ell=\underbrace{-Gm^2\sum_{i&lt;j}\frac1{r_{\ell,ij}}}_{U_\ell}+\underbrace{\frac m2\sum_{k,d}V_{\ell,k,d}^{\,2}}_{K_\ell}=E^*.\]</div>
+      <p>势能 \(U_\ell\) 与动能 \(K_\ell\) 可以相互转换，只有总和沿物理时间 \(\ell\) 不变；\(E^*\) 可因轨迹而异。</p>
     </div>
     <div class="physical-energy-connector" aria-hidden="true">↓</div>
-    <div class="physical-energy-joint"><span class="physical-energy-label">05 · 联合反向传播</span>
-      <div class="retro-equation">\[\mathcal L=\mathbb E_{x_0,t,\epsilon}\!\left[w(t)\mathcal L_\epsilon+w_1(t)\mathcal L_r+w_2(t)\mathcal L_v\right]\]</div>
-      <p>梯度经距离倒数、平方运算与去噪还原传回 GRU；生成时仍走反向扩散。</p>
+    <div class="physical-energy-stage"><span class="physical-energy-label">02 · 提取非线性组成量，让外层变为线性求和</span>
+      <div class="retro-equation">\[u_{\ell,ij}=\frac1{r_{\ell,ij}},\qquad s_{\ell,k,d}=V_{\ell,k,d}^{\,2}\]
+        \[E_\ell=-Gm^2\sum_{i&lt;j}u_{\ell,ij}+\frac m2\sum_{k,d}s_{\ell,k,d}=a^\top h_\ell.\]</div>
+      <p>将所有 \(u,s\) 排成向量 \(h_\ell\)，相应系数组成 \(a\)；距离为 \(r_{\ell,ij}=\|C_{\ell,i}-C_{\ell,j}\|\)。</p>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <div class="physical-energy-stage"><span class="physical-energy-label">03 · 为什么可以改为监督组成量？</span>
+      <div class="retro-equation">\[\hat E_\ell-E^*=a^\top(\hat h_\ell-h_\ell)\]
+        \[|\hat E_\ell-E^*|^2\leq\|a\|^2\,\|\hat h_\ell-h_\ell\|^2.\]</div>
+      <p>帽号表示去噪预测。由 Cauchy–Schwarz 不等式，组成量误差可控制能量误差；即使动能与势能的误差相互抵消，逐项损失仍会惩罚它们。</p>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <p class="physical-energy-branch-label">04 · 对齐同一干净轨迹的逐帧真值，分别平方、求和</p>
+    <div class="physical-energy-branches">
+      <div><strong>距离倒数误差</strong><div class="retro-equation">\[\mathcal L_r=\sum_{\ell,i&lt;j}(\hat u_{\ell,ij}-u_{\ell,ij})^2\]
+        \[=\sum_{\ell,i&lt;j}\left(\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right)^2\]</div></div>
+      <div><strong>速度分量平方的误差</strong><div class="retro-equation">\[\mathcal L_v=\sum_{\ell,k,d}(\hat s_{\ell,k,d}-s_{\ell,k,d})^2\]
+        \[=\sum_{\ell,k,d}\left(\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right)^2\]</div></div>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <div class="physical-energy-joint"><strong>加权后，加入原有扩散损失</strong>
+      <div class="retro-equation">\[\mathcal L_E=\mathbb E_{x_0,t,\epsilon}\!\left[w_1(t)\mathcal L_r+w_2(t)\mathcal L_v\right]\]
+        \[\mathcal L=\mathcal L_{\mathrm{noise}}+\mathcal L_E.\]</div>
+      <p>主实验由去噪位置、速度直接计算 \(\hat u=1/\hat r\)、\(\hat s=\hat V^2\)，无须预先给定 \(E^*\)。</p>
     </div>
   </div>
-  <p class="retro-caption">真值来自干净训练轨迹，无须预设总能量常数；\(w,w_1,w_2\) 控制各项权重。这里加入的是软监督，不保证生成轨迹严格守恒。另一种“一般非线性”变体才使用共享 GRU 表示的辅助头，直接预测距离倒数与速度平方。</p>
+  <p class="retro-caption">这里是由守恒结构引出的分项软监督，并非守恒式的等价变形；也不要求动能、势能各自恒定，不保证生成结果严格守恒。粒子对的重复计数系数可并入 \(w_1\)。</p>
   <div class="retro-support">
     <h3>具体网络承载什么？</h3>
     <p>三体使用 GRU 处理时间序列；五弹簧使用 EGNN 提取粒子和连边特征，并结合 GRU 处理时间变化；PDE 按任务采用 GRU 或 U-Net，Darcy、Burgers 与浅水使用 U-Net 系列。框架的重点是输出目标与物理损失如何匹配，而不是为所有物理系统指定同一个网络。</p>

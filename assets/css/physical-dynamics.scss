@@ -81,20 +81,13 @@
   background: var(--retro-accent-soft);
   text-align: center;
 }
-.physical-project .physical-energy-steps,
 .physical-project .physical-energy-branches {
   display: grid;
   gap: 1.65rem;
   align-items: stretch;
 }
-.physical-project .physical-energy-steps {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
 .physical-project .physical-energy-branches { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.physical-project .physical-energy-steps > li,
+.physical-project .physical-energy-stage,
 .physical-project .physical-energy-branches > div,
 .physical-project .physical-energy-joint {
   min-width: 0;
@@ -103,14 +96,6 @@
   border: 1px solid var(--retro-line);
   border-radius: 5px;
   background: var(--retro-paper);
-}
-.physical-project .physical-energy-steps > li { position: relative; }
-.physical-project .physical-energy-steps > li + li::before {
-  content: "→";
-  position: absolute;
-  left: -1.5rem;
-  top: 45%;
-  color: var(--retro-accent);
 }
 .physical-project .physical-energy-label {
   display: block;
@@ -133,18 +118,12 @@
   font-size: 0.82rem;
   font-weight: 600;
 }
+.physical-project .physical-energy-stage p,
 .physical-project .physical-energy-joint p { margin: 0.6rem 0 0; font-size: 0.8rem; }
 @media (max-width: 740px) {
   .physical-project .physical-energy-flow { padding: 0.8rem; }
-  .physical-project .physical-energy-steps,
   .physical-project .physical-energy-branches { grid-template-columns: 1fr; }
   .physical-project .physical-energy-branches { gap: 0.8rem; }
-  .physical-project .physical-energy-steps > li + li::before {
-    content: "↓";
-    top: -1.65rem;
-    left: 50%;
-    transform: translateX(-50%);
-  }
   .physical-project .physical-evidence { grid-template-columns: 1fr; gap: 1.4rem; }
   .physical-project .physical-evidence figure { max-width: 620px; width: 100%; margin: 0 auto; }
   .physical-project .physical-evidence h3 { font-size: 0.86rem; }

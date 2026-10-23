@@ -220,34 +220,41 @@ project_chapters:
   <div class="retro-equation">\[P_\ell=\sum_{k=1}^{K}m_kV_{\ell,k},\qquad \bar P=\frac1L\sum_{\ell=1}^{L}P_\ell.\]</div>
   <div class="retro-equation">\[\mathcal L_P=\mathbb E\!\left[w(t)\sum_{\ell=1}^{L}\|\hat P_\ell-\bar{\hat P}\|^2\right].\]</div>
   <p>The constraint requires total momentum to remain constant within a trajectory, without requiring all samples to share the same momentum value. This residual is linear in velocity, making it suitable for the denoised output directly; the main five-spring experiment uses this type of training term.</p>
-  <h3 id="physical-energy">Three-body energy conservation: how is it implemented?</h3>
-  <p>For three equal masses \(m\), energy combines squared velocities and inverse distances. Counting each particle pair once:</p>
-  <div class="retro-equation">\[E_\ell=\frac m2\sum_{k=1}^{3}\sum_{d=1}^{3}V_{\ell,k,d}^{\,2}-Gm^2\sum_{i&lt;j}\frac1{r_{\ell,ij}},\qquad r_{\ell,ij}=\|C_{\ell,i}-C_{\ell,j}\|.\]</div>
-  <p>The main experiment uses the <strong>reducible nonlinear scheme</strong>: match these two features to clean-trajectory targets alongside noise prediction.</p>
-  <div class="physical-energy-flow" role="group" aria-label="Three-body energy supervision during training">
-    <ol class="physical-energy-steps">
-      <li><span class="physical-energy-label">01 · Add noise</span><strong>Joint positions and velocities</strong><div class="retro-equation">\[x_0=(C,V)\]
-        \[x_t=\alpha_t x_0+\sigma_t\epsilon\]</div></li>
-      <li><span class="physical-energy-label">02 · GRU denoising</span><strong>Predict the added noise</strong><div class="retro-equation">\[\hat\epsilon=\epsilon_\theta(x_t,t)\]
-        \[\mathcal L_\epsilon=\|\hat\epsilon-\epsilon\|^2\]</div></li>
-      <li><span class="physical-energy-label">03 · Clean estimate</span><strong>Recover positions and velocities</strong><div class="retro-equation">\[\hat x_0=\frac{x_t-\sigma_t\hat\epsilon}{\alpha_t}\]
-        \[\hat x_0=(\hat C,\hat V)\]</div></li>
-    </ol>
-    <div class="physical-energy-connector" aria-hidden="true">↓</div>
-    <p class="physical-energy-branch-label">04 · Compute two features and match the clean training sample frame by frame</p>
-    <div class="physical-energy-branches">
-      <div><strong>Potential energy · inverse distances</strong><div class="retro-equation">\[\hat r_{\ell,ij}=\|\hat C_{\ell,i}-\hat C_{\ell,j}\|\]
-        \[\mathcal L_r=\sum_{\ell,i\ne j}\left(\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right)^2\]</div></div>
-      <div><strong>Kinetic energy · squared components</strong><div class="retro-equation">\[\hat V_{\ell,k,d}\longmapsto\hat V_{\ell,k,d}^{\,2}\]
-        \[\mathcal L_v=\sum_{\ell,k,d}\left(\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right)^2\]</div></div>
+  <h3 id="physical-energy">Three-body: from energy conservation to a loss</h3>
+  <p>Consider three equal masses \(m\), counting each pair once. Follow <strong>conservation → energy features → component errors → training loss</strong>.</p>
+  <div class="physical-energy-flow" role="group" aria-label="Deriving component losses from three-body energy conservation">
+    <div class="physical-energy-stage"><span class="physical-energy-label">01 · Start with conservation</span>
+      <div class="retro-equation">\[E_\ell=\underbrace{-Gm^2\sum_{i&lt;j}\frac1{r_{\ell,ij}}}_{U_\ell}+\underbrace{\frac m2\sum_{k,d}V_{\ell,k,d}^{\,2}}_{K_\ell}=E^*.\]</div>
+      <p>Potential energy \(U_\ell\) and kinetic energy \(K_\ell\) can exchange; only their sum stays constant over physical time \(\ell\). Each trajectory may have a different \(E^*\).</p>
     </div>
     <div class="physical-energy-connector" aria-hidden="true">↓</div>
-    <div class="physical-energy-joint"><span class="physical-energy-label">05 · Joint backpropagation</span>
-      <div class="retro-equation">\[\mathcal L=\mathbb E_{x_0,t,\epsilon}\!\left[w(t)\mathcal L_\epsilon+w_1(t)\mathcal L_r+w_2(t)\mathcal L_v\right]\]</div>
-      <p>Gradients flow through inverse distances, squares, and the clean estimate back to the GRU. Sampling still uses reverse diffusion.</p>
+    <div class="physical-energy-stage"><span class="physical-energy-label">02 · Extract nonlinear features; the outer sum becomes linear</span>
+      <div class="retro-equation">\[u_{\ell,ij}=\frac1{r_{\ell,ij}},\qquad s_{\ell,k,d}=V_{\ell,k,d}^{\,2}\]
+        \[E_\ell=-Gm^2\sum_{i&lt;j}u_{\ell,ij}+\frac m2\sum_{k,d}s_{\ell,k,d}=a^\top h_\ell.\]</div>
+      <p>Stack all \(u,s\) into \(h_\ell\), with coefficients in \(a\); distances are \(r_{\ell,ij}=\|C_{\ell,i}-C_{\ell,j}\|\).</p>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <div class="physical-energy-stage"><span class="physical-energy-label">03 · Why supervise the features?</span>
+      <div class="retro-equation">\[\hat E_\ell-E^*=a^\top(\hat h_\ell-h_\ell)\]
+        \[|\hat E_\ell-E^*|^2\leq\|a\|^2\,\|\hat h_\ell-h_\ell\|^2.\]</div>
+      <p>Hats denote denoised predictions. By Cauchy–Schwarz, feature error bounds energy error; component losses penalize kinetic and potential errors even when they cancel in total energy.</p>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <p class="physical-energy-branch-label">04 · Match the clean trajectory frame by frame; square and sum each error</p>
+    <div class="physical-energy-branches">
+      <div><strong>Inverse-distance error</strong><div class="retro-equation">\[\mathcal L_r=\sum_{\ell,i&lt;j}(\hat u_{\ell,ij}-u_{\ell,ij})^2\]
+        \[=\sum_{\ell,i&lt;j}\left(\frac1{\hat r_{\ell,ij}}-\frac1{r_{\ell,ij}}\right)^2\]</div></div>
+      <div><strong>Squared-velocity component error</strong><div class="retro-equation">\[\mathcal L_v=\sum_{\ell,k,d}(\hat s_{\ell,k,d}-s_{\ell,k,d})^2\]
+        \[=\sum_{\ell,k,d}\left(\hat V_{\ell,k,d}^{\,2}-V_{\ell,k,d}^{\,2}\right)^2\]</div></div>
+    </div>
+    <div class="physical-energy-connector" aria-hidden="true">↓</div>
+    <div class="physical-energy-joint"><strong>Weight the terms and add the diffusion loss</strong>
+      <div class="retro-equation">\[\mathcal L_E=\mathbb E_{x_0,t,\epsilon}\!\left[w_1(t)\mathcal L_r+w_2(t)\mathcal L_v\right]\]
+        \[\mathcal L=\mathcal L_{\mathrm{noise}}+\mathcal L_E.\]</div>
+      <p>The main experiment computes \(\hat u=1/\hat r\) and \(\hat s=\hat V^2\) directly from denoised positions and velocities, without specifying \(E^*\).</p>
     </div>
   </div>
-  <p class="retro-caption">Targets come from clean training trajectories; no total-energy constant is required. \(w,w_1,w_2\) weight the losses. This soft supervision does not guarantee exact conservation. Only the separate “general nonlinear” variant uses auxiliary heads sharing the GRU representation to predict inverse distances and squared velocities directly.</p>
+  <p class="retro-caption">This is soft component supervision motivated by conservation, not an equivalent rewriting of it. It neither requires kinetic and potential energy to remain separately constant nor guarantees exact conservation in generated samples. Duplicate-pair factors can be absorbed into \(w_1\).</p>
   <div class="retro-support">
     <h3>What do the specific networks handle?</h3>
     <p>The three-body model uses a GRU for time series; the five-spring model uses an EGNN to extract particle and edge features, combined with a GRU for temporal variation; the PDE models use a GRU or U-Net according to the task, with U-Net variants for Darcy, Burgers, and shallow water. The framework focuses on matching output targets with physical losses, rather than prescribing a single network for every physical system.</p>
