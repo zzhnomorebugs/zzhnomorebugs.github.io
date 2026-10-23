@@ -16,6 +16,7 @@ tldr_zh: '逆合成中原子顺序至关重要：将反应中心原子置于序�
 
 venue: 'ICML2026'
 paperurl: 'https://arxiv.org/pdf/2602.13136v1'
+githuburl: 'https://github.com/LOGO-CUHKSZ/RetroDiT'
 posterurl: 'https://icml.cc/media/PosterPDFs/ICML%202026/60684.png'
 poster_image: publications/posters/retro_order_poster.png
 poster_thumb: publications/posters/retro_order_poster_thumb.webp
