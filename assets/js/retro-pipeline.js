@@ -24,6 +24,8 @@
   var nodeDraws = data.nodes.map(function (_, i) { return (0.137 + i * 0.239) % 1; });
   var edgeDraws = data.edges.map(function (_, i) { return (0.613 + i * 0.317) % 1; });
   var value = 0, stage = -1, running = false, previousTime = 0, frame = 0;
+  var visible = false, autoplayStarted = false, userPaused = false, resumeOnVisible = false;
+  var loopElapsed = 0, loopDelay = 1200;
   var circumference = 2 * Math.PI * data.ringRadius;
   var fields = {};
   figure.querySelectorAll("[data-rt-field]").forEach(function (svg) {
@@ -180,6 +182,7 @@
   }
   function updateControls() {
     play.textContent = running ? (zh ? "暂停" : "Pause") : value >= 1000 ? (zh ? "重新播放" : "Replay") : (zh ? "播放讲解" : "Play walkthrough");
+    play.setAttribute("aria-pressed", String(running));
     prev.disabled = stage === 0;
     next.disabled = stage === sceneCount - 1;
     slider.value = Math.round(value);
@@ -237,35 +240,52 @@
     }
     updateControls();
   }
-  function pause() { running = false; previousTime = 0; cancelAnimationFrame(frame); updateControls(); }
+  function pause(manual) {
+    running = false; previousTime = 0; cancelAnimationFrame(frame);
+    if (manual) { userPaused = true; resumeOnVisible = false; }
+    updateControls();
+  }
   function tick(timestamp) {
     if (!running) return;
-    if (previousTime) render(value+(timestamp-previousTime)*1000/duration);
+    var delta = previousTime ? Math.max(0, timestamp-previousTime) : 0;
     previousTime = timestamp;
-    if (value >= 1000) pause(); else frame = requestAnimationFrame(tick);
+    if (value >= 1000) {
+      // Hold the completed reactants briefly before the next walkthrough.
+      // This clock only advances while the animation is visible and playing.
+      loopElapsed += delta;
+      if (loopElapsed >= loopDelay) { loopElapsed = 0; render(0); }
+    } else {
+      render(value+delta*1000/duration);
+      if (value >= 1000) loopElapsed = 0;
+    }
+    if (value >= 1000 && motion.matches) { pause(false); return; }
+    frame = requestAnimationFrame(tick);
   }
-  function start() {
+  function start(resume) {
     if (running) return;
+    userPaused = false; autoplayStarted = true;
+    if (!visible || document.hidden) { resumeOnVisible = true; updateControls(); return; }
+    resumeOnVisible = false;
     running = true; previousTime = 0;
-    if (value >= 1000) render(0);
+    if (value >= 1000 && !resume) { loopElapsed = 0; render(0); }
     updateControls(); frame = requestAnimationFrame(tick);
   }
   function jump(index) {
-    pause(); index = Math.max(0, Math.min(sceneCount-1,index));
+    pause(true); loopElapsed = 0; index = Math.max(0, Math.min(sceneCount-1,index));
     render(index === sceneCount-1 ? 1000 : starts[index]+(starts[index+1]-starts[index])*0.99);
   }
-  play.addEventListener("click", function () { if (running) pause(); else start(); });
+  play.addEventListener("click", function () { if (running) pause(true); else start(); });
   prev.addEventListener("click", function () { jump(stage-1); });
   next.addEventListener("click", function () { jump(stage+1); });
-  slider.addEventListener("input", function () { var requested = Number(slider.value); pause(); render(requested); });
+  slider.addEventListener("input", function () { var requested = Number(slider.value); pause(true); loopElapsed = 0; render(requested); });
   sampleButtons.forEach(function (button, index) {
-    button.addEventListener("click", function () { pause(); selectedCase = index; root = data.cases[index].root; syncCase(); markRoot(root); alignRows(1); jump(0); });
+    button.addEventListener("click", function () { pause(true); selectedCase = index; root = data.cases[index].root; syncCase(); markRoot(root); alignRows(1); jump(0); });
   });
   rootButtons.forEach(function (button) {
-    button.addEventListener("click", function () { pause(); root = button.dataset.root; alignRows(1); jump(1); });
+    button.addEventListener("click", function () { pause(true); root = button.dataset.root; alignRows(1); jump(1); });
   });
   figure.querySelector("[data-rt-redraw]").addEventListener("click", function () {
-    pause(); selectedCase = Math.floor(Math.random()*data.cases.length);
+    pause(false); loopElapsed = 0; selectedCase = Math.floor(Math.random()*data.cases.length);
     root = data.cases[selectedCase].roots[Math.floor(Math.random()*2)];
     // Hold the demonstration at t=.45; the training formula still samples t in general.
     time = 0.45;
@@ -274,10 +294,24 @@
     syncCase(); markRoot(root); alignRows(1); render(0); start();
   });
   steps.forEach(function (button, index) { button.disabled = false; button.addEventListener("click", function () { jump(index); }); });
-  document.addEventListener("visibilitychange", function () { if (document.hidden && running) pause(); });
-  motion.addEventListener("change", function () { pause(); render(value); });
-  if ("IntersectionObserver" in window) new IntersectionObserver(function (entries) { if (!entries[0].isIntersecting && running) pause(); }, {threshold:0}).observe(figure);
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) { resumeOnVisible = resumeOnVisible || running; pause(false); }
+    else if (visible && !userPaused && (resumeOnVisible || (!autoplayStarted && !motion.matches))) start(true);
+  });
+  motion.addEventListener("change", function () {
+    if (motion.matches) { resumeOnVisible = false; pause(false); }
+    else if (!userPaused) { resumeOnVisible = true; start(true); }
+    render(value);
+  });
   syncCase(); markRoot(root); alignRows(1);
   renderField("probability", time, 0); renderField("sample", time, 1);
   figure.classList.add("is-ready"); figure.querySelector(".rt-controls").hidden = false; render(0);
+  var screen = figure.querySelector(".rt-screen");
+  if ("IntersectionObserver" in window) new IntersectionObserver(function (entries) {
+    var entry = entries[0]; visible = entry.isIntersecting;
+    if (!visible) { if (running) { resumeOnVisible = true; pause(false); } return; }
+    if (resumeOnVisible && !userPaused) start(true);
+    else if (!autoplayStarted && !userPaused && !motion.matches && entry.intersectionRect.height >= Math.min(240, screen.clientHeight*0.35)) start(true);
+  }, {threshold:[0,0.15,0.3,0.5,0.7,1]}).observe(screen);
+  else { visible = true; if (!motion.matches) start(); }
 })();

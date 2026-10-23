@@ -106,7 +106,7 @@
     var view='overview',walkPosition=0,viewTime=0,inspectAt=8,inspected=false;
     var autoplayStarted=false,visible=false,resumeOnVisible=false,userPaused=false;
     var readDuration=1750,stageDuration=3500,walkStepDuration=300,resumeStepDuration=200,focusDuration=550,zoomInDuration=600,recomputeHoldDuration=1000,zoomOutDuration=1200;
-    var fps=60,frame=0,playhead=0;
+    var fps=60,frame=0,playhead=0,loopPauseDuration=1200;
     function frames(ms){return Math.round(ms*fps/1000);}
     function timelineBounds(){
       var focus=inspectAt*frames(walkStepDuration),zoomIn=focus+frames(focusDuration),detail=zoomIn+frames(zoomInDuration);
@@ -428,9 +428,17 @@
     function tick(now){
       if(!playing)return;
       var delta=last?Math.max(0,now-last):0;last=now;
-      playhead=Math.min(timelineBounds().total,playhead+delta*fps/1000);
+      var end=timelineBounds().total;
+      // Keep the completed trajectory visible before replaying the full story.
+      // The dwell shares the playhead, so leaving the viewport pauses it too.
+      playhead=Math.min(end+frames(loopPauseDuration),playhead+delta*fps/1000);
       applyFrame(Math.floor(playhead+1e-7));
-      if(view==='done'){pause(false);return;}
+      if(view==='done'){
+        if(reduced.matches){pause(false);return;}
+        if(playhead>=end+frames(loopPauseDuration)){
+          inspectAt=8;playhead=0;applyFrame(0);
+        }
+      }
       raf=requestAnimationFrame(tick);
     }
     function reset(){
@@ -458,7 +466,11 @@
       if(document.hidden){resumeOnVisible=resumeOnVisible||playing;pause(false);}
       else if(resumeOnVisible&&!userPaused&&visible)run();
     });
-    reduced.addEventListener('change',function(){if(reduced.matches)pause(true);render();});
+    reduced.addEventListener('change',function(){
+      if(reduced.matches){resumeOnVisible=false;pause(false);}
+      else if(!userPaused&&(resumeOnVisible||!autoplayStarted||view!=='done'))run();
+      render();
+    });
     var width=scene.clientWidth;build();
     if('ResizeObserver'in window)new ResizeObserver(function(){if(Math.abs(scene.clientWidth-width)>1){width=scene.clientWidth;build();}}).observe(scene);
     root.dataset.mappingReady='true';controls.hidden=false;buttons();
