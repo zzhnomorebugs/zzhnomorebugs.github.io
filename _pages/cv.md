@@ -143,7 +143,8 @@ Shanghai AI Laboratory · Aug. 2025 - May 2026
 <article class="cv-entry cv-project">
 <div class="cv-project-top">
 <div class="cv-entry-head"><h3>Protein Sequence Generation: MSA Modeling and Property-Controlled Editing</h3></div>
-{% include cv-project-visual.html image="images/cv/protein-sequence.svg" alt="Abstract illustration of protein sequence modeling" caption="Sequence modeling & controlled generation" %}
+{% assign protein_control_project = site.research | where: "permalink", "/research/protein-control/" | where_exp: "item", "item.published != false" | first %}
+{% include cv-project-visual.html image="images/cv/protein-sequence.svg" url=protein_control_project.url alt="Abstract illustration of protein sequence modeling" caption="Sequence modeling & controlled generation" %}
 </div>
 
 <div class="cv-entry-text" markdown="1">
@@ -162,7 +163,7 @@ MSA modeling: Shanghai AI Laboratory, Jun. - Dec. 2025; controllable editing: Te
 <article class="cv-entry cv-project">
 <div class="cv-project-top">
 <div class="cv-entry-head"><h3>3D Molecular Conformation Generation: Geometric Diffusion and Efficient Sampling</h3><span class="cv-badge">TPAMI</span></div>
-{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="https://arxiv.org/abs/2403.01430" alt="Geometric diffusion in SE(3)-invariant space" external=true %}
+{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="/research/se3-diffusion/" alt="Geometric diffusion in SE(3)-invariant space" %}
 </div>
 
 <div class="cv-entry-text" markdown="1">

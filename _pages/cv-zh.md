@@ -142,7 +142,8 @@ GPA：3.513 / 4.0 · 一等荣誉学位（First Class Honors）
 <article class="cv-entry cv-project">
 <div class="cv-project-top">
 <div class="cv-entry-head"><h3>蛋白质序列生成｜MSA 建模与性质可控编辑</h3><span class="cv-badge">上海人工智能实验室 · 腾讯生命科学实验室</span></div>
-{% include cv-project-visual.html image="images/cv/protein-sequence.svg" alt="蛋白质序列建模的抽象示意" caption="序列建模与可控生成" %}
+{% assign protein_control_project = site.research | where: "permalink", "/zh/research/protein-control/" | where_exp: "item", "item.published != false" | first %}
+{% include cv-project-visual.html image="images/cv/protein-sequence.svg" url=protein_control_project.url alt="蛋白质序列建模的抽象示意" caption="序列建模与可控生成" %}
 </div>
 
 <div class="cv-entry-text" markdown="1">
@@ -161,7 +162,7 @@ MSA 建模：上海人工智能实验室，2025.06–2025.12；可控编辑：�
 <article class="cv-entry cv-project">
 <div class="cv-project-top">
 <div class="cv-entry-head"><h3>分子三维构象生成｜几何扩散与高效采样</h3><span class="cv-badge">TPAMI</span></div>
-{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="https://arxiv.org/abs/2403.01430" alt="SE(3) 不变空间中的几何扩散框架" external=true %}
+{% include cv-project-visual.html image="images/publications/se3_diffusion_timeline.webp" url="/zh/research/se3-diffusion/" alt="SE(3) 不变空间中的几何扩散框架" %}
 </div>
 
 <div class="cv-entry-text" markdown="1">
