@@ -101,9 +101,11 @@ project_chapters:
   <p class="retro-kicker">Coordinates, distances, and projection</p>
   <h2><span class="retro-chapter__number">03</span> 把一次距离更新，写成一个坐标重建问题</h2>
   <p class="retro-lede">如果先在距离流形上写逆过程，每一步都要把候选距离拉回合法集合，再找回一组坐标。把这两个操作合起来，才能看清计算代价来自哪里。</p>
-  <figure class="retro-figure se3-framework">
+  <figure class="retro-figure se3-framework-group">
+    <p class="se3-mapping__panel-label">(a) 距离与坐标的几何框架</p>
     <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/framework.webp"><img src="{{ base_path }}/images/research/se3-diffusion/framework.webp" alt="坐标空间 L、谱坐标代表 N 与距离流形 M 之间的映射，距离的切向更新转换为坐标位移" width="2400" height="870" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 1 · 距离与坐标交替的几何框架。灰色区域是坐标空间 \(L\)，蓝色区域表示可行距离，绿色区域表示所选坐标代表；橙色方向在距离侧给出去噪变化，红色方向是转换后的坐标更新。谱坐标用于分析，采样时可以直接维护普通坐标。</figcaption>
+    {% include se3-mapping-animation.html %}
+    <figcaption class="retro-figure__caption">图 1 · 距离与坐标交替的几何框架。(a) 映射关系总览；(b) 整体去噪轨迹及单步切空间映射的动态讲解。灰色区域是坐标空间 \(L\)，蓝色区域表示可行距离，绿色区域表示所选坐标代表；橙色方向在距离侧给出去噪变化，红色方向是转换后的坐标更新。谱坐标用于分析，采样时可以直接维护普通坐标。</figcaption>
   </figure>
   <h3>先写出需要投影的理想化更新</h3>
   <p>沿论文的流形描述，设 \(\mathcal B_t^M\) 为流形 Brownian motion。在适当的几何、度量及噪声条件下，用下式表示距离扩散；它不意味着任意坐标加噪都诱导一个各向同性的距离过程。</p>

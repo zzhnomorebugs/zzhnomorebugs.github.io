@@ -101,9 +101,11 @@ project_chapters:
   <p class="retro-kicker">Coordinates, distances, and projection</p>
   <h2><span class="retro-chapter__number">03</span> Express a distance update as a coordinate reconstruction problem</h2>
   <p class="retro-lede">Writing the reverse process on the distance manifold means that every step must bring proposed distances back to the feasible set and recover a set of coordinates. Combining these operations reveals where the computational cost arises.</p>
-  <figure class="retro-figure se3-framework">
+  <figure class="retro-figure se3-framework-group">
+    <p class="se3-mapping__panel-label">(a) The geometry of distances and coordinates</p>
     <a class="image-popup" href="{{ base_path }}/images/research/se3-diffusion/framework.webp"><img src="{{ base_path }}/images/research/se3-diffusion/framework.webp" alt="Maps among coordinate space L, spectral coordinate representatives N, and distance manifold M; a tangential distance update becomes a coordinate displacement" width="2400" height="870" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 1 · The geometry of alternating between distances and coordinates. The gray region is coordinate space \(L\), the blue region represents feasible distances, and the green region represents the selected coordinate representatives. Orange indicates a denoising change in distance space; red indicates the resulting coordinate update. Spectral coordinates serve the analysis, while sampling can maintain ordinary coordinates directly.</figcaption>
+    {% include se3-mapping-animation.html %}
+    <figcaption class="retro-figure__caption">Figure 1 · The geometry of alternating between distances and coordinates. (a) Overview of the mappings; (b) an animated denoising trajectory with the tangent-space mappings of each reverse step. The gray region is coordinate space \(L\), the blue region represents feasible distances, and the green region represents the selected coordinate representatives. Orange indicates a denoising change in distance space; red indicates the resulting coordinate update. Spectral coordinates serve the analysis, while sampling can maintain ordinary coordinates directly.</figcaption>
   </figure>
   <h3>Start with an idealized update that requires projection</h3>
   <p>Following the paper’s manifold formulation, let \(\mathcal B_t^M\) be manifold Brownian motion. Under suitable geometric, metric, and noise assumptions, distance diffusion is written as follows. This does not mean that arbitrary coordinate noise induces an isotropic distance process.</p>

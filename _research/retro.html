@@ -7,6 +7,8 @@ lang: en
 lang_switch_url: /zh/research/retro/
 research_project: true
 mathjax: true
+project_stylesheet: retro-pipeline.css
+project_class: retro-detail
 order: 2
 published: true
 read_time: false
@@ -87,9 +89,10 @@ project_chapters:
     <li><strong>Tail · Dummy nodes</strong><span>Reserve space for additional atoms in the reactants.</span></li>
   </ol>
   <p>During training, atom mapping between products and reactants identifies the ground-truth reaction centers, and training examples are constructed with different center atoms as roots. At inference, only the product is available, so a separate graph neural network first predicts candidate centers. The atoms are then ordered from each candidate root to generate reactants.</p>
+  {% include retro-pipeline.html %}
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/framework.webp"><img src="{{ base_path }}/images/research/retro/framework.webp" alt="RETRO workflow: atom mapping extracts ground-truth reaction centers during training, while an R-GCN predicts candidate centers at inference; RetroDiT and discrete flow matching generate reactants from the ordered graph" width="2407" height="1239" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 1 · Left: center extraction, atom ordering, and target prediction during training. Right: center prediction, ordering, and iterative generation at inference.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 2 · Left: center extraction, atom ordering, and target prediction during training. Right: center prediction, ordering, and iterative generation at inference.</figcaption>
   </figure>
   <div class="retro-support">
     <h3>How ordering is implemented and reaction centers are defined</h3>
@@ -114,7 +117,7 @@ project_chapters:
     </div>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/retrodit.webp"><img src="{{ base_path }}/images/research/retro/retrodit.webp" alt="RetroDiT block: edge embeddings modulate multihead attention, rotary positional encoding is applied to node attention, and nodes and edges are updated through separate feed-forward networks" width="1419" height="1270" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">Figure 2 · The node–edge interaction block in RetroDiT.</figcaption>
+      <figcaption class="retro-figure__caption">Figure 3 · The node–edge interaction block in RetroDiT.</figcaption>
     </figure>
   </div>
   <div class="retro-support">
@@ -136,7 +139,7 @@ project_chapters:
   <p><strong>Training need not simulate the full generation trajectory.</strong> Each iteration directly samples a time and an intermediate state, supervising endpoint prediction with cross-entropy over node and edge categories. At inference, graph transformation is completed by discretized sampling of a continuous-time Markov chain.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/generation-trajectory.png"><img src="{{ base_path }}/images/research/retro/generation-trajectory.png" alt="Five states of the same molecular graph during generation: bonds are progressively adjusted, and placeholder nodes gradually form additional reactant structures" width="2936" height="679" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 3 · An example molecular graph generation trajectory, showing progressive node and bond updates from left to right.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 4 · An example molecular graph generation trajectory, showing progressive node and bond updates from left to right.</figcaption>
   </figure>
   <div class="retro-results-grid">
     <div><span class="retro-result__value">20–50</span><span class="retro-result__label">Sampling steps</span><p class="retro-result__note">These achieve good generation performance in the reported experiments; the main experiments use 50 steps.</p></div>
@@ -152,7 +155,7 @@ project_chapters:
     <div class="retro-equation">\[\mathcal L=\mathbb E_{t,G_0,G_1,G_t}\!\left[\operatorname{CE}\!\left(G_1,p^\theta_{1\mid t}(\cdot\mid G_t)\right)\right].\]</div>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/sampling-steps.webp"><img src="{{ base_path }}/images/research/retro/sampling-steps.webp" alt="Top-1 accuracy curves on USPTO-50k for different model sizes at 10, 20, 50, and 100 sampling steps, leveling off after relatively few steps" width="2088" height="546" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">Figure 4 · Sampling steps and accuracy.</figcaption>
+      <figcaption class="retro-figure__caption">Figure 5 · Sampling steps and accuracy.</figcaption>
     </figure>
     <p>The training cost comparison is: RetroBridge, about 72 hours on one GPU, totaling 72 GPU-hours; this method, about 1.5 hours on 8 GPUs, totaling 12 GPU-hours.</p>
   </div>
@@ -252,14 +255,14 @@ project_chapters:
   <h3>To what extent can structural guidance substitute for model scale?</h3>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/scaling.webp"><img src="{{ base_path }}/images/research/retro/scaling.webp" alt="Scaling experiments on USPTO-Full from 280K to 65M parameters, comparing Top-1, Top-3, and Top-5 with canonical ordering, predicted-center ordering, and Oracle-center ordering" width="1779" height="530" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 5 · Ordering and scale ablations on USPTO-Full. Blue: Canonical; green: predicted centers; purple: ground-truth centers.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 6 · Ordering and scale ablations on USPTO-Full. Blue: Canonical; green: predicted centers; purple: ground-truth centers.</figcaption>
   </figure>
   <p>The most striking comparison is that <strong>a 280K-parameter model with Oracle-center guidance reaches about 51% Top-1, comparable to the 65M model with Canonical ordering (50.4%).</strong> This shows that an accurate structural prior can substantially reduce the learning burden; the conclusion depends on access to ground-truth reaction centers.</p>
   <div class="retro-support">
     <h3>A candidate-generation case and evaluation details</h3>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/ordering-cases.webp"><img src="{{ base_path }}/images/research/retro/ordering-cases.webp" alt="Candidate distributions for the same product under reaction-center-rooted and canonical ordering, with the dataset's recorded reactants highlighted in yellow" width="2658" height="1825" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">Figure 6 · Candidate-generation distributions for one specific product. The 95% and 83% in the figure are sampling frequencies for this case, not overall accuracies.</figcaption>
+      <figcaption class="retro-figure__caption">Figure 7 · Candidate-generation distributions for one specific product. The 95% and 83% in the figure are sampling frequencies for this case, not overall accuracies.</figcaption>
     </figure>
     <p>This case shows that the same chemical structure can produce different candidate distributions under different input permutations. It illustrates how ordering works; overall gains should be assessed through dataset experiments and ablations.</p>
     <p>Evaluation draws 100 samples for each product, standardizes and deduplicates the generated structures, ranks them by frequency, and then computes Top-\(k\). Values in the main table and scaling ablations differ slightly; this page cites each from its corresponding experiment.</p>
@@ -272,7 +275,7 @@ project_chapters:
   <p class="retro-lede">A substantial gap separates Oracle and predicted centers. Reaction centers provide useful guidance, but incorrect predictions can also mislead generation.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/rc-accuracy.webp"><img src="{{ base_path }}/images/research/retro/rc-accuracy.webp" alt="Sensitivity to reaction-center prediction accuracy: generation Top-1 rises on both USPTO datasets as center accuracy improves, but can fall below the canonical baseline when center quality is too low" width="1383" height="822" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">Figure 7 · Sensitivity experiment with controlled reaction-center accuracy. The horizontal axis is the experimentally specified center accuracy; it analyzes a trend and is not directly equivalent to the main experiment's center predictor performance.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 8 · Sensitivity experiment with controlled reaction-center accuracy. The horizontal axis is the experimentally specified center accuracy; it analyzes a trend and is not directly equivalent to the main experiment's center predictor performance.</figcaption>
   </figure>
   <p>This result suggests that future improvements should address both the accuracy and uncertainty of center prediction: improve candidate-center coverage, retain multiple hypotheses when uncertain, and study how the generator can reduce its dependence on incorrect centers.</p>
   <div class="retro-callout"><strong>The central lesson of this project</strong><p>The representation order of a molecular graph can carry a prior about reaction sites. Reaction-center-rooted ordering connects positional encoding to the chemistry task. Combined with graph generation and discrete flow matching, it forms a retrosynthesis system whose components can be improved separately.</p></div>

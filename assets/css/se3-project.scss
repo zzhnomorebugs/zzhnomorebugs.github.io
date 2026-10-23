@@ -18,6 +18,273 @@
 .se3-project .se3-math-check { border-left-color: var(--retro-muted); }
 .se3-project .se3-limits li + li { margin-top: 0.8rem; }
 .se3-project .retro-equation[id] { scroll-margin-top: 135px; }
+
+/* A companion to the paper's gray / green / blue manifold diagram. */
+.se3-project .se3-framework-group { margin-inline: 0; }
+.se3-project .se3-framework-group > .image-popup {
+  max-width: 850px;
+  margin-inline: auto;
+}
+.se3-mapping { margin-top: 2.4rem; scroll-margin-top: 125px; text-align: left; }
+.se3-project .se3-mapping__panel-label {
+  margin: 0 0 0.65rem;
+  color: var(--retro-muted);
+  font-size: 0.74rem;
+}
+.se3-mapping__header h3 { margin: 0 0 0.5rem; font-size: 1.18rem; }
+.se3-mapping__header > p:last-child { max-width: 820px; }
+.se3-project .se3-mapping__story {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 1.4rem 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+.se3-project .se3-mapping__story > li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0.45rem 0;
+  color: var(--retro-muted);
+  border-bottom: 2px solid var(--retro-line);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  transition: color 250ms ease, border-color 250ms ease;
+}
+.se3-mapping__story span { font-variant-numeric: tabular-nums; font-size: 0.72rem; }
+.se3-mapping__story strong { font-weight: 500; }
+.se3-project .se3-mapping__story > li.is-current { color: var(--retro-accent); border-color: var(--retro-accent); }
+.se3-mapping__view-header {
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--retro-line);
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: #f7f9f8;
+  transition: background-color 400ms ease;
+}
+.se3-mapping[data-mapping-view="detail"] .se3-mapping__view-header,
+.se3-mapping[data-mapping-view="zoom-in"] .se3-mapping__view-header { background: #fcf8f2; }
+.se3-project .se3-mapping__view-header h4 { margin: 0 0 0.2rem; font-size: 0.86rem; line-height: 1.6; }
+.se3-project .se3-mapping__view-header p { min-height: 2.8em; margin: 0; color: var(--retro-muted); font-size: 0.73rem; line-height: 1.4; }
+.se3-mapping__stage {
+  position: relative;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid var(--retro-line);
+  border-radius: 0 0 3px 3px;
+  overflow: hidden;
+}
+.se3-mapping__diagram { position: relative; min-width: 0; }
+.se3-mapping__formula {
+  position: absolute;
+  color: #b72828;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform-origin: center;
+}
+.se3-mapping__formula mjx-container { margin: 0 !important; }
+.se3-mapping__formula--conversion {
+  box-sizing: border-box;
+  width: 11em;
+  padding: 0.5em 0.6em;
+  text-align: center;
+  background: #fff;
+  border: 1px solid #cfaaaa;
+  border-radius: 4px;
+}
+.se3-mapping__formula-title {
+  display: block;
+  margin-bottom: 0.45em;
+  font-size: 0.66em;
+  line-height: 1.2;
+}
+.se3-mapping__formula--recompute { color: #357bb7; }
+.se3-mapping__scene {
+  width: 100%;
+  margin: 0;
+  background: #fff;
+  overflow: hidden;
+  scroll-margin-top: 125px;
+}
+.se3-mapping__scene:empty { display: none; }
+.se3-map-svg { display: block; width: 100%; height: auto; }
+.se3-map-label {
+  font-family: inherit;
+  font-weight: 400;
+}
+.se3-map-math {
+  font-family: "STIX Two Math", "Cambria Math", "Times New Roman", serif;
+  font-style: italic;
+}
+.se3-mapping__dynamics {
+  display: grid;
+  min-width: 0;
+  margin: 0 1.4rem;
+  padding: 0.2rem 0 0.85rem;
+  border-top: 1px solid #dfe6e2;
+  background: #fff;
+}
+.se3-mapping__dynamics-panel {
+  grid-area: 1 / 1;
+  min-width: 0;
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+.se3-mapping [data-mapping-equations="overview"] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+.se3-mapping:is([data-mapping-view="zoom-in"], [data-mapping-view="detail"], [data-mapping-view="zoom-out"]) [data-mapping-equations="overview"] {
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.se3-mapping:is([data-mapping-view="zoom-in"], [data-mapping-view="detail"], [data-mapping-view="zoom-out"]) [data-mapping-equations="detail"] {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+}
+.se3-project .se3-mapping__dynamics p {
+  margin: 0.45rem 0 0;
+  font-size: 0.73rem;
+  line-height: 1.65;
+}
+.se3-project .se3-mapping__dynamics .se3-mapping__dynamics-note { color: var(--retro-muted); }
+.se3-mapping__dynamics-equation {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  font-size: 0.79rem;
+}
+.se3-mapping__dynamics-equation mjx-container[jax="CHTML"][display="true"] {
+  margin: 0.2em 0 0.55em;
+  padding-block: 0.35em;
+}
+.se3-mapping__controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  padding-block: 1rem 0.65rem;
+}
+.se3-mapping__controls button {
+  min-height: 42px;
+  padding: 0.35rem 0.85rem;
+  color: var(--retro-ink);
+  font: inherit;
+  font-size: 0.76rem;
+  background: transparent;
+  border: 1px solid var(--retro-line);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.se3-mapping__controls .se3-mapping__play {
+  min-width: 7em;
+  color: var(--retro-paper);
+  border-color: var(--retro-accent);
+  background: var(--retro-accent);
+}
+.se3-mapping__controls button:hover { filter: brightness(0.94); }
+.se3-mapping__progress-label {
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  font-size: 0.73rem;
+  white-space: nowrap;
+}
+.se3-mapping__progress-label input {
+  display: block;
+  width: 100%;
+  min-width: 50px;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  accent-color: var(--retro-accent);
+  cursor: pointer;
+}
+.se3-mapping__counter {
+  font-size: 0.73rem;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.se3-project .se3-mapping__status {
+  min-height: 3.6em;
+  margin: 0 0 1rem;
+  font-size: 0.79rem;
+  color: var(--retro-ink);
+}
+.se3-project .se3-mapping__steps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.3rem 2.2rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.se3-project .se3-mapping__steps > li + li { margin-top: 0; }
+.se3-mapping__steps > li {
+  min-width: 0;
+  margin: 0;
+  border-top: 2px solid var(--retro-line);
+  padding-top: 0.65rem;
+}
+.se3-mapping__steps > li.is-current { border-top-color: var(--retro-accent); }
+.se3-mapping__steps button {
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  padding: 0.15rem 0;
+  margin: 0 0 0.35rem;
+  background: transparent;
+  color: var(--retro-ink);
+  border: 0;
+  font: inherit;
+  font-size: 0.82rem;
+  text-align: left;
+  cursor: pointer;
+}
+.se3-mapping__steps button:disabled { opacity: 1; cursor: default; }
+.se3-mapping__step-number { color: var(--retro-accent); font-variant-numeric: tabular-nums; }
+.se3-project .se3-mapping__steps p { font-size: 0.77rem; margin: 0 0 0.4rem; }
+.se3-mapping__equation { overflow-x: auto; max-width: 100%; font-size: 0.74rem; }
+.se3-mapping__equation mjx-container[jax="CHTML"][display="true"] { margin: 0.55em 0; padding-block: 0.25em; }
+.se3-project .se3-mapping__note {
+  margin: 1.4rem 0 0;
+  color: var(--retro-muted);
+  font-size: 0.73rem;
+}
+.se3-project .se3-framework-group > figcaption { margin-top: 1.2rem; }
+@media (max-width: 740px) {
+  .se3-project .se3-mapping__story { gap: 0.5rem; margin-top: 1rem; }
+  .se3-project .se3-mapping__story > li { display: block; font-size: 0.68rem; }
+  .se3-mapping__story span { display: block; font-size: 0.65rem; margin-bottom: 0.1rem; }
+  .se3-mapping__view-header { padding: 0.7rem 0.75rem; }
+  .se3-project .se3-mapping__view-header h4 { font-size: 0.8rem; }
+  .se3-project .se3-mapping__view-header p { min-height: 4.2em; font-size: 0.7rem; }
+  .se3-mapping__dynamics { margin-inline: 0.75rem; padding: 0.2rem 0 0.8rem; }
+  .se3-mapping__dynamics-equation { font-size: 0.72rem; }
+  .se3-project .se3-mapping__dynamics p { font-size: 0.7rem; }
+  .se3-project .se3-mapping__steps { grid-template-columns: 1fr; gap: 1rem; }
+  .se3-mapping__progress-label { order: 3; flex-basis: 100%; }
+  .se3-mapping__counter { order: 4; }
+  .se3-mapping__steps button { min-height: 44px; margin-bottom: 0; }
+  .se3-project .se3-mapping__status { min-height: 5.4em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .se3-project .se3-mapping__story > li,
+  .se3-mapping__view-header,
+  .se3-mapping__dynamics-panel { transition: none; }
+}
 .se3-project .se3-experiment-figure { margin: 1.8rem 0 2.5rem; }
 .se3-gallery {
   display: grid;

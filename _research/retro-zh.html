@@ -7,6 +7,8 @@ lang: zh-CN
 lang_switch_url: /research/retro/
 research_project: true
 mathjax: true
+project_stylesheet: retro-pipeline.css
+project_class: retro-detail
 order: 2
 published: true
 read_time: false
@@ -72,9 +74,10 @@ papers: [retro-order]
     <li><strong>Tail · Dummy 节点</strong><span>为反应物中额外的原子预留空间。</span></li>
   </ol>
   <p>训练时，通过产物与反应物的 atom mapping 提取真实反应中心，并以不同中心原子为起点构造训练样本。推理时，只能看到产物，因此先用独立的图神经网络预测候选中心，再按各候选起点排序并生成反应物。</p>
+  {% include retro-pipeline.html %}
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/framework.webp"><img src="{{ base_path }}/images/research/retro/framework.webp" alt="RETRO 总体流程：训练利用原子映射提取真实反应中心，推理由 R-GCN 预测候选中心；排序后的图经 RetroDiT 和离散流匹配生成反应物" width="2407" height="1239" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 1 · 左：训练时的中心提取、原子排序与目标预测。右：推理时的中心预测、排序与逐步生成。</figcaption>
+    <figcaption class="retro-figure__caption">图 2 · 左：训练时的中心提取、原子排序与目标预测。右：推理时的中心预测、排序与逐步生成。</figcaption>
   </figure>
   <div class="retro-support">
     <h3>排序实现与反应中心的定义</h3>
@@ -99,7 +102,7 @@ papers: [retro-order]
     </div>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/retrodit.webp"><img src="{{ base_path }}/images/research/retro/retrodit.webp" alt="RetroDiT 模块：边嵌入调制多头注意力，节点注意力加入旋转位置编码，节点与边分别经前馈网络更新" width="1419" height="1270" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">图 2 · RetroDiT 的节点与边交互模块。</figcaption>
+      <figcaption class="retro-figure__caption">图 3 · RetroDiT 的节点与边交互模块。</figcaption>
     </figure>
   </div>
   <div class="retro-support">
@@ -121,7 +124,7 @@ papers: [retro-order]
   <p><strong>训练不必模拟完整生成轨迹。</strong>每次直接采样时间和中间状态，用节点、边类别的交叉熵监督终点预测。推理时，再通过连续时间马尔可夫链的离散化采样完成图变换。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/generation-trajectory.png"><img src="{{ base_path }}/images/research/retro/generation-trajectory.png" alt="同一分子图在生成过程中的五个状态：化学键逐步调整，占位节点逐步形成反应物中的新增结构" width="2936" height="679" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 3 · 分子图生成轨迹示例，从左到右展示节点与化学键的逐步更新。</figcaption>
+    <figcaption class="retro-figure__caption">图 4 · 分子图生成轨迹示例，从左到右展示节点与化学键的逐步更新。</figcaption>
   </figure>
   <div class="retro-results-grid">
     <div><span class="retro-result__value">20–50</span><span class="retro-result__label">采样步数</span><p class="retro-result__note">论文实验中可获得较好的生成效果；主实验使用 50 步。</p></div>
@@ -137,7 +140,7 @@ papers: [retro-order]
     <div class="retro-equation">\[\mathcal L=\mathbb E_{t,G_0,G_1,G_t}\!\left[\operatorname{CE}\!\left(G_1,p^\theta_{1\mid t}(\cdot\mid G_t)\right)\right].\]</div>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/sampling-steps.webp"><img src="{{ base_path }}/images/research/retro/sampling-steps.webp" alt="USPTO-50k 不同模型规模在 10、20、50、100 采样步下的 Top-1 准确率曲线，较少步数后趋于稳定" width="2088" height="546" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">图 4 · 采样步数与准确率。</figcaption>
+      <figcaption class="retro-figure__caption">图 5 · 采样步数与准确率。</figcaption>
     </figure>
     <p>训练成本比较为 RetroBridge：单卡约 72 小时，合计 72 GPU-hours；本方法：8 卡约 1.5 小时，合计 12 GPU-hours。</p>
   </div>
@@ -237,14 +240,14 @@ papers: [retro-order]
   <h3>结构指导能在多大程度上替代模型规模？</h3>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/scaling.webp"><img src="{{ base_path }}/images/research/retro/scaling.webp" alt="USPTO-Full 上从 280K 到 65M 参数的规模实验，对比 canonical 排序、预测中心排序和 Oracle 中心排序的 Top-1、Top-3、Top-5" width="1779" height="530" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 5 · USPTO-Full 上的排序与规模消融。蓝色：Canonical；绿色：预测中心；紫色：真实中心。</figcaption>
+    <figcaption class="retro-figure__caption">图 6 · USPTO-Full 上的排序与规模消融。蓝色：Canonical；绿色：预测中心；紫色：真实中心。</figcaption>
   </figure>
   <p>最醒目的对照是：<strong>280K 参数模型在 Oracle 中心指导下达到约 51% Top-1，与 Canonical 排序的 65M 模型（50.4%）相当。</strong>这说明准确的结构先验可以显著降低学习负担；这个结论依赖已知真实反应中心的条件。</p>
   <div class="retro-support">
     <h3>候选生成案例与评测细节</h3>
     <figure class="retro-figure">
       <a class="image-popup" href="{{ base_path }}/images/research/retro/ordering-cases.webp"><img src="{{ base_path }}/images/research/retro/ordering-cases.webp" alt="同一产物在反应中心起始排序与 canonical 排序下的候选生成分布案例，黄色标记数据集记录的反应物" width="2658" height="1825" loading="lazy"></a>
-      <figcaption class="retro-figure__caption">图 6 · 一个具体产物的候选生成分布。图中的 95% 与 83% 是该案例的采样频率，不能作为总体准确率。</figcaption>
+      <figcaption class="retro-figure__caption">图 7 · 一个具体产物的候选生成分布。图中的 95% 与 83% 是该案例的采样频率，不能作为总体准确率。</figcaption>
     </figure>
     <p>该案例展示同一化学结构在不同输入排列下，可以得到不同的候选分布。它用于解释排序的作用，整体收益应以数据集实验与消融为依据。</p>
     <p>论文评测对每个产物进行 100 次采样，对生成结构标准化、去重，并按出现频率排序后计算 Top-\(k\)。主表与规模消融数值存在小幅差异，本页分别引用对应实验。</p>
@@ -257,7 +260,7 @@ papers: [retro-order]
   <p class="retro-lede">Oracle 与预测中心之间存在明显差距。反应中心是有效的指导信息，也可能在预测错误时误导生成。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/retro/rc-accuracy.webp"><img src="{{ base_path }}/images/research/retro/rc-accuracy.webp" alt="反应中心预测准确率敏感性实验：随中心准确率提高，两个 USPTO 数据集的生成 Top-1 上升；中心质量过低时可低于 canonical 基线" width="1383" height="822" loading="lazy"></a>
-    <figcaption class="retro-figure__caption">图 7 · 控制反应中心准确率的敏感性实验。横轴是实验设定的中心准确率；它用于分析趋势，不直接等同于主实验中心预测器的表现。</figcaption>
+    <figcaption class="retro-figure__caption">图 8 · 控制反应中心准确率的敏感性实验。横轴是实验设定的中心准确率；它用于分析趋势，不直接等同于主实验中心预测器的表现。</figcaption>
   </figure>
   <p>这个结果提示，后续改进应同时考虑中心预测的准确性与不确定性：提高候选中心覆盖率，在不确定时保留多个假设，并研究生成器如何减少对错误中心的依赖。</p>
   <div class="retro-callout"><strong>这个项目留下的核心认识</strong><p>分子图的表示顺序也可以成为反应位点先验的载体。以反应中心为起点的排序，让位置编码与化学任务建立联系；再与图生成和离散流匹配结合，形成一个可分别改进的逆合成系统。</p></div>

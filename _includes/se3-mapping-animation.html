@@ -1,0 +1,101 @@
+{% if page.lang == 'zh-CN' %}{% assign mapping_language = 'zh' %}{% else %}{% assign mapping_language = 'en' %}{% endif %}
+<div class="se3-mapping" data-se3-mapping data-language="{{ mapping_language }}" data-mapping-view="overview" id="se3-mapping-animation">
+  <header class="se3-mapping__header">
+    <p class="se3-mapping__panel-label">{% if mapping_language == 'zh' %}(b) 去噪轨迹与单步映射{% else %}(b) Denoising trajectories and one-step mappings{% endif %}</p>
+    <h3>{% if mapping_language == 'zh' %}一条去噪轨迹，三个空间中的同步变化{% else %}One denoising trajectory across three spaces{% endif %}</h3>
+    <p>{% if mapping_language == 'zh' %}先看从 \(\mathcal C_T\) 到 \(\mathcal C_0\) 的整体去噪：灰色坐标空间 \(L\) 与 \(N\)、\(M\) 球面上的三条轨迹同步游走。动画随后暂停并放大其中一小步，依次展示模型读取 \(d_s\)、预测距离变化、转换切空间，再通过 Shift 完成 \(\mathcal C_s\to\mathcal C_t\)（\(t&lt;s\)）；映射完成后，镜头退回全景，继续沿原来的轨迹去噪。{% else %}First follow the denoising process from \(\mathcal C_T\) to \(\mathcal C_0\): the trajectories in the gray coordinate space \(L\) and on \(N\) and \(M\) advance together. The animation then pauses and zooms into one step: the model reads \(d_s\), predicts a distance change, maps it between tangent spaces, and applies Shift to update \(\mathcal C_s\to\mathcal C_t\), with \(t&lt;s\). Once the mapping is complete, the view pulls back and denoising continues along the same trajectories.{% endif %}</p>
+  </header>
+
+  <ol class="se3-mapping__story" aria-label="{% if mapping_language == 'zh' %}动画顺序{% else %}Animation sequence{% endif %}">
+    <li class="is-current" data-mapping-story-part="overview"><span>01</span><strong>{% if mapping_language == 'zh' %}整体游走{% else %}Overall walk{% endif %}</strong></li>
+    <li data-mapping-story-part="detail"><span>02</span><strong>{% if mapping_language == 'zh' %}放大一小步{% else %}Zoom into one step{% endif %}</strong></li>
+    <li data-mapping-story-part="resume"><span>03</span><strong>{% if mapping_language == 'zh' %}继续去噪{% else %}Continue denoising{% endif %}</strong></li>
+  </ol>
+  <div class="se3-mapping__view-header">
+    <h4 data-mapping-view-title>{% if mapping_language == 'zh' %}整体去噪轨迹{% else %}The overall denoising trajectory{% endif %}</h4>
+    <p data-mapping-view-caption>{% if mapping_language == 'zh' %}三个空间中的对应点同步前进；片刻后，暂停观察其中的一小步。{% else %}Corresponding points advance together in all three spaces. In a moment, the animation pauses to examine one step.{% endif %}</p>
+  </div>
+  <div class="se3-mapping__stage">
+    <div class="se3-mapping__diagram">
+      <div class="se3-mapping__scene" data-mapping-scene></div>
+      <div class="se3-mapping__formula se3-mapping__formula--conversion" data-mapping-formula aria-hidden="true">
+        <span class="se3-mapping__formula-title">{% if mapping_language == 'zh' %}切空间之间的局部转换{% else %}Local tangent conversion{% endif %}</span>
+        \(\displaystyle\frac{-F^{\mathcal N}}{2(n-1)}\circledast\frac{\partial d_s}{\partial\mathcal C_s}\)
+      </div>
+      <div class="se3-mapping__formula se3-mapping__formula--recompute" data-mapping-recompute-formula aria-hidden="true">\(\displaystyle d=\operatorname{adj}(\mathcal C)\)</div>
+    </div>
+    <div class="se3-mapping__dynamics">
+    <section class="se3-mapping__dynamics-panel" data-mapping-equations="overview" aria-hidden="false">
+      <div class="se3-mapping__dynamics-equation">\[\begin{aligned}
+      \text{SDE:}\quad \mathrm d\mathcal C_t
+      &\approx\left[\mathbf f(\mathcal C_t,t)-\frac{g^2(t)}{2(n-1)}
+      S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}\right]\mathrm dt
+      +\mathbf G(\mathcal C_t,t)\,\mathrm d\overline W_t,\\[0.6em]
+      \text{VE ODE:}\quad\frac{\mathrm d\mathcal C_t}{\mathrm dt}
+      &\approx\frac{G^2(t)}{2(n-1)}\left[\frac{3}{d_t}-S_t(d_t)\right]
+      \circledast\frac{\partial d_t}{\partial\mathcal C_t},\\[0.6em]
+      \text{VE ODE (practical):}\quad\frac{\mathrm d\mathcal C_t}{\mathrm dt}
+      &\approx-\frac{G^2(t)}{2(n-1)}S_t(d_t)\circledast\frac{\partial d_t}{\partial\mathcal C_t}.
+      \end{aligned}\]</div>
+      <p>{% if mapping_language == 'zh' %}沿 \(t:T\to0\) 逆向积分。\(S_t=\nabla_d\log p_t\) 为距离 score；\(\mathbf f,\mathbf G\) 为坐标侧漂移与噪声系数，\(g\) 为距离侧噪声系数，\(\overline W_t\) 为逆时间 Brownian motion。\(n\) 为点数，\(\circledast\) 按边汇总坐标位移。{% else %}Integrate backward along \(t:T\to0\). \(S_t=\nabla_d\log p_t\) is the distance score. \(\mathbf f,\mathbf G\) are the coordinate drift and noise coefficient; \(g\) is the distance noise coefficient; \(\overline W_t\) is reverse-time Brownian motion. \(n\) counts points; \(\circledast\) aggregates edge contributions to coordinates.{% endif %}</p>
+      <p class="se3-mapping__dynamics-note">{% if mapping_language == 'zh' %}ODE 适用 VE：\(\mathbf f=0\)、\(\mathbf G=G(t)I\)、\(g=\sqrt2\,G\)；\(3/d_t\) 按元素相除。实用式采用高斯距离 score 并省略径向漂移。以上均使用局部沿边近似，忽略距离条目间的相关性。<a href="#se3-sde">SDE 推导</a> · <a href="#se3-ode">ODE 条件</a>。{% else %}The ODE assumes VE: \(\mathbf f=0\), \(\mathbf G=G(t)I\), \(g=\sqrt2\,G\); division in \(3/d_t\) is entrywise. The practical form uses a Gaussian distance score and omits radial drift. These local edge approximations ignore correlations between distance entries. <a href="#se3-sde">SDE derivation</a> · <a href="#se3-ode">ODE assumptions</a>.{% endif %}</p>
+    </section>
+    <section class="se3-mapping__dynamics-panel" data-mapping-equations="detail" aria-hidden="true">
+      <div class="se3-mapping__dynamics-equation">\[\begin{aligned}
+      \mathcal C^{k-1}&=\mathcal C^k-
+      \frac{F^{\mathcal N}(d^k,s)}{2(n-1)}\circledast\frac{\partial d^k}{\partial\mathcal C^k},\\[0.6em]
+      F^{\mathcal N}(d^k,s)&=\tau\bigl[f(d^k,s)-g^2(s)S_s(d^k)\bigr]
+      +\sqrt\tau\,g(s)\,z^{s,d^k},\\[0.4em]
+      \tau&=T/K,\qquad s=k\tau,\qquad t=(k-1)\tau=s-\tau.
+      \end{aligned}\]</div>
+      <p>{% if mapping_language == 'zh' %}\(\mathcal C_s=\mathcal C^k\)、\(\mathcal C_t=\mathcal C^{k-1}\)，\(d^k=\operatorname{adj}(\mathcal C^k)\)；\(K\) 为采样总步数，\(n\) 为点数。\(f,g\) 为距离侧漂移和噪声系数，\(S_s=\nabla_d\log p_s\) 为模型估计的距离 score，\(z^{s,d^k}\) 为 \(T_{d^k}M\) 中的标准高斯噪声。{% else %}\(\mathcal C_s=\mathcal C^k\), \(\mathcal C_t=\mathcal C^{k-1}\), and \(d^k=\operatorname{adj}(\mathcal C^k)\). \(K\) counts sampling steps; \(n\) counts points. \(f,g\) are the distance drift and noise coefficient, \(S_s=\nabla_d\log p_s\) is the model's distance score, and \(z^{s,d^k}\) is standard Gaussian noise in \(T_{d^k}M\).{% endif %}</p>
+      <p class="se3-mapping__dynamics-note">{% if mapping_language == 'zh' %}\(-F^{\mathcal N}\) 合并漂移、score 与随机项；\(\circledast\) 沿各边的 \(\partial d_{ij}/\partial\mathcal C\) 汇总位移。\(1/[2(n-1)]\) 为完整图的局部线性近似系数，Shift 将所得坐标更新施加到 \(L\) 中。{% else %}\(-F^{\mathcal N}\) combines drift, score, and noise. \(\circledast\) sums displacements along the edge derivatives \(\partial d_{ij}/\partial\mathcal C\). The complete-graph factor \(1/[2(n-1)]\) gives a local linear approximation; Shift applies the resulting coordinate update in \(L\).{% endif %}</p>
+    </section>
+    </div>
+  </div>
+
+  <div class="se3-mapping__controls" data-mapping-controls hidden>
+    <button type="button" class="se3-mapping__play" data-mapping-play>{% if mapping_language == 'zh' %}播放动画{% else %}Play animation{% endif %}</button>
+    <button type="button" class="se3-mapping__step-play" data-mapping-step-play>{% if mapping_language == 'zh' %}放大当前小步{% else %}Inspect this step{% endif %}</button>
+    <button type="button" class="se3-mapping__restart" data-mapping-restart>{% if mapping_language == 'zh' %}从头开始{% else %}Restart{% endif %}</button>
+    <label class="se3-mapping__progress-label" for="se3-mapping-progress">
+      <span>{% if mapping_language == 'zh' %}动画进度{% else %}Animation progress{% endif %}</span>
+      <input id="se3-mapping-progress" type="range" min="0" max="0" value="0" step="1" data-mapping-progress>
+    </label>
+    <output class="se3-mapping__counter" for="se3-mapping-progress" data-mapping-counter hidden aria-hidden="true"></output>
+  </div>
+  <p class="se3-mapping__status" data-mapping-status aria-live="polite">{% if mapping_language == 'zh' %}当前小步：读取距离 → 预测距离切向量 → 转换到坐标切空间 → Shift 更新坐标。{% else %}Current step: read distances → predict a distance tangent vector → map to the coordinate tangent space → Shift the coordinates.{% endif %}</p>
+
+  <ol class="se3-mapping__steps">
+    <li data-mapping-step="0">
+      <button type="button" data-mapping-jump="0" disabled><span class="se3-mapping__step-number">01</span><strong>{% if mapping_language == 'zh' %}模型读取当前距离 \(d_s\){% else %}The model reads the current distances \(d_s\){% endif %}</strong></button>
+      <p>{% if mapping_language == 'zh' %}当前结构为 \(\mathcal C_s\in L\)，对应距离 \(d_s=\operatorname{adj}(\mathcal C_s)\in M\)。模型以 \(d_s\) 与时间 \(s\) 为输入；\(N\) 中的代表 \(\varphi(d_s)\) 与 \(\mathcal C_s\) 描述相同的距离。{% else %}The current structure \(\mathcal C_s\in L\) has distances \(d_s=\operatorname{adj}(\mathcal C_s)\in M\). The model takes \(d_s\) and time \(s\) as inputs. Its representative \(\varphi(d_s)\in N\) describes the same distances as \(\mathcal C_s\).{% endif %}</p>
+    </li>
+    <li data-mapping-step="1">
+      <button type="button" data-mapping-jump="1" disabled><span class="se3-mapping__step-number">02</span><strong>{% if mapping_language == 'zh' %}预测距离切空间中的变化{% else %}Predict the change in the distance tangent space{% endif %}</strong></button>
+      <p>{% if mapping_language == 'zh' %}记本小步的距离变化为 \(v_M=-F^{\mathcal N}(d_s,s)\)。橙色箭头从 \(d_s\) 出发，表示理论切空间 \(T_{d_s}M\) 中的更新方向。实际网络输出边上的标量信号，未显式约束为严格的切向量。{% else %}Write the distance change for this step as \(v_M=-F^{\mathcal N}(d_s,s)\). The orange arrow starts at \(d_s\) and illustrates the update in the theoretical tangent space \(T_{d_s}M\). The network outputs scalar edge signals without an explicit constraint enforcing exact tangency.{% endif %}</p>
+    </li>
+    <li data-mapping-step="2">
+      <button type="button" data-mapping-jump="2" disabled><span class="se3-mapping__step-number">03</span><strong>{% if mapping_language == 'zh' %}把方向转换到 \(N\) 的切空间{% else %}Map the direction to the tangent space of \(N\){% endif %}</strong></button>
+      <p>{% if mapping_language == 'zh' %}在局部光滑选规下，\(\varphi\circ\pi_M\) 的微分把距离方向送入 \(T_{\varphi(d_s)}N\)。论文用沿边方向的线性公式近似这一步，并在当前坐标代表中计算位移 \(\Delta\mathcal C_s\)：{% else %}In a locally smooth gauge, the differential of \(\varphi\circ\pi_M\) carries the distance direction into \(T_{\varphi(d_s)}N\). The paper approximates this step with a linear edge-direction formula, evaluating the displacement \(\Delta\mathcal C_s\) in the current coordinate representative:{% endif %}</p>
+      <div class="se3-mapping__equation">\[\begin{aligned}
+      v_N&=D(\varphi\circ\pi_{M,d_s})_{d_s}[v_M],\\
+      \Delta\mathcal C_s=A_sv_M
+      &\equiv\frac{-F^{\mathcal N}(d_s,s)}{2(n-1)}\circledast\frac{\partial d_s}{\partial\mathcal C_s}.
+      \end{aligned}\]</div>
+      <p>{% if mapping_language == 'zh' %}上式的 \(v_N\) 表示理想切向量；\(A_sv_M\) 是同一小步在普通坐标中的局部近似位移。系数对应完整图，\(\circledast\) 将各边信号汇总为各点位移。{% else %}\(v_N\) denotes the ideal tangent vector; \(A_sv_M\) is the local approximation to that step in ordinary coordinates. The coefficient is for a complete graph, and \(\circledast\) aggregates edge signals into point displacements.{% endif %}</p>
+    </li>
+    <li data-mapping-step="3">
+      <button type="button" data-mapping-jump="3" disabled><span class="se3-mapping__step-number">04</span><strong>{% if mapping_language == 'zh' %}通过 Shift 更新 \(\mathcal C_s\to\mathcal C_t\){% else %}Apply Shift to update \(\mathcal C_s\to\mathcal C_t\){% endif %}</strong></button>
+      <p>{% if mapping_language == 'zh' %}红色箭头把当前小步落实为 \(L\) 中各点的位移。图中的 Shift 表示在当前嵌入代表上施加该更新，再由新坐标计算下一步的距离：{% else %}The red arrow applies this step as point displacements in \(L\). Shift denotes applying the update to the current embedding representative, then computing the next distances from the updated coordinates:{% endif %}</p>
+      <div class="se3-mapping__equation">\[\begin{aligned}
+      \mathcal C_t&=\operatorname{Shift}(\mathcal C_s,\Delta\mathcal C_s)
+      =\mathcal C_s+\Delta\mathcal C_s,\qquad t&lt;s,\\
+      d_t&=\operatorname{adj}(\mathcal C_t)\in M.
+      \end{aligned}\]</div>
+      <p>{% if mapping_language == 'zh' %}这就完成了一个逆向小步。重复同样的循环，三个空间中的对应点沿各自曲线同步前进，直到 \(\mathcal C_0\)。{% else %}This completes one reverse step. Repeating the loop advances corresponding points along all three trajectories until \(\mathcal C_0\).{% endif %}</p>
+    </li>
+  </ol>
+  <p class="se3-mapping__note">{% if mapping_language == 'zh' %}球面与去噪路径为几何示意，切向量按统一长度放大显示；Shift 结束后，等长红色箭头表示对应的坐标更新，真实采样的各步长度可以不同。细虚线标示切向端点与球面的几何间距。沿边公式是小步长下的局部近似；实现直接维护普通坐标，无需每步显式重建 \(N\) 中的代表。{% else %}The spheres and denoising paths are geometric illustrations with tangent vectors enlarged to a common display length. After Shift, an equal-length red arrow shows the corresponding coordinate update; actual sampling steps can have different lengths. Thin dashed guides show the geometric gap between each tangent endpoint and the sphere. The edge formula is a local approximation for small steps; implementation maintains ordinary coordinates without explicitly reconstructing a representative in \(N\) at every step.{% endif %}</p>
+</div>
+<script src="{{ base_path }}/assets/js/se3-mapping.js?v={{ site.time | date: '%s' }}" defer></script>
