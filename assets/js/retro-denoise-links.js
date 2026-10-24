@@ -24,6 +24,30 @@
     });
     var pending = 0;
 
+    function interpolate(a, b, t) {
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    }
+
+    function drawProgress() {
+      var progress = Number(layer.dataset.progress || 0);
+      routes.forEach(function (route) {
+        if (!route.curve) return;
+        route.path.style.visibility = progress > 0 ? "visible" : "hidden";
+        // Split the cubic at the current progress so the marker travels with
+        // the growing tip, rather than appearing at the destination in advance.
+        var curve = route.curve;
+        var a = interpolate(curve[0], curve[1], progress);
+        var b = interpolate(curve[1], curve[2], progress);
+        var c = interpolate(curve[2], curve[3], progress);
+        var d = interpolate(a, b, progress);
+        var e = interpolate(b, c, progress);
+        var tip = interpolate(d, e, progress);
+        route.path.setAttribute("d", "M " + pointText(curve[0]) + " C " + pointText(a) + " " + pointText(d) + " " + pointText(tip));
+      });
+    }
+
+    layer.addEventListener("retro:denoise-progress", drawProgress);
+
     function render() {
       pending = 0;
       var rect = model.getBoundingClientRect();
@@ -68,8 +92,9 @@
         var length = Math.hypot(tx, ty);
         if (!length) return;
         var end = { x: target.x - tx * 17 / length, y: target.y - ty * 17 / length };
-        route.path.setAttribute("d", "M " + pointText(start) + " C " + pointText(first) + " " + pointText(second) + " " + pointText(end));
+        route.curve = [start, first, second, end];
       });
+      drawProgress();
     }
 
     function schedule() {

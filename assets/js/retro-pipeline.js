@@ -150,7 +150,10 @@
     var field = fields.sample;
     field.svg.dataset.denoise = denoise.toFixed(6);
     field.svg.dataset.clean = clean.toFixed(6);
-    field.svg.querySelector("[data-rt-denoise-links]").setAttribute("opacity", signal);
+    var links = field.svg.querySelector("[data-rt-denoise-links]");
+    links.dataset.progress = signal.toFixed(6);
+    links.setAttribute("opacity", signal > 0 ? 1-clean : 0);
+    links.dispatchEvent(new CustomEvent("retro:denoise-progress"));
     var endpoint = field.svg.querySelector("[data-rt-clean-endpoint]");
     endpoint.setAttribute("opacity", clean);
     endpoint.setAttribute("aria-hidden", String(clean === 0));
@@ -222,7 +225,7 @@
       var prediction = motion.matches ? 1 : ease(clamp((p-0.28)/0.18));
       var denoise = motion.matches ? 1 : ease(clamp((p-0.58)/0.24));
       var clean = motion.matches ? 1 : ease(clamp((p-0.82)/0.10));
-      var signal = motion.matches ? 0 : ease(clamp((p-0.47)/0.09)) * (1-clean);
+      var signal = motion.matches ? 0 : ease(clamp((p-0.47)/0.09));
       renderField("sample", time, collapse);
       renderDenoising(denoise, clean, signal);
       figure.querySelector("[data-rt-time-value]").textContent = mix(time, 1, denoise).toFixed(2);
@@ -235,7 +238,7 @@
       fields.sample.nodes.forEach(function (view, i) {
         view.el.classList.toggle("is-prediction-node", prediction > 0.5 && clean < 1 && [20, 21, 28].indexOf(data.nodes[i].id) !== -1);
       });
-      figure.querySelector("[data-rt-model]").classList.toggle("is-active", (prediction > 0 && prediction < 1) || signal > 0);
+      figure.querySelector("[data-rt-model]").classList.toggle("is-active", (prediction > 0 && prediction < 1) || (signal > 0 && clean < 1));
       figure.querySelector("[data-rt-sample-key]").textContent = denoise > 0 ? (zh ? "恢复 token · 补键与断键" : "Recover tokens · restore and remove bonds") : prediction > 0 ? (zh ? "预测分布 · 仅示意三个节点" : "Predicted distributions · three example nodes") : (zh ? "采样后只保留离散 token" : "Only discrete tokens remain after sampling");
     }
     updateControls();
