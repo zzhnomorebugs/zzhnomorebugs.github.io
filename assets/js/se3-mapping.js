@@ -105,13 +105,17 @@
     var index=0,phase=0,playing=false,raf=0,last=0,announced='';
     var view='overview',walkPosition=0,viewTime=0,inspectAt=8,inspected=false;
     var autoplayStarted=false,visible=false,resumeOnVisible=false,userPaused=false;
-    var readDuration=1750,stageDuration=3500,walkStepDuration=300,resumeStepDuration=200,focusDuration=550,zoomInDuration=600,recomputeHoldDuration=1000,zoomOutDuration=1200;
+    // Every arrow uses the same reveal time, regardless of its screen length.
+    var arrowDuration=1400,arrowPause=200,arrowSlot=arrowDuration+arrowPause;
+    var stageDurations=[1750,2*arrowSlot,2*arrowSlot,4*arrowSlot];
+    var readDuration=stageDurations[0],walkStepDuration=300,resumeStepDuration=200,focusDuration=550,zoomInDuration=600,recomputeHoldDuration=1000,zoomOutDuration=1200;
+    function stageProgress(local,stage,slot){return ease((local*stageDurations[stage]-slot*arrowSlot)/arrowDuration);}
     var fps=60,frame=0,playhead=0,loopPauseDuration=1200;
     function frames(ms){return Math.round(ms*fps/1000);}
     function timelineBounds(){
       var focus=inspectAt*frames(walkStepDuration),zoomIn=focus+frames(focusDuration),detail=zoomIn+frames(zoomInDuration);
-      var predict=detail+frames(readDuration),convert=predict+frames(stageDuration),shift=convert+frames(stageDuration);
-      var hold=shift+frames(stageDuration),zoomOut=hold+frames(recomputeHoldDuration),resume=zoomOut+frames(zoomOutDuration);
+      var predict=detail+frames(readDuration),convert=predict+frames(stageDurations[1]),shift=convert+frames(stageDurations[2]);
+      var hold=shift+frames(stageDurations[3]),zoomOut=hold+frames(recomputeHoldDuration),resume=zoomOut+frames(zoomOutDuration);
       return{focus:focus,zoomIn:zoomIn,detail:detail,predict:predict,convert:convert,shift:shift,hold:hold,zoomOut:zoomOut,resume:resume,total:resume+(STEPS-inspectAt-1)*frames(resumeStepDuration)};
     }
     function el(tag,attrs,parent,text){
@@ -271,14 +275,14 @@
       var localView=view==='detail'||view==='zoom-in'||view==='zoom-out';
       var detail=Math.min(3,Math.floor(phase*4)),local=phase*4-detail;
       if(reduced.matches)local=1;
-      var amount=view==='overview'?walkPosition-index:view==='done'||view==='zoom-out'?1:detail===3&&view==='detail'?ease((local-0.44)/0.4):0;
+      var amount=view==='overview'?walkPosition-index:view==='done'||view==='zoom-out'?1:detail===3&&view==='detail'?stageProgress(local,3,2):0;
       if(reduced.matches&&view==='overview')amount=0;
       orientTrails(reduced.matches?(localView?1:0):zoom);
       var lp=showTrail(refs.l,'l',amount),np=showTrail(refs.n,'n',amount),mp=showTrail(refs.m,'m',amount);
       var a=displayStates[index],b=displayStates[index+1];
-      var mv=planeGeometry(refs.mPlane,a.m,b.m,layout.m,detail<1?0:detail===1?ease(local/0.68):1);
+      var mv=planeGeometry(refs.mPlane,a.m,b.m,layout.m,detail<1?0:detail===1?stageProgress(local,1,0):1);
       // The M → N connection arrives first; only then does the N tangent grow.
-      var nv=planeGeometry(refs.nPlane,a.n,b.n,layout.n,detail<2?0:detail===2?ease((local-0.58)/0.37):1);
+      var nv=planeGeometry(refs.nPlane,a.n,b.n,layout.n,detail<2?0:detail===2?stageProgress(local,2,1):1);
       opacity(refs.mPlane.group,detail>=1?1:0);opacity(refs.nPlane.group,detail>=2?1:0);
       ['n','m'].forEach(function(key){
         var center=layout[key],geometry=key==='n'?nv:mv,sphereLabels=refs[key+'Sphere'];
@@ -297,30 +301,32 @@
         refs.l.targetLabel.setAttribute('text-anchor','middle');pointLabel(refs.l.targetLabel,lt,0,28);
       }
       refs.inputArrow.setAttribute('d','M'+(model[0]+82)+' '+model[1]+' C'+(layout.m[0]+layout.r+12)+' '+model[1]+' '+mv.approach.join(' ')+' '+mv.shaft.join(' '));
-      // The orange prediction completes first. Its blue annotation appears
-      // in one frame, without a travelling bead or stroke-drawing animation.
-      var predictionVisible=detail>1||(detail===1&&local>=0.68);
-      opacity(refs.input,detail<=1?1:0.28);opacity(refs.inputArrow,predictionVisible?1:0);
+      // Finish the orange prediction before drawing its blue annotation.
+      var predictionAmount=detail<1?0:detail===1?stageProgress(local,1,1):1;
+      drawArrow(refs.inputArrow,predictionAmount);
+      opacity(refs.input,detail<=1?1:0.28);opacity(refs.inputArrow,predictionAmount>0?1:0);
       refs.convertArrow.setAttribute('d',layout.c?
         'M'+mv.tip.join(' ')+' C414 585 414 300 '+ns.join(' '):
         'M'+mv.tip.join(' ')+' C900 138 680 138 '+ns.join(' '));
-      var convertAmount=detail<2?0:detail===2?ease(local/0.52):1;
+      var convertAmount=detail<2?0:detail===2?stageProgress(local,2,0):1;
       drawArrow(refs.convertArrow,convertAmount);bead(refs.convertArrow,refs.convertBead,convertAmount);opacity(refs.convert,detail>=2?1:0);opacity(refs.convertBead,detail===2&&convertAmount<1?1:0);
       refs.convertArrow.setAttribute('data-conversion-progress',convertAmount.toFixed(4));
       refs.shiftArrow.setAttribute('d',layout.c?
         'M'+nv.tip.join(' ')+' C400 145 170 130 '+ls.join(' '):
         'M'+nv.tip.join(' ')+' C595 128 245 128 '+ls.join(' '));
-      var shiftAmount=detail===3?ease(local/0.4):1;
+      var shiftAmount=detail===3?stageProgress(local,3,0):1;
       drawArrow(refs.shiftArrow,shiftAmount);pointLabel(refs.shiftLabel,layout.c?[345,110]:[355,88],0,0);
-      // Finish the N → L connector, then reveal the fixed coordinate update.
-      // C_s moves along it only after it has appeared.
-      line(refs.lUpdate,ls,lt);opacity(refs.lUpdate,detail===3&&shiftAmount===1?1:0);
+      // Draw the coordinate update after N → L; move C_s only once it is complete.
+      var coordinateAmount=detail===3?stageProgress(local,3,1):0;
+      line(refs.lUpdate,ls,lt);drawArrow(refs.lUpdate,coordinateAmount);opacity(refs.lUpdate,detail===3&&coordinateAmount>0?1:0);
       refs.lUpdate.setAttribute('data-shift-progress',shiftAmount.toFixed(4));
       opacity(refs.shift,detail===3?1:0);
       refs.recomputeArrow.setAttribute('d',layout.c?
         'M'+lp.join(' ')+' C8 '+lp[1]+' 8 10 80 10 L410 10 Q446 10 446 60 L446 '+(mp[1]+60)+' Q446 '+(mp[1]+95)+' '+mp.join(' '):
         'M'+lp.join(' ')+' C18 '+lp[1]+' 18 18 170 18 L950 18 Q1040 18 1040 100 L1040 '+(mp[1]+60)+' Q1040 '+(mp[1]+95)+' '+mp.join(' '));
-      opacity(refs.recompute,detail===3&&local>0.86?0.85:0);bead(refs.recomputeArrow,refs.recomputeBead,ease((local-0.86)/0.14));opacity(refs.recomputeBead,detail===3&&local>0.86?1:0);
+      var recomputeAmount=detail===3?stageProgress(local,3,3):0;
+      drawArrow(refs.recomputeArrow,recomputeAmount);
+      opacity(refs.recompute,detail===3&&recomputeAmount>0?0.85:0);bead(refs.recomputeArrow,refs.recomputeBead,recomputeAmount);opacity(refs.recomputeBead,detail===3&&recomputeAmount>0&&recomputeAmount<1?1:0);
       // A single camera and the same three state points carry the transition.
       // Only the local mapping layers fade in; the trajectory never restarts.
       var cameraZoom=reduced.matches?(localView?1:0):zoom;
@@ -340,8 +346,8 @@
         recomputeFormula.style.top=((1-scale)*46+scale*(layout.c?70:73)/layout.height*100)+'%';
         recomputeFormula.style.fontSize=Math.max(layout.c?17:0,23*scene.clientWidth/layout.width)+'px';
         recomputeFormula.style.transform='translate(-50%, -50%) scale('+scale+')';
-        recomputeFormula.style.opacity=String((detail===3&&local>0.86?0.85:0)*ease(zoom));
-        recomputeFormula.setAttribute('aria-hidden',String(!localView||detail!==3||local<=0.86));
+        recomputeFormula.style.opacity=String((detail===3&&recomputeAmount>0?0.85:0)*ease(zoom));
+        recomputeFormula.setAttribute('aria-hidden',String(!localView||detail!==3||recomputeAmount<=0));
       }
       [refs.input,refs.mPlane.group,refs.nPlane.group,refs.convert,refs.shift,refs.recompute].forEach(function(node){opacity(node,Number(node.getAttribute('opacity'))*ease(zoom));});
       var focusing=view==='focus'||view==='zoom-in';
@@ -407,8 +413,9 @@
       }else if(frame<b.detail){
         view='zoom-in';viewTime=(frame-b.zoomIn)*1000/fps;
       }else if(frame<b.hold){
-        view='detail';var elapsed=frame-b.detail;
-        phase=elapsed<frames(readDuration)?elapsed/frames(readDuration)/4:(1+(elapsed-frames(readDuration))/frames(stageDuration))/4;
+        view='detail';var elapsed=frame-b.detail,stage=0;
+        while(stage<3&&elapsed>=frames(stageDurations[stage])){elapsed-=frames(stageDurations[stage]);stage++;}
+        phase=(stage+elapsed/frames(stageDurations[stage]))/4;
       }else if(frame<b.zoomOut){
         // Keep the completed distance recomputation visible for one second.
         view='detail';phase=1;walkPosition=inspectAt+1;
@@ -458,7 +465,7 @@
     root.querySelectorAll('[data-mapping-jump]').forEach(function(button){button.disabled=false;button.addEventListener('click',function(){
       pause(true);
       if(view==='overview'||view==='done')inspectAt=Math.min(STEPS-1,Math.ceil(walkPosition));
-      var step=Number(button.dataset.mappingJump),offset=step===0?0.98*frames(readDuration):frames(readDuration)+(step-1+0.98)*frames(stageDuration);
+      var step=Number(button.dataset.mappingJump),offset=stageDurations.slice(0,step).reduce(function(sum,ms){return sum+frames(ms);},0)+0.98*frames(stageDurations[step]);
       seekFrame(timelineBounds().detail+offset);
       scene.scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});
     });});
