@@ -77,6 +77,7 @@
 
 </div>
 <div class="rt-controls" hidden>
+  <p class="rt-motion-note" data-rt-motion-note hidden>{% if rt_zh %}系统已减少动态效果。点击“播放讲解”可观看完整动画。{% else %}Your system reduces motion. Select “Play walkthrough” to watch the full animation.{% endif %}</p>
   <button type="button" data-rt-play>{% if rt_zh %}播放讲解{% else %}Play walkthrough{% endif %}</button>
   <button type="button" data-rt-prev aria-label="{% if rt_zh %}上一幕{% else %}Previous scene{% endif %}">←</button><button type="button" data-rt-next aria-label="{% if rt_zh %}下一幕{% else %}Next scene{% endif %}">→</button>
   <button type="button" data-rt-redraw>{% if rt_zh %}重新抽样{% else %}Draw again{% endif %}</button><label class="rt-progress-label" for="rt-progress">{% if rt_zh %}讲解进度{% else %}Progress{% endif %}</label>

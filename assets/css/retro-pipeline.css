@@ -53,6 +53,7 @@
 }
 .retro-train .rt-header h3 { margin: 0 0 .35rem; font-size: 1.28rem; }
 .retro-train .rt-header p { margin: 0 0 .85rem; color: var(--retro-muted); font-size: .96rem; }
+.retro-train .rt-motion-note { flex-basis: 100%; margin: 0 0 .25rem; color: var(--retro-muted); font-size: .88rem; }
 .retro-train .rt-screen {
   background: var(--retro-accent-soft);
   border-radius: 4px;
@@ -520,7 +521,7 @@
   .retro-train .rt-steps button { font-size: .74rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .retro-train *, .retro-train *::before, .retro-train *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .retro-train:not(.has-user-motion) *, .retro-train:not(.has-user-motion) *::before, .retro-train:not(.has-user-motion) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
 @media print {
   .retro-project.retro-detail { font-size: 10pt; }
