@@ -101,13 +101,13 @@ project_chapters:
     <div><h4>Conditional residual: Supply the correction</h4><p>It reads the same \(s_t,t\), together with \(x_{\mathrm{ref}},y\), then outputs \(r_\phi\): a score correction for each position and class. The reference sequence provides context for relative editing, while the target property specifies the desired direction.</p></div>
   </div>
   <figure class="retro-figure protein-figure protein-generated-figure">
-    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance-en.png">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance-en.svg">
       <picture>
-        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile-en.png" width="846" height="1860">
-        <img src="{{ base_path }}/images/research/protein-control/prior-guidance-en.png" width="1122" height="1402" alt="Large-data priors and small-data guidance: (a) a general prior undergoes unconditional pretraining on public natural protein sequence collections, then remains frozen while only the conditional residual is trained on a smaller property-labeled task dataset. (b) Both networks receive the current state; the residual also receives the reference and target property. Their logits are added before softmax and a BFN or DFM state update, then the next prediction step begins." loading="lazy">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile-en.svg" width="740" height="500">
+        <img src="{{ base_path }}/images/research/protein-control/prior-guidance-en.svg" width="1080" height="500" alt="A compact integrated denoiser: four left-aligned inputs feed a large prior f and a smaller residual g. State and time each branch into both networks; target and reference enter only the residual. A thick prior prediction path leads directly into addition, while a thin residual branch adds a conditional correction from below. The combined output connects through two right-angle bends to the right column of softmax, state update and next state." loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">Figure 2 · Large-data priors, small-data guidance. (a) Training: a general prior undergoes unconditional pretraining on public natural protein sequence collections. Downstream training freezes it and trains only the conditional residual on a smaller property-labeled task dataset, with the loss applied to the combined prediction. (b) Each generation step: add the two networks' logits, apply softmax to obtain token probabilities, then update the state with BFN / DFM and repeat. Both models' weights remain fixed during generation.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 2 · A prior backbone with a learned residual correction. State \(s_t\) and time \(t\) each feed both networks; target label \(y\) and reference context \(x_{\mathrm{ref}}\) feed only \(g\). The larger prior \(f\) supplies base token logits along the thick main path. The smaller residual \(g\) adds a conditional correction from below, giving \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\). Softmax and a BFN / DFM state update then advance generation. Downstream training freezes the prior and trains the residual; generation fixes both networks. Node counts, box areas and line widths are schematic.</figcaption>
   </figure>
 
   <h3>3.2 Add the logits, then obtain clean-token probabilities</h3>

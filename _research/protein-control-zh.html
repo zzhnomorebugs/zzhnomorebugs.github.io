@@ -102,13 +102,13 @@ project_chapters:
     <div><h4>条件残差：给出预测修正</h4><p>读取相同的 \(s_t,t\)，并结合 \(x_{\mathrm{ref}},y\)，输出 \(r_\phi\)：针对各位点、各类别的分数修正。参考序列提供相对编辑的上下文，目标性质指定调整方向。</p></div>
   </div>
   <figure class="retro-figure protein-figure protein-generated-figure">
-    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance.png">
+    <a class="image-popup" href="{{ base_path }}/images/research/protein-control/prior-guidance.svg">
       <picture>
-        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile.png" width="845" height="1862">
-        <img src="{{ base_path }}/images/research/protein-control/prior-guidance.png" width="1122" height="1402" alt="大数据学先验，小数据学引导：（a）通用先验在公开天然蛋白序列集上无条件预训练，下游冻结先验，只在较小的性质标签数据集上训练条件残差。（b）生成时当前状态进入两路网络，参考序列与目标性质额外进入残差；两路 logits 相加，经 softmax 和 BFN 或 DFM 更新得到下一状态，再进入下一轮预测。" loading="lazy">
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/protein-control/prior-guidance-mobile.svg" width="740" height="500">
+        <img src="{{ base_path }}/images/research/protein-control/prior-guidance.svg" width="1080" height="500" alt="紧凑的组合去噪框架：四个输入在左侧同列，状态和时间各自分叉进入大型先验 f 与较小的残差 g，目标标签和参考上下文只进入残差。先验输出沿粗主干水平进入加号，残差沿细支路从下方注入条件修正；合成输出经过两次直角转弯，进入右侧纵向排列的 softmax、状态更新和下一状态。" loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">图 2 · 大数据学先验，小数据学引导。（a）训练分工：通用先验在公开天然蛋白序列集上做无条件预训练，下游冻结后，只用较小的带性质标签任务集训练条件残差；损失作用于两路合成的预测。（b）每一步生成：两路网络的 logits 相加，经 softmax 得到 token 概率，再由 BFN / DFM 更新当前状态并进入下一轮；生成时两路权重均固定。</figcaption>
+    <figcaption class="retro-figure__caption">图 2 · 先验主干与残差校正。状态 \(s_t\) 和时间 \(t\) 分别输入两路网络，目标标签 \(y\) 与参考上下文 \(x_{\mathrm{ref}}\) 只输入 \(g\)。大型先验 \(f\) 沿粗主干提供基础 token logits；较小的残差 \(g\) 从下方注入条件修正，得到 \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\)，随后通过 softmax 与 BFN / DFM 状态更新推进生成。下游训练冻结先验、训练残差；生成时两路权重均固定。节点数量、框图面积与线宽均为示意。</figcaption>
   </figure>
 
   <h3>3.2 在 logits 上相加，再变成干净 token 概率</h3>

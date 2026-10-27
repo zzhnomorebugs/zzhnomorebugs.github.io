@@ -1,0 +1,226 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="500" viewBox="0 0 740 500">
+<defs>
+<marker id="arrow-block" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="currentColor" />
+</marker>
+<marker id="arrow-open" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+  <path d="M 0 0 L 10 5 L 0 10" fill="none" stroke="currentColor" stroke-width="1.5" />
+</marker>
+<marker id="arrow-classic" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+  <path d="M 0 0 L 10 5 L 0 10 L 3 5 Z" fill="currentColor" />
+</marker>
+<marker id="arrow-diamond" viewBox="0 0 12 12" refX="12" refY="6" markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+  <path d="M 0 6 L 6 0 L 12 6 L 6 12 Z" fill="currentColor" />
+</marker>
+<marker id="arrow-main" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="14" markerHeight="14" orient="auto-start-reverse" markerUnits="userSpaceOnUse">
+  <path d="M 0 0 L 10 5 L 0 10 Z" fill="currentColor" />
+</marker>
+</defs>
+<rect width="100%" height="100%" fill="#FFFFFF" />
+<rect x="205" y="15" width="320" height="470" rx="6" fill="#FAFBFC" stroke="#8796A3" stroke-width="1.6" />
+<text x="365" y="250" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="23" fill="#243442"> </text>
+<text x="223" y="24" text-anchor="start" dominant-baseline="hanging" font-family="SimSun" font-size="22" fill="#243442" font-weight="700">组合去噪网络</text>
+<rect x="230" y="65" width="210" height="220" rx="6" fill="#E2F1F9" stroke="#0072B2" stroke-width="1.6" />
+<text x="335" y="175" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="23" fill="#243442"> </text>
+<text x="335" y="70" text-anchor="middle" dominant-baseline="hanging" font-family="SimSun" font-size="19" fill="#243442" font-weight="700">大型先验 f</text>
+<text x="335" y="254" text-anchor="middle" dominant-baseline="hanging" font-family="SimSun" font-size="16" fill="#0072B2">基础预测 · 冻结</text>
+<ellipse cx="254" cy="139" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="254" y="139" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="254" cy="175" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="254" y="175" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="254" cy="211" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="254" y="211" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="281" cy="121" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="281" y="121" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="281" cy="157" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="281" y="157" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="281" cy="193" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="281" y="193" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="281" cy="229" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="281" y="229" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="308" cy="121" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="308" y="121" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="308" cy="157" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="308" y="157" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="308" cy="193" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="308" y="193" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="308" cy="229" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="308" y="229" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="335" cy="121" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="335" y="121" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="335" cy="157" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="335" y="157" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="335" cy="193" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="335" y="193" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="335" cy="229" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="335" y="229" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="362" cy="121" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="362" y="121" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="362" cy="157" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="362" y="157" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="362" cy="193" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="362" y="193" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="362" cy="229" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="362" y="229" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="389" cy="121" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="389" y="121" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="389" cy="157" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="389" y="157" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="389" cy="193" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="389" y="193" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="389" cy="229" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="389" y="229" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="416" cy="139" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="416" y="139" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="416" cy="175" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="416" y="175" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="416" cy="211" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#0072B2" stroke-width="1.2" />
+<text x="416" y="211" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<rect x="260" y="315" width="150" height="145" rx="6" fill="#FFF0D5" stroke="#B87800" stroke-width="1.6" />
+<text x="335" y="387.5" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="23" fill="#243442"> </text>
+<text x="335" y="320" text-anchor="middle" dominant-baseline="hanging" font-family="SimSun" font-size="19" fill="#243442" font-weight="700">小型残差 g</text>
+<text x="335" y="429" text-anchor="middle" dominant-baseline="hanging" font-family="SimSun" font-size="16" fill="#B87800">残差修正 · 训练</text>
+<ellipse cx="284" cy="381.5" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="284" y="381.5" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="284" cy="398.5" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="284" y="398.5" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="318" cy="373" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="318" y="373" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="318" cy="390" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="318" y="390" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="318" cy="407" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="318" y="407" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="352" cy="373" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="352" y="373" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="352" cy="390" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="352" y="390" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="352" cy="407" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="352" y="407" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="386" cy="381.5" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="386" y="381.5" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="386" cy="398.5" rx="4.5" ry="4.5" fill="#FFFFFF" stroke="#B87800" stroke-width="1.2" />
+<text x="386" y="398.5" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<rect x="12" y="73" width="100" height="64" rx="6" fill="#EDF1F8" stroke="#557CA4" stroke-width="1.6" />
+<text x="62" y="105" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="20" fill="#243442"><tspan x="62" dy="-14">带噪状态</tspan><tspan x="62" dy="28"><tspan font-family="Times New Roman" font-style="italic">s<tspan baseline-shift="sub" font-size="70%" font-style="normal">t</tspan></tspan></tspan></text>
+<ellipse cx="62" cy="200" rx="32" ry="32" fill="#EAF3F0" stroke="#4B8279" stroke-width="1.6" />
+<text x="62" y="200" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="19" fill="#243442"><tspan x="62" dy="-13.3">时间</tspan><tspan x="62" dy="26.6"><tspan font-family="Times New Roman" font-style="italic">t</tspan></tspan></text>
+<rect x="12" y="348" width="100" height="64" rx="6" fill="#F3EEF7" stroke="#78628D" stroke-width="1.6" />
+<text x="62" y="380" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="20" fill="#243442"><tspan x="62" dy="-14">目标标签</tspan><tspan x="62" dy="28"><tspan font-family="Times New Roman" font-style="italic">y</tspan></tspan></text>
+<rect x="12" y="418" width="100" height="64" rx="6" fill="#F3EEF7" stroke="#78628D" stroke-width="1.6" />
+<text x="62" y="450" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="20" fill="#243442"><tspan x="62" dy="-14">参考上下文</tspan><tspan x="62" dy="28"><tspan font-family="Times New Roman" font-style="italic">x<tspan baseline-shift="sub" font-size="70%" font-style="normal">ref</tspan></tspan></tspan></text>
+<ellipse cx="145" cy="105" rx="3" ry="3" fill="#557CA4" stroke="#557CA4" stroke-width="1.6" />
+<text x="145" y="105" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="185" cy="200" rx="3" ry="3" fill="#4B8279" stroke="#4B8279" stroke-width="1.6" />
+<text x="185" y="200" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="1" fill="#243442"> </text>
+<ellipse cx="490" cy="175" rx="20" ry="20" fill="#FFFFFF" stroke="#243442" stroke-width="1.6" />
+<text x="490" y="175" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="28" fill="#243442">+</text>
+<rect x="441" y="129" width="85" height="38" rx="6" fill="none" stroke="none" stroke-width="1.6" />
+<text x="483.5" y="148" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="19" fill="#0072B2"><tspan font-family="Times New Roman" font-style="italic">ℓ<tspan baseline-shift="sub" font-size="70%" font-style="normal">prior</tspan></tspan></text>
+<rect x="418" y="393" width="85" height="38" rx="6" fill="none" stroke="none" stroke-width="1.6" />
+<text x="460.5" y="412" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="20" fill="#B87800"><tspan font-family="Times New Roman" font-style="italic">r<tspan baseline-shift="sub" font-size="70%" font-style="normal">φ</tspan></tspan></text>
+<rect x="585" y="80" width="140" height="70" rx="6" fill="#FFFFFF" stroke="#8796A3" stroke-width="1.6" />
+<text x="655" y="115" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="22" fill="#243442"><tspan x="655" dy="-15.4">softmax</tspan><tspan x="655" dy="30.8"><tspan font-family="Times New Roman" font-style="italic">q</tspan></tspan></text>
+<rect x="585" y="235" width="140" height="70" rx="6" fill="#EEF3F2" stroke="#8796A3" stroke-width="1.6" />
+<text x="655" y="270" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="20" fill="#243442"><tspan x="655" dy="-14">状态更新</tspan><tspan x="655" dy="28">BFN / DFM</tspan></text>
+<rect x="585" y="390" width="140" height="64" rx="6" fill="#EDF1F8" stroke="#557CA4" stroke-width="1.6" />
+<text x="655" y="422" text-anchor="middle" dominant-baseline="central" font-family="SimSun" font-size="20" fill="#243442">下一状态</text>
+<rect x="528" y="48" width="54" height="40" rx="6" fill="none" stroke="none" stroke-width="1.6" />
+<text x="555" y="68" text-anchor="middle" dominant-baseline="central" font-family="Times New Roman" font-size="18" fill="#243442"><tspan font-family="Times New Roman" font-style="italic">ℓ<tspan baseline-shift="sub" font-size="70%" font-style="normal">cond</tspan></tspan></text>
+<text x="655" y="464" text-anchor="middle" dominant-baseline="hanging" font-family="SimSun" font-size="18" fill="#243442">逐步重复</text>
+<line x1="258.5" y1="139" x2="276.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="139" x2="276.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="175" x2="276.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="175" x2="276.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="175" x2="276.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="175" x2="276.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="211" x2="276.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="258.5" y1="211" x2="276.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="121" x2="303.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="121" x2="303.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="157" x2="303.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="157" x2="303.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="157" x2="303.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="157" x2="303.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="193" x2="303.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="193" x2="303.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="193" x2="303.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="193" x2="303.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="229" x2="303.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="285.5" y1="229" x2="303.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="121" x2="330.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="121" x2="330.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="157" x2="330.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="157" x2="330.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="157" x2="330.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="157" x2="330.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="193" x2="330.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="193" x2="330.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="193" x2="330.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="193" x2="330.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="229" x2="330.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="312.5" y1="229" x2="330.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="121" x2="357.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="121" x2="357.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="157" x2="357.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="157" x2="357.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="157" x2="357.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="157" x2="357.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="193" x2="357.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="193" x2="357.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="193" x2="357.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="193" x2="357.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="229" x2="357.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="339.5" y1="229" x2="357.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="121" x2="384.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="121" x2="384.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="157" x2="384.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="157" x2="384.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="157" x2="384.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="157" x2="384.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="193" x2="384.5" y2="121" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="193" x2="384.5" y2="157" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="193" x2="384.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="193" x2="384.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="229" x2="384.5" y2="193" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="366.5" y1="229" x2="384.5" y2="229" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="121" x2="411.5" y2="139" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="157" x2="411.5" y2="139" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="157" x2="411.5" y2="175" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="193" x2="411.5" y2="175" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="193" x2="411.5" y2="211" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="393.5" y1="229" x2="411.5" y2="211" stroke="#A4C8DD" stroke-width="0.75" style="color: #A4C8DD" fill="none" />
+<line x1="288.5" y1="381.5" x2="313.5" y2="373" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="288.5" y1="381.5" x2="313.5" y2="390" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="288.5" y1="381.5" x2="313.5" y2="407" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="288.5" y1="398.5" x2="313.5" y2="373" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="288.5" y1="398.5" x2="313.5" y2="390" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="288.5" y1="398.5" x2="313.5" y2="407" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="373" x2="347.5" y2="373" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="373" x2="347.5" y2="390" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="373" x2="347.5" y2="407" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="390" x2="347.5" y2="373" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="390" x2="347.5" y2="390" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="390" x2="347.5" y2="407" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="407" x2="347.5" y2="373" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="407" x2="347.5" y2="390" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="322.5" y1="407" x2="347.5" y2="407" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="373" x2="381.5" y2="381.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="373" x2="381.5" y2="398.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="390" x2="381.5" y2="381.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="390" x2="381.5" y2="398.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="407" x2="381.5" y2="381.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="356.5" y1="407" x2="381.5" y2="398.5" stroke="#D6B986" stroke-width="0.75" style="color: #D6B986" fill="none" />
+<line x1="112" y1="105" x2="142" y2="105" stroke="#557CA4" stroke-width="2" style="color: #557CA4" fill="none" />
+<line x1="148" y1="105" x2="230" y2="105" stroke="#557CA4" stroke-width="2" marker-end="url(#arrow-block)" style="color: #557CA4" fill="none" />
+<path d="M 145 108 L 145 350 L 260 350" stroke="#557CA4" stroke-width="2" marker-end="url(#arrow-block)" style="color: #557CA4" fill="none" />
+<path d="M 138 200.0 Q 145 186.0 152 200.0" stroke="#FFFFFF" fill="none" stroke-width="7" /><path stroke="#4B8279" stroke-width="2" style="color: #4B8279" fill="none" d="M 94 200.0 L 138 200.0 Q 145 186.0 152 200.0 L 182 200.0" />
+<line x1="188" y1="200" x2="230" y2="200" stroke="#4B8279" stroke-width="2" marker-end="url(#arrow-block)" style="color: #4B8279" fill="none" />
+<path d="M 185 203 L 185 330 L 260 330" stroke="#4B8279" stroke-width="2" marker-end="url(#arrow-block)" style="color: #4B8279" fill="none" />
+<line x1="112" y1="380" x2="260" y2="380" stroke="#78628D" stroke-width="2" marker-end="url(#arrow-block)" style="color: #78628D" fill="none" />
+<line x1="112" y1="450" x2="260" y2="450" stroke="#78628D" stroke-width="2" marker-end="url(#arrow-block)" style="color: #78628D" fill="none" />
+<line x1="440" y1="175" x2="470" y2="175" stroke="#0072B2" stroke-width="3.8" marker-end="url(#arrow-main)" style="color: #0072B2" fill="none" />
+<path d="M 410 387.5 L 490 387.5 L 490 195" stroke="#B87800" stroke-width="1.8" marker-end="url(#arrow-block)" style="color: #B87800" fill="none" />
+<path d="M 510 175 L 547.5 175 L 547.5 115 L 585 115" stroke="#243442" stroke-width="3.8" marker-end="url(#arrow-main)" style="color: #243442" fill="none" />
+<line x1="655" y1="150" x2="655" y2="235" stroke="#243442" stroke-width="2" marker-end="url(#arrow-block)" style="color: #243442" fill="none" />
+<line x1="655" y1="305" x2="655" y2="390" stroke="#243442" stroke-width="2" marker-end="url(#arrow-block)" style="color: #243442" fill="none" />
+</svg>
