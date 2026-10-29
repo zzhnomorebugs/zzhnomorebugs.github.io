@@ -1,6 +1,15 @@
 {% include base_path %}
 
-{% assign is_zh = page.lang == "zh-CN" %}
+{% assign is_zh = false %}
+{% if page.lang == "zh-CN" %}{% assign is_zh = true %}{% endif %}
+{% assign interview_mode = false %}
+{% for project in site.research %}
+  {% if project.permalink == "/zh/research/protein-control/" or project.permalink == "/zh/research/protein-foundation/" or project.permalink == "/research/protein-control/" or project.permalink == "/research/protein-foundation/" %}
+    {% if project.published != false %}
+      {% assign interview_mode = true %}
+    {% endif %}
+  {% endif %}
+{% endfor %}
 
 <div class="experience-entries">
   {% for entry in site.data.experience.entries %}
@@ -44,7 +53,12 @@
           {% assign highlights = entry.highlights.en %}
         {% endif %}
         {% for content in highlights %}
-          <li>{{ content | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+          {% assign highlight_text = content %}
+          {% if is_zh and interview_mode == false %}
+            {% assign playful_suffix = entry.playful_zh[forloop.index0] %}
+            {% assign highlight_text = highlight_text | append: playful_suffix %}
+          {% endif %}
+          <li>{{ highlight_text | markdownify | remove: '<p>' | remove: '</p>' }}</li>
         {% endfor %}
       </ul>
 

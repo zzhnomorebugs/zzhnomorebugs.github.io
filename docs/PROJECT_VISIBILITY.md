@@ -60,3 +60,9 @@ bundle exec jekyll build
 隐藏后应确认目标 HTML 不再生成，且中文、英文项目列表均无对应入口。正常构建不要加 `--unpublished`；这个开关仅用于本地预览未发布内容。
 
 如果需要在 GitHub 网页上操作，也可以编辑对应文件的 `published` 并提交。多语言项目需要同步修改全部语言文件，使用本地工具更不容易遗漏。
+
+## 中文经历页联动
+
+中文“经历”页直接读取这两个蛋白质项目的 `published` 状态，不需要额外开关。任一项目（任一语言页）公开时，隐藏逆合成与蛋白质实习描述末尾的六句整活文案；全部隐藏时恢复。正式研究描述和英文页面不受影响。
+
+整活原句保存在 `_data/experience.yml` 对应经历的 `playful_zh` 数组中，按顺序与中文 highlights 对应。模板在生成 HTML 时决定是否输出，因此 public 模式的网页源码中也不会包含这些句子。现有 `python scripts/project_visibility.py public|private --push` 命令及直接修改项目 `published` 的方式均自动生效。
