@@ -20,7 +20,7 @@ columns:
     color: "#b94a38"
     backgrounds:
       - research/incomplete-learning/demo-nano.webp
-      - research/incomplete-learning/idcd-advection-four-blocks-poster.webp
+      - research/incomplete-learning/context-query.webp
       - research/incomplete-learning/demo-sss.webp
     palette:
       - "#E64B35"
