@@ -8,6 +8,8 @@ columns:
     short_label_en: "Retrosynthesis"
     label_en: "Retrosynthesis Structure Generation"
     color: "#7E6148"
+    backgrounds:
+      - research/retro/generation-trajectory.png
     palette:
       - "#7E6148"
 
@@ -16,6 +18,10 @@ columns:
     short_label_en: "Incomplete observations"
     label_en: "Dynamics Under Incomplete Observations"
     color: "#b94a38"
+    backgrounds:
+      - research/incomplete-learning/demo-nano.webp
+      - research/incomplete-learning/idcd-advection-four-blocks-poster.webp
+      - research/incomplete-learning/demo-sss.webp
     palette:
       - "#E64B35"
 
@@ -24,6 +30,10 @@ columns:
     short_label_en: "Physical dynamics"
     label_en: "Dynamics Prediction"
     color: "#24796b"
+    backgrounds:
+      - research/physical-dynamics/five-spring-prior-rollout-poster.webp
+      - research/learning-to-decouple/three-body-t8-trajectory.webp
+      - research/physical-dynamics/burgers-comparison.webp
     palette:
       - "#91D1C2"
       - "#00A087"
@@ -33,6 +43,8 @@ columns:
     short_label_en: "Molecules & proteins"
     label_en: "Molecular & Protein Generation"
     color: "#3C5488"
+    backgrounds:
+      - research/se3-diffusion/molecules-drugs-sde100.webp
     palette:
       - "#8491B4"
       - "#3C5488"

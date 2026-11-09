@@ -166,8 +166,25 @@
       const lane = list.filter(p => p.lane === i);
       if (!lane.length) return;
       const group = color(node('div', 'gantt-group'), i);
-      group.append(node('h3', 'gantt-group__heading', col.label));
-      chart.append(group);
+      const groupHeader = node('div', 'gantt-group__header');
+      groupHeader.append(node('h3', 'gantt-group__heading', col.label));
+      const rows = node('div', 'gantt-group__rows');
+      const backgroundUrls = (col.backgrounds || []).map(safeUrl).filter(Boolean);
+      if (backgroundUrls.length) {
+        const background = node('div', 'gantt-group__background');
+        const artwork = node('div', 'gantt-group__artwork');
+        artwork.classList.toggle('gantt-group__artwork--multiple', backgroundUrls.length > 1);
+        backgroundUrls.forEach(url => {
+          const image = node('img', 'gantt-group__image');
+          image.alt = '';
+          image.loading = 'lazy';
+          image.decoding = 'async';
+          image.src = url;
+          artwork.append(image);
+        });
+        background.append(artwork);
+        rows.append(background);
+      }
       lane.forEach(p => {
         const row = node('div', 'gantt-row');
         const label = projectButton(p, 'gantt-label gantt-project');
@@ -183,8 +200,10 @@
         if (duration >= 3) bar.append(node('span', '', duration + ' ' + words.months));
         track.append(bar);
         row.append(label, track);
-        chart.append(row);
+        rows.append(row);
       });
+      group.append(groupHeader, rows);
+      chart.append(group);
     });
     if (now >= first && now <= last) {
       const marker = node('div', 'gantt-now');

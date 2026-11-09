@@ -102,7 +102,11 @@
 <script type="application/json" id="timeline-columns">
 [
 {% for col in timeline.columns %}
-  {"label": {% if is_zh %}{{ col.short_label | default: col.label | jsonify }}{% else %}{{ col.short_label_en | default: col.label_en | jsonify }}{% endif %}, "color": {{ col.color | jsonify }}}{% unless forloop.last %},{% endunless %}
+  {
+    "label": {% if is_zh %}{{ col.short_label | default: col.label | jsonify }}{% else %}{{ col.short_label_en | default: col.label_en | jsonify }}{% endif %},
+    "color": {{ col.color | jsonify }},
+    "backgrounds": [{% for background in col.backgrounds %}{{ background | prepend: '/images/' | relative_url | jsonify }}{% unless forloop.last %}, {% endunless %}{% endfor %}]
+  }{% unless forloop.last %},{% endunless %}
 {% endfor %}
 ]
 </script>
