@@ -4,6 +4,7 @@ title: "Differentiable mass transfer modeling enables wet lab validated inverse 
 authors: "Baochen Li, <strong>Zihan Zhou</strong>, Yanqing Yu, Sen Lin, Peng Wang, Tianshu Yu, Xiaoxue Wang"
 collection: publications
 category: preprint
+published: true
 permalink: /publication/differentiable-lc
 
 excerpt: 'We develop a differentiable physics framework for liquid chromatography that combines mechanistic column modeling with physics-informed machine learning. It supports fast forward simulation and gradient-based estimation of transport and adsorption parameters from gradient-elution chromatograms. An observability-guided experimental-design strategy improves parameter identifiability, and wet-lab validation yields a database of 731 parameter sets extracted from 2,553 chromatograms.'
