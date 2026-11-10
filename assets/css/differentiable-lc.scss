@@ -1,0 +1,13 @@
+---
+---
+
+.lc-project .lc-schematic > a { padding: 0; }
+.lc-project .lc-schematic img { width: 100%; max-height: none; }
+.lc-project .lc-comparison th[scope="row"] { white-space: normal; }
+.lc-project .lc-comparison th[scope="col"]:not(:first-child),
+.lc-project .lc-comparison td { width: 22%; min-width: 0; text-align: center; }
+
+@media (max-width: 740px) {
+  .lc-project .retro-hero__title { text-wrap: balance; }
+  .lc-project .retro-figure img { width: 100%; max-height: none; }
+}

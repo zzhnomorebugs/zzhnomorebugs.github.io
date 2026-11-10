@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">FNO 批量筛选与 COMSOL 复算</title>
+  <desc id="desc">从多组九参数候选出发，冻结权重的 FNO 批量预测各梯度程序的出口曲线，与实测比较曲线、峰时和峰高。遗传算法选择、交叉和变异，形成新一代候选。循环筛选后，排名靠前的候选交给 COMSOL 求解通用速率模型，按原梯度程序下的保留时间均方根误差重排。图中曲线仅作示意。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #243743; }
+      .card { fill: #fff; stroke: #d4e2dc; stroke-width: 2; }
+      .model { fill: #edf6f1; stroke: #9ac2b3; stroke-width: 2; }
+      .verification { fill: #edf3f7; stroke: #adc6d4; stroke-width: 2; }
+      .step { fill: #25766c; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+      .heading { font-size: 23px; font-weight: 700; }
+      .body { font-size: 17px; fill: #3f5659; }
+      .small { font-size: 15px; fill: #4b6062; }
+      .arrow { fill: none; stroke: #25766c; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .trace { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+      .chip { fill: #edf3f0; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="#25766c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <g id="candidate">
+      <circle cx="0" cy="0" r="4.3"/><circle cx="17" cy="0" r="4.3"/><circle cx="34" cy="0" r="4.3"/>
+      <circle cx="51" cy="0" r="4.3"/><circle cx="68" cy="0" r="4.3"/><circle cx="85" cy="0" r="4.3"/>
+      <circle cx="102" cy="0" r="4.3"/><circle cx="119" cy="0" r="4.3"/><circle cx="136" cy="0" r="4.3"/>
+    </g>
+  </defs>
+  <rect width="1200" height="430" rx="14" fill="#f7faf7"/>
+  <text x="34" y="52" font-size="28" font-weight="700">先批量筛选，再精细复算</text>
+  <text class="step" x="1166" y="50" text-anchor="end">FNO 参数反演</text>
+
+  <rect class="card" x="34" y="84" width="208" height="250" rx="14"/>
+  <rect class="model" x="265" y="84" width="208" height="250" rx="14"/>
+  <rect class="card" x="496" y="84" width="208" height="250" rx="14"/>
+  <rect class="card" x="727" y="84" width="208" height="250" rx="14"/>
+  <rect class="verification" x="958" y="84" width="208" height="250" rx="14"/>
+  <path class="arrow" d="M246 209 H261"/>
+  <path class="arrow" d="M477 209 H492"/>
+  <path class="arrow" d="M708 209 H723"/>
+  <path class="arrow" d="M939 209 H954"/>
+
+  <g text-anchor="middle">
+    <text class="step" x="138" y="115">01</text>
+    <text class="heading" x="138" y="151">候选参数群</text>
+    <use href="#candidate" x="70" y="185" fill="#9db9ca"/>
+    <use href="#candidate" x="70" y="207" fill="#76aa9b"/>
+    <use href="#candidate" x="70" y="229" fill="#5d839a"/>
+    <text class="body" x="138" y="281">每组含 9 个物理参数</text>
+
+    <text class="step" x="369" y="115">02</text>
+    <text class="heading" x="369" y="151">批量预测曲线</text>
+    <text class="body" x="369" y="271">固定 FNO 权重</text>
+    <text class="small" x="369" y="300">使用各组已知梯度程序</text>
+
+    <text class="step" x="600" y="115">03</text>
+    <text class="heading" x="600" y="151">综合评分</text>
+    <text class="body" x="600" y="191">比较预测与实测</text>
+    <rect class="chip" x="514" y="213" width="52" height="34" rx="9"/>
+    <rect class="chip" x="574" y="213" width="52" height="34" rx="9"/>
+    <rect class="chip" x="634" y="213" width="52" height="34" rx="9"/>
+    <text class="small" x="540" y="235">曲线</text>
+    <text class="small" x="600" y="235">峰时</text>
+    <text class="small" x="660" y="235">峰高</text>
+    <text class="small" x="600" y="286">合并各梯度的误差</text>
+
+    <text class="step" x="831" y="115">04</text>
+    <text class="heading" x="831" y="151">遗传算法筛选</text>
+    <text class="body" x="831" y="207">选择 · 交叉 · 变异</text>
+    <text class="small" x="831" y="246">生成下一代候选</text>
+    <text class="small" x="831" y="282">循环结束后保留优胜组</text>
+
+    <text class="step" x="1062" y="115">05</text>
+    <text class="heading" x="1062" y="151">复算并重排</text>
+    <text class="body" x="1062" y="199">COMSOL 求解 GRM</text>
+    <text class="small" x="1062" y="238">只复算排名靠前的候选</text>
+    <text class="small" x="1062" y="272">按原梯度条件的</text>
+    <text class="small" x="1062" y="296">峰时 RMSE 重排</text>
+  </g>
+
+  <path d="M294 170 V235 H446" fill="none" stroke="#abbebc" stroke-width="1.5"/>
+  <path class="trace" stroke="#274a63" d="M300 229 H318 C334 229 331 180 345 180 S354 229 370 229 H441"/>
+  <path class="trace" stroke="#25766c" d="M300 229 H345 C361 229 359 190 373 190 S383 229 397 229 H441"/>
+  <path class="trace" stroke="#72a997" d="M300 229 H373 C388 229 390 198 403 198 S413 229 431 229 H441"/>
+
+  <path class="arrow" d="M831 340 v22 q0 17 -17 17 H155 q-17 0 -17 -17 v-22"/>
+  <rect x="377" y="361" width="214" height="36" rx="18" fill="#e8f3ec"/>
+  <text class="body" x="484" y="385" text-anchor="middle">用下一代继续批量评估</text>
+</svg>

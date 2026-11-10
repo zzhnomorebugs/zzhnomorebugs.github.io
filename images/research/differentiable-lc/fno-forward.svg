@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="564" viewBox="0 0 1120 564" role="img" aria-labelledby="title desc">
+  <title id="title">傅里叶神经算子如何推进浓度场</title>
+  <desc id="desc">训练时，傅里叶神经算子从初态连续推进，把各时刻的流体、孔隙和吸附浓度场与 COMSOL 参考场比较。预测时，每一步由当前网格状态、物理参数和实验程序决定，网络权重在各步共享。逐时刻读取柱末端的流体浓度得到出口曲线。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif; fill: #21374a; }
+      .stage { font-size: 22px; font-weight: 700; fill: #116b62; }
+      .heading { font-size: 22px; font-weight: 700; }
+      .body { font-size: 17px; fill: #495f6d; }
+      .note { font-size: 16px; fill: #116b62; }
+      .card { fill: #fff; stroke: #cbd9dc; stroke-width: 1.5; }
+      .model { fill: #deefea; stroke: #74a9a0; stroke-width: 1.5; }
+      .link { fill: none; stroke: #577c7f; stroke-width: 2.5; marker-end: url(#arrow); }
+      .repeat { stroke-dasharray: 5 5; }
+      .icon { fill: none; stroke: #116b62; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1 1 L6 4 L1 7" fill="none" stroke="#577c7f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="field" viewBox="0 0 56 56">
+      <path class="icon" d="M12 9 H49 V36 M7 14 H44 V41" opacity=".65"/>
+      <rect class="icon" x="2" y="19" width="37" height="27" rx="4"/>
+      <path d="M3 31 C13 31 14 23 23 23 C29 23 30 30 38 31 V41 Q38 45 34 45 H7 Q3 45 3 41 Z" fill="#c4e4dc"/>
+      <path class="icon" d="M3 36 C11 36 15 29 22 29 S31 35 38 36"/>
+    </symbol>
+    <symbol id="compare" viewBox="0 0 56 56">
+      <path class="icon" d="M9 8 V47 H50" opacity=".65"/>
+      <path class="icon" d="M12 39 C18 39 20 18 27 18 S35 38 47 39"/>
+      <path class="icon" d="M12 42 C24 41 25 14 32 14 S41 41 48 42" stroke-dasharray="4 4" opacity=".72"/>
+    </symbol>
+    <symbol id="spectral" viewBox="0 0 56 56">
+      <path class="icon" d="M5 16 C11 4 17 4 23 16 S35 28 41 16 S49 10 51 16 M5 30 C9 22 13 22 17 30 S25 38 29 30 S37 22 41 30 S49 38 51 30 M5 44 H51"/>
+    </symbol>
+    <symbol id="grid" viewBox="0 0 56 56">
+      <rect x="5" y="13" width="46" height="30" rx="4" fill="#e4f3ef"/>
+      <path d="M20 14 H35 V42 H20Z" fill="#a4d2c6"/>
+      <path class="icon" d="M20 14 V42 M35 14 V42 M5 23 H51 M5 33 H51" opacity=".65"/>
+      <rect class="icon" x="5" y="13" width="46" height="30" rx="4"/>
+    </symbol>
+    <symbol id="curve" viewBox="0 0 56 56">
+      <path class="icon" d="M7 9 V46 H51" opacity=".65"/>
+      <path class="icon" d="M11 40 H17 C24 40 25 14 31 14 C37 14 37 40 45 40 H49"/>
+    </symbol>
+  </defs>
+
+  <rect width="1120" height="564" fill="#fafbf9"/>
+  <rect x="24" y="20" width="1072" height="220" rx="16" fill="#f0f4f6"/>
+  <rect x="24" y="284" width="1072" height="260" rx="16" fill="#edf6f3"/>
+  <text x="56" y="60" class="stage">离线训练</text>
+  <text x="56" y="324" class="stage">逐步正向求解</text>
+  <use href="#curve" x="724" y="300" width="34" height="34"/>
+  <text x="1064" y="324" class="note" text-anchor="end">沿时间读取柱末端流体浓度，得到出口曲线</text>
+
+  <rect x="56" y="83" width="266" height="126" rx="12" class="card"/>
+  <use href="#field" x="73" y="118" width="56" height="56"/>
+  <text x="145" y="130" class="heading">COMSOL 模拟</text>
+  <text x="145" y="160" class="body">多组参数与梯度程序</text>
+  <text x="145" y="184" class="body">生成参考时空浓度场</text>
+
+  <rect x="427" y="83" width="266" height="126" rx="12" class="model"/>
+  <use href="#spectral" x="449" y="118" width="56" height="56"/>
+  <text x="522" y="130" class="heading">训练 FNO</text>
+  <text x="522" y="160" class="body">从初态连续推进</text>
+  <text x="522" y="184" class="body">用轨迹误差更新权重</text>
+
+  <rect x="798" y="83" width="266" height="126" rx="12" class="card"/>
+  <use href="#compare" x="816" y="118" width="56" height="56"/>
+  <text x="890" y="130" class="heading">整段轨迹误差</text>
+  <text x="890" y="160" class="body">比较各时刻的预测</text>
+  <text x="890" y="184" class="body">与三类参考浓度场</text>
+
+  <path d="M335 146 H414" class="link"/>
+  <path d="M785 146 H706" class="link"/>
+  <path d="M560 220 V334" class="link"/>
+  <text x="579" y="268" class="note">沿用训练后的权重</text>
+
+  <rect x="56" y="346" width="266" height="126" rx="12" class="card"/>
+  <use href="#grid" x="73" y="381" width="56" height="56"/>
+  <text x="145" y="393" class="heading">当前网格状态</text>
+  <text x="145" y="423" class="body">沿柱长的浓度分布</text>
+  <text x="145" y="447" class="body">给定参数与实验程序</text>
+
+  <rect x="427" y="346" width="266" height="126" rx="12" class="model"/>
+  <use href="#spectral" x="449" y="381" width="56" height="56"/>
+  <text x="522" y="393" class="heading">FNO 推进一步</text>
+  <text x="522" y="423" class="body">在频域混合空间信息</text>
+
+  <rect x="798" y="346" width="266" height="126" rx="12" class="card"/>
+  <use href="#grid" x="816" y="381" width="56" height="56"/>
+  <text x="890" y="393" class="heading">下一步网格状态</text>
+  <text x="890" y="423" class="body">各位置的浓度预测</text>
+
+  <path d="M335 409 H414" class="link"/>
+  <path d="M706 409 H785" class="link"/>
+  <path d="M931 478 V506 Q931 520 917 520 H203 Q189 520 189 506 V479" class="link repeat"/>
+  <text x="560" y="507" class="note" text-anchor="middle">把新状态送回，同一模型逐步推进</text>
+</svg>

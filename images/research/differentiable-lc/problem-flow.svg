@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="326" viewBox="0 0 1200 326" role="img" aria-labelledby="title desc">
+  <title id="title">从实验程序和物理参数到出口浓度曲线</title>
+  <desc id="desc">给定随时间改变的溶剂配比和九个待估的传质与吸附参数，推算浓度在色谱柱内怎样随时间与位置变化，再读取出口浓度曲线。曲线峰顶对应保留时间。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "Noto Sans CJK SC", "PingFang SC", sans-serif; fill: #22323e; }
+      .card { fill: #fff; stroke: #cedad6; stroke-width: 1.5; }
+      .stage { font-size: 27px; font-weight: 700; text-anchor: middle; }
+      .label { font-size: 18px; font-weight: 650; fill: #286a60; text-anchor: middle; }
+      .note { font-size: 19px; fill: #405763; text-anchor: middle; }
+      .axis-label { font-size: 16px; fill: #405763; }
+      .axis { fill: none; stroke: #71848a; stroke-width: 1.5; }
+      .curve { fill: none; stroke: #217568; stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+      .connector { fill: none; stroke: #548278; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <pattern id="packing" width="26" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="7" cy="6" r="4" fill="#d1e4dd" stroke="#a3c6b9"/>
+      <circle cx="20" cy="18" r="4" fill="#d1e4dd" stroke="#a3c6b9"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="326" rx="14" fill="#f5f8f6"/>
+  <g transform="translate(18 24)">
+    <rect class="card" width="348" height="278" rx="12"/>
+    <text class="label" x="174" y="35">已知条件与待估参数</text>
+    <text class="stage" x="174" y="69">设置模型输入</text>
+    <text class="axis-label" x="68" y="104">溶剂配比（梯度程序）</text>
+    <path class="axis" d="M68 117 V181 H282"/>
+    <path class="curve" d="M78 167 H110 L229 125 H272"/>
+    <text class="axis-label" x="282" y="205" text-anchor="end">时间</text>
+    <rect x="26" y="222" width="296" height="37" rx="8" fill="#edf4f9"/>
+    <text class="note" x="174" y="247">9 个待估的传质与吸附参数</text>
+  </g>
+  <path class="connector" d="M380 163 H412 M404 155 L412 163 L404 171"/>
+  <g transform="translate(426 24)">
+    <rect class="card" width="348" height="278" rx="12"/>
+    <text class="label" x="174" y="35">不可直接观测</text>
+    <text class="stage" x="174" y="69">推算柱内浓度</text>
+    <rect x="61" y="109" width="226" height="62" rx="12" fill="#f0f7f4"/>
+    <rect x="61" y="109" width="226" height="62" rx="12" fill="url(#packing)" stroke="#629889" stroke-width="2"/>
+    <path class="connector" d="M34 140 H60 M288 140 H314 M306 132 L314 140 L306 148"/>
+    <path d="M104 140 H244 M235 132 L244 140 L235 148" fill="none" stroke="#217568" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="note" x="174" y="209">流动、扩散与吸附</text>
+    <text class="note" x="174" y="240">浓度随位置和时间变化</text>
+  </g>
+  <path class="connector" d="M788 163 H820 M812 155 L820 163 L812 171"/>
+  <g transform="translate(834 24)">
+    <rect class="card" width="348" height="278" rx="12"/>
+    <text class="label" x="174" y="35">可测量</text>
+    <text class="stage" x="174" y="69">读取出口曲线</text>
+    <text class="axis-label" x="68" y="104">出口浓度</text>
+    <path class="axis" d="M68 117 V203 H282"/>
+    <path d="M78 193 C125 193 145 191 158 166 C170 144 175 130 186 130 C199 130 207 149 216 168 C228 191 247 193 272 193 V203 H78 Z" fill="#e4f3ed"/>
+    <path class="curve" d="M78 193 C125 193 145 191 158 166 C170 144 175 130 186 130 C199 130 207 149 216 168 C228 191 247 193 272 193"/>
+    <path d="M186 131 V205" stroke="#6f8b91" stroke-width="1.8" stroke-dasharray="4 5"/>
+    <circle cx="186" cy="130" r="4.5" fill="#217568"/>
+    <text class="axis-label" x="282" y="227" text-anchor="end">时间</text>
+    <text class="note" x="186" y="246">峰顶对应保留时间</text>
+  </g>
+</svg>

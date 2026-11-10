@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="1060" viewBox="0 0 640 1060" role="img" aria-labelledby="title desc">
+  <title id="title">FNO 批量筛选与 COMSOL 复算</title>
+  <desc id="desc">从多组九参数候选出发，冻结权重的 FNO 批量预测各梯度程序的出口曲线，与实测比较曲线、峰时和峰高。遗传算法选择、交叉和变异，形成新一代候选。循环筛选后，排名靠前的候选交给 COMSOL 求解通用速率模型，按原梯度程序下的保留时间均方根误差重排。图中曲线仅作示意。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #243743; }
+      .card { fill: #fff; stroke: #d4e2dc; stroke-width: 2.5; }
+      .model { fill: #edf6f1; stroke: #9ac2b3; stroke-width: 2.5; }
+      .verification { fill: #edf3f7; stroke: #adc6d4; stroke-width: 2.5; }
+      .step { fill: #25766c; font-size: 23px; font-weight: 700; letter-spacing: 1px; }
+      .heading { font-size: 32px; font-weight: 700; }
+      .body { font-size: 25px; fill: #3f5659; }
+      .small { font-size: 23px; fill: #4b6062; }
+      .arrow { fill: none; stroke: #25766c; stroke-width: 3.4; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .trace { fill: none; stroke-width: 3.8; stroke-linecap: round; }
+    </style>
+    <marker id="arrow" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M2 1 L11 7 L2 13" fill="none" stroke="#25766c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <g id="candidate">
+      <circle cx="0" cy="0" r="4.5"/><circle cx="16" cy="0" r="4.5"/><circle cx="32" cy="0" r="4.5"/>
+      <circle cx="48" cy="0" r="4.5"/><circle cx="64" cy="0" r="4.5"/><circle cx="80" cy="0" r="4.5"/>
+      <circle cx="96" cy="0" r="4.5"/><circle cx="112" cy="0" r="4.5"/><circle cx="128" cy="0" r="4.5"/>
+    </g>
+  </defs>
+  <rect width="640" height="1060" rx="18" fill="#f7faf7"/>
+  <text x="34" y="56" font-size="31" font-weight="700">先批量筛选，再精细复算</text>
+
+  <rect class="card" x="34" y="84" width="530" height="142" rx="18"/>
+  <rect class="model" x="34" y="263" width="530" height="173" rx="18"/>
+  <rect class="card" x="34" y="473" width="530" height="135" rx="18"/>
+  <rect class="card" x="34" y="645" width="530" height="142" rx="18"/>
+  <rect class="verification" x="34" y="841" width="530" height="177" rx="18"/>
+  <path class="arrow" d="M299 232 V256"/>
+  <path class="arrow" d="M299 442 V466"/>
+  <path class="arrow" d="M299 614 V638"/>
+  <path class="arrow" d="M299 793 V833"/>
+
+  <g text-anchor="middle">
+    <text class="step" x="81" y="132">01</text>
+    <text class="heading" x="299" y="134">候选参数群</text>
+    <use href="#candidate" x="93" y="166" fill="#9db9ca"/>
+    <use href="#candidate" x="93" y="183" fill="#76aa9b"/>
+    <use href="#candidate" x="93" y="200" fill="#5d839a"/>
+    <text class="body" x="380" y="191">每组含 9 个物理参数</text>
+
+    <text class="step" x="81" y="311">02</text>
+    <text class="heading" x="299" y="313">批量预测曲线</text>
+    <text class="body" x="392" y="361">固定 FNO 权重</text>
+    <text class="small" x="397" y="399">按多个已知梯度程序预测</text>
+
+    <text class="step" x="81" y="521">03</text>
+    <text class="heading" x="299" y="523">综合评分</text>
+    <text class="body" x="299" y="573">比较实测与预测的曲线、峰时和峰高</text>
+
+    <text class="step" x="81" y="693">04</text>
+    <text class="heading" x="299" y="695">遗传算法筛选</text>
+    <text class="body" x="299" y="745">选择、交叉、变异，生成下一代</text>
+
+    <text class="step" x="81" y="889">05</text>
+    <text class="heading" x="299" y="891">复算并重排</text>
+    <text class="body" x="299" y="940">COMSOL 复算排名靠前的候选</text>
+    <text class="small" x="299" y="982">按原梯度条件的峰时 RMSE 重排</text>
+  </g>
+
+  <path d="M90 331 V406 H258" fill="none" stroke="#abbebc" stroke-width="2"/>
+  <path class="trace" stroke="#274a63" d="M98 400 H117 C132 400 132 340 146 340 S158 400 174 400 H251"/>
+  <path class="trace" stroke="#25766c" d="M98 400 H144 C162 400 160 351 176 351 S188 400 206 400 H251"/>
+  <path class="trace" stroke="#72a997" d="M98 400 H174 C190 400 191 363 207 363 S220 400 239 400 H251"/>
+
+  <path class="arrow" d="M572 717 H587 q20 0 20 -20 V175 q0 -20 -20 -20 H572"/>
+  <text class="small" x="322" y="821">循环结束后</text>
+</svg>

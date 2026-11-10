@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">PINN 参数反演的一轮迭代</title>
+  <desc id="desc">给定已知实验程序和九个候选物理参数，固定权重的 PINN 预测出口曲线。把预测曲线与实测曲线逐点比较并计算均方误差，再对候选参数自动求导。L-BFGS 更新候选参数，用于下一轮预测。图中的曲线仅作示意。</desc>
+  <defs>
+    <style>
+      text { font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif; fill: #243743; }
+      .card { fill: #fff; stroke: #d4e2dc; stroke-width: 2; }
+      .model { fill: #edf6f1; stroke: #9ac2b3; stroke-width: 2; }
+      .step { fill: #25766c; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+      .heading { font-size: 23px; font-weight: 700; }
+      .body { font-size: 18px; fill: #3f5659; }
+      .small { font-size: 15px; fill: #4b6062; }
+      .arrow { fill: none; stroke: #25766c; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .measured, .predicted { fill: none; stroke-width: 3.2; stroke-linecap: round; }
+      .measured { stroke: #274a63; }
+      .predicted { stroke: #25766c; stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="#25766c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="430" rx="14" fill="#f7faf7"/>
+  <text x="34" y="52" font-size="28" font-weight="700">固定模型，迭代求解物理参数</text>
+  <text class="step" x="1166" y="50" text-anchor="end">PINN 参数反演</text>
+
+  <rect class="card" x="34" y="84" width="224" height="250" rx="14"/>
+  <rect class="model" x="294" y="84" width="225" height="250" rx="14"/>
+  <rect class="card" x="555" y="84" width="312" height="250" rx="14"/>
+  <rect class="card" x="903" y="84" width="263" height="250" rx="14"/>
+  <path class="arrow" d="M265 210 H287"/>
+  <path class="arrow" d="M526 210 H548"/>
+  <path class="arrow" d="M874 210 H896"/>
+
+  <g text-anchor="middle">
+    <text class="step" x="146" y="115">01</text>
+    <text class="heading" x="146" y="151">9 个候选参数</text>
+    <g fill="#8bb9a8">
+      <circle cx="118" cy="183" r="6"/><circle cx="146" cy="183" r="6"/><circle cx="174" cy="183" r="6"/>
+      <circle cx="118" cy="208" r="6"/><circle cx="146" cy="208" r="6"/><circle cx="174" cy="208" r="6"/>
+      <circle cx="118" cy="233" r="6"/><circle cx="146" cy="233" r="6"/><circle cx="174" cy="233" r="6"/>
+    </g>
+    <rect x="57" y="271" width="178" height="36" rx="18" fill="#edf2f5"/>
+    <text class="small" x="146" y="294">实验程序固定</text>
+
+    <text class="step" x="406.5" y="115">02</text>
+    <text class="heading" x="406.5" y="151">预测出口曲线</text>
+    <g fill="none" stroke="#25766c" stroke-width="2.7" stroke-linecap="round">
+      <rect x="394.5" y="198" width="24" height="18" rx="4"/>
+      <path d="M399.5 198 v-6 a7 7 0 0 1 14 0 v6"/>
+    </g>
+    <text class="body" x="406.5" y="251">固定 PINN 权重</text>
+    <text class="small" x="406.5" y="286">逐个时间点计算出口浓度</text>
+
+    <text class="step" x="711" y="115">03</text>
+    <text class="heading" x="711" y="151">比较整条曲线</text>
+    <text class="small" x="711" y="308">计算均方误差（MSE）</text>
+
+    <text class="step" x="1034.5" y="115">04</text>
+    <text class="heading" x="1034.5" y="151">更新物理参数</text>
+    <text class="body" x="1034.5" y="206">对候选参数自动求导</text>
+    <path class="arrow" d="M1034.5 222 v30"/>
+    <text class="body" x="1034.5" y="284">L-BFGS 更新候选值</text>
+  </g>
+  <path d="M584 169 V247 H837" fill="none" stroke="#abbebc" stroke-width="1.5"/>
+  <path class="measured" d="M588 241 C623 241 635 240 648 235 C667 228 672 186 694 183 C719 180 719 220 744 232 C760 240 794 241 832 241"/>
+  <path class="predicted" d="M588 241 C634 241 652 240 667 234 C688 224 690 194 712 192 C735 190 739 223 758 234 C772 241 804 241 832 241"/>
+  <path class="measured" d="M608 269 h28"/>
+  <text class="small" x="645" y="274">实测</text>
+  <path class="predicted" d="M724 269 h28"/>
+  <text class="small" x="761" y="274">预测</text>
+
+  <path class="arrow" d="M1034.5 340 v22 q0 17 -17 17 H163 q-17 0 -17 -17 v-22"/>
+  <rect x="479" y="361" width="242" height="36" rx="18" fill="#e8f3ec"/>
+  <text class="body" x="600" y="385" text-anchor="middle">用新参数进入下一轮</text>
+</svg>
