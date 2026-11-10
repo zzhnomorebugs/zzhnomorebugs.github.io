@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="564" viewBox="0 0 1120 564" role="img" aria-labelledby="title desc">
+  <title id="title">How the Fourier neural operator advances the concentration fields</title>
+  <desc id="desc">During training, the FNO rolls forward from the initial state and compares the full trajectories of the bulk fluid, particle-pore and adsorbed-phase concentrations with COMSOL reference fields. For prediction, the same learned operator takes the current concentration grid, physical parameters and experimental conditions at every step. Read the fluid concentration at the column outlet over time to obtain the chromatogram.</desc>
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #21374a; }
+      .stage { font-size: 22px; font-weight: 700; fill: #116b62; }
+      .heading { font-size: 22px; font-weight: 700; }
+      .body { font-size: 17px; fill: #495f6d; }
+      .note { font-size: 16px; fill: #116b62; }
+      .card { fill: #fff; stroke: #cbd9dc; stroke-width: 1.5; }
+      .model { fill: #deefea; stroke: #74a9a0; stroke-width: 1.5; }
+      .link { fill: none; stroke: #577c7f; stroke-width: 2.5; marker-end: url(#arrow); }
+      .repeat { stroke-dasharray: 5 5; }
+      .icon { fill: none; stroke: #116b62; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1 1 L6 4 L1 7" fill="none" stroke="#577c7f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="field" viewBox="0 0 56 56">
+      <path class="icon" d="M12 9 H49 V36 M7 14 H44 V41" opacity=".65"/>
+      <rect class="icon" x="2" y="19" width="37" height="27" rx="4"/>
+      <path d="M3 31 C13 31 14 23 23 23 C29 23 30 30 38 31 V41 Q38 45 34 45 H7 Q3 45 3 41 Z" fill="#c4e4dc"/>
+      <path class="icon" d="M3 36 C11 36 15 29 22 29 S31 35 38 36"/>
+    </symbol>
+    <symbol id="compare" viewBox="0 0 56 56">
+      <path class="icon" d="M9 8 V47 H50" opacity=".65"/>
+      <path class="icon" d="M12 39 C18 39 20 18 27 18 S35 38 47 39"/>
+      <path class="icon" d="M12 42 C24 41 25 14 32 14 S41 41 48 42" stroke-dasharray="4 4" opacity=".72"/>
+    </symbol>
+    <symbol id="spectral" viewBox="0 0 56 56">
+      <path class="icon" d="M5 16 C11 4 17 4 23 16 S35 28 41 16 S49 10 51 16 M5 30 C9 22 13 22 17 30 S25 38 29 30 S37 22 41 30 S49 38 51 30 M5 44 H51"/>
+    </symbol>
+    <symbol id="grid" viewBox="0 0 56 56">
+      <rect x="5" y="13" width="46" height="30" rx="4" fill="#e4f3ef"/>
+      <path d="M20 14 H35 V42 H20Z" fill="#a4d2c6"/>
+      <path class="icon" d="M20 14 V42 M35 14 V42 M5 23 H51 M5 33 H51" opacity=".65"/>
+      <rect class="icon" x="5" y="13" width="46" height="30" rx="4"/>
+    </symbol>
+    <symbol id="curve" viewBox="0 0 56 56">
+      <path class="icon" d="M7 9 V46 H51" opacity=".65"/>
+      <path class="icon" d="M11 40 H17 C24 40 25 14 31 14 C37 14 37 40 45 40 H49"/>
+    </symbol>
+  </defs>
+
+  <rect width="1120" height="564" fill="#fafbf9"/>
+  <rect x="24" y="20" width="1072" height="220" rx="16" fill="#f0f4f6"/>
+  <rect x="24" y="284" width="1072" height="260" rx="16" fill="#edf6f3"/>
+  <text x="56" y="60" class="stage">Offline training</text>
+  <text x="56" y="324" class="stage">Stepwise prediction</text>
+  <use href="#curve" x="692" y="300" width="34" height="34"/>
+  <text x="1064" y="324" class="note" text-anchor="end">Read the outlet fluid concentration over time</text>
+
+  <rect x="56" y="83" width="266" height="126" rx="12" class="card"/>
+  <use href="#field" x="73" y="118" width="56" height="56"/>
+  <text x="145" y="130" class="heading">COMSOL runs</text>
+  <text x="145" y="160" class="body">Reference fields</text>
+  <text x="145" y="184" class="body">across conditions</text>
+
+  <rect x="427" y="83" width="266" height="126" rx="12" class="model"/>
+  <use href="#spectral" x="449" y="118" width="56" height="56"/>
+  <text x="522" y="130" class="heading">Train FNO</text>
+  <text x="522" y="160" class="body">Advance from start</text>
+  <text x="522" y="184" class="body">Fit the full trajectory</text>
+
+  <rect x="798" y="83" width="266" height="126" rx="12" class="card"/>
+  <use href="#compare" x="816" y="118" width="56" height="56"/>
+  <text x="890" y="130" class="heading">Trajectory loss</text>
+  <text x="890" y="160" class="body">Compare three fields</text>
+  <text x="890" y="184" class="body">at every time step</text>
+
+  <path d="M335 146 H414" class="link"/>
+  <path d="M785 146 H706" class="link"/>
+  <path d="M560 220 V334" class="link"/>
+  <text x="579" y="268" class="note">Reuse trained weights</text>
+
+  <rect x="56" y="346" width="266" height="126" rx="12" class="card"/>
+  <use href="#grid" x="73" y="381" width="56" height="56"/>
+  <text x="145" y="393" class="heading">Current state</text>
+  <text x="145" y="423" class="body">Concentration grid</text>
+  <text x="145" y="447" class="body">Parameters, settings</text>
+
+  <rect x="427" y="346" width="266" height="126" rx="12" class="model"/>
+  <use href="#spectral" x="449" y="381" width="56" height="56"/>
+  <text x="522" y="393" class="heading">FNO step</text>
+  <text x="522" y="423" class="body">Mix spatial features</text>
+  <text x="522" y="447" class="body">in Fourier space</text>
+
+  <rect x="798" y="346" width="266" height="126" rx="12" class="card"/>
+  <use href="#grid" x="816" y="381" width="56" height="56"/>
+  <text x="890" y="393" class="heading">Next state</text>
+  <text x="890" y="423" class="body">Updated grid values</text>
+
+  <path d="M335 409 H414" class="link"/>
+  <path d="M706 409 H785" class="link"/>
+  <path d="M931 478 V506 Q931 520 917 520 H203 Q189 520 189 506 V479" class="link repeat"/>
+  <text x="560" y="507" class="note" text-anchor="middle">Feed each new state back into the same model</text>
+</svg>

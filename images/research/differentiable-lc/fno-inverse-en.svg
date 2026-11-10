@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">FNO batch screening and COMSOL re-simulation</title>
+  <desc id="desc">Starting from a pool of nine-parameter candidates, the FNO predicts outlet curves in batches across known gradient programs with its weights fixed. It scores the predictions against the measured curves using curve, peak-time, and peak-height errors. A genetic algorithm selects, crosses over, and mutates candidates to form the next generation. After screening, COMSOL solves the general rate model for the top candidates and re-ranks them by retention-time root mean squared error under the same gradient conditions. The curves are schematic.</desc>
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #243743; }
+      .card { fill: #fff; stroke: #d4e2dc; stroke-width: 2; }
+      .model { fill: #edf6f1; stroke: #9ac2b3; stroke-width: 2; }
+      .verification { fill: #edf3f7; stroke: #adc6d4; stroke-width: 2; }
+      .step { fill: #25766c; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+      .heading { font-size: 21px; font-weight: 700; }
+      .body { font-size: 17px; fill: #3f5659; }
+      .small { font-size: 15px; fill: #4b6062; }
+      .arrow { fill: none; stroke: #25766c; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .trace { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+      .chip { fill: #edf3f0; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="#25766c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <g id="candidate">
+      <circle cx="0" cy="0" r="4.3"/><circle cx="17" cy="0" r="4.3"/><circle cx="34" cy="0" r="4.3"/>
+      <circle cx="51" cy="0" r="4.3"/><circle cx="68" cy="0" r="4.3"/><circle cx="85" cy="0" r="4.3"/>
+      <circle cx="102" cy="0" r="4.3"/><circle cx="119" cy="0" r="4.3"/><circle cx="136" cy="0" r="4.3"/>
+    </g>
+  </defs>
+  <rect width="1200" height="430" rx="14" fill="#f7faf7"/>
+  <text x="34" y="52" font-size="28" font-weight="700">Screen in batches, then rerun the best</text>
+  <text class="step" x="1166" y="50" text-anchor="end">FNO INVERSION</text>
+
+  <rect class="card" x="34" y="84" width="208" height="250" rx="14"/>
+  <rect class="model" x="265" y="84" width="208" height="250" rx="14"/>
+  <rect class="card" x="496" y="84" width="208" height="250" rx="14"/>
+  <rect class="card" x="727" y="84" width="208" height="250" rx="14"/>
+  <rect class="verification" x="958" y="84" width="208" height="250" rx="14"/>
+  <path class="arrow" d="M246 209 H261"/>
+  <path class="arrow" d="M477 209 H492"/>
+  <path class="arrow" d="M708 209 H723"/>
+  <path class="arrow" d="M939 209 H954"/>
+
+  <g text-anchor="middle">
+    <text class="step" x="138" y="115">01</text>
+    <text class="heading" x="138" y="151">Candidate pool</text>
+    <use href="#candidate" x="70" y="185" fill="#9db9ca"/>
+    <use href="#candidate" x="70" y="207" fill="#76aa9b"/>
+    <use href="#candidate" x="70" y="229" fill="#5d839a"/>
+    <text class="body" x="138" y="272">9 physical parameters</text>
+    <text class="small" x="138" y="295">per candidate</text>
+
+    <text class="step" x="369" y="115">02</text>
+    <text class="heading" x="369" y="151">Predict in batches</text>
+    <text class="body" x="369" y="271">FNO weights fixed</text>
+    <text class="small" x="369" y="300">Known gradient programs</text>
+
+    <text class="step" x="600" y="115">03</text>
+    <text class="heading" x="600" y="151">Score candidates</text>
+    <text class="body" x="600" y="191">Predicted vs. measured</text>
+    <rect class="chip" x="508" y="213" width="49" height="34" rx="9"/>
+    <rect class="chip" x="562" y="213" width="60" height="34" rx="9"/>
+    <rect class="chip" x="627" y="213" width="65" height="34" rx="9"/>
+    <text class="small" x="532.5" y="235" style="font-size: 12px">Curve</text>
+    <text class="small" x="592" y="235" style="font-size: 12px">Peak time</text>
+    <text class="small" x="659.5" y="235" style="font-size: 12px">Peak height</text>
+    <text class="small" x="600" y="286">Combine errors across runs</text>
+
+    <text class="step" x="831" y="115">04</text>
+    <text class="heading" x="831" y="151">Genetic search</text>
+    <text class="body" x="831" y="207" style="font-size: 16px">Select, cross over, mutate</text>
+    <text class="small" x="831" y="246">Form the next generation</text>
+    <text class="small" x="831" y="282">Keep top sets when done</text>
+
+    <text class="step" x="1062" y="115">05</text>
+    <text class="heading" x="1062" y="151">Rerun and re-rank</text>
+    <text class="body" x="1062" y="199">COMSOL solves GRM</text>
+    <text class="small" x="1062" y="238">Rerun top candidates</text>
+    <text class="small" x="1062" y="272">On the same gradient runs,</text>
+    <text class="small" x="1062" y="296">rank by peak-time RMSE</text>
+  </g>
+
+  <path d="M294 170 V235 H446" fill="none" stroke="#abbebc" stroke-width="1.5"/>
+  <path class="trace" stroke="#274a63" d="M300 229 H318 C334 229 331 180 345 180 S354 229 370 229 H441"/>
+  <path class="trace" stroke="#25766c" d="M300 229 H345 C361 229 359 190 373 190 S383 229 397 229 H441"/>
+  <path class="trace" stroke="#72a997" d="M300 229 H373 C388 229 390 198 403 198 S413 229 431 229 H441"/>
+
+  <path class="arrow" d="M831 340 v22 q0 17 -17 17 H155 q-17 0 -17 -17 v-22"/>
+  <rect x="344" y="361" width="280" height="36" rx="18" fill="#e8f3ec"/>
+  <text class="body" x="484" y="385" text-anchor="middle">Evaluate the next generation</text>
+</svg>

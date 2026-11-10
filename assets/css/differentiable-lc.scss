@@ -1,6 +1,12 @@
 ---
 ---
 
+.lc-project:lang(en) .retro-hero__title {
+  font-size: clamp(1.95rem, 5.8vw, 4.8rem);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
 .lc-project .lc-schematic > a { padding: 0; }
 .lc-project .lc-schematic img { width: 100%; max-height: none; }
 .lc-project .lc-comparison th[scope="row"] { white-space: normal; }

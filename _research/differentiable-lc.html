@@ -1,0 +1,150 @@
+---
+title: "Differentiable Inverse Modeling for Liquid Chromatography"
+layout: research-project
+collection: research
+permalink: /research/differentiable-lc/
+lang: en
+lang_switch_url: /zh/research/differentiable-lc/
+research_project: true
+mathjax: true
+project_class: lc-project
+project_stylesheet: differentiable-lc.css
+project_title: "Differentiable Inverse Modeling for Liquid Chromatography"
+project_area: "AI4Science · Differentiable Physics and Inverse Problems"
+order: 7
+published: true
+read_time: false
+index_title: "Inferring Column Parameters from Liquid Chromatograms"
+excerpt: "How can an outlet chromatogram reveal the transport and adsorption parameters inside a column? This study uses a PINN and an FNO to accelerate forward prediction, then estimates physical parameters through gradient-based optimization and genetic search, respectively."
+project_image: /images/publications/lc_mapping.png
+papers: [differentiable-lc]
+project_chapters:
+  - id: lc-problem
+    label: Problem
+  - id: lc-surrogate
+    label: Forward
+  - id: lc-inversion
+    label: Inversion
+  - id: lc-validation
+    label: Validation
+---
+
+{% include base_path %}
+
+<section class="retro-chapter" id="lc-problem">
+  <p class="retro-kicker">The inverse problem</p>
+  <h2><span class="retro-chapter__number">01</span> Inferring column parameters from an outlet curve</h2>
+  <p class="retro-lede">A gradient program controls how the solvent composition changes over time. The instrument records a curve at the column outlet, and the study uses it to estimate nine physical parameters that govern how the sample moves and adsorbs inside the column.</p>
+  <figure class="retro-figure lc-schematic">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/problem-flow-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/problem-flow-mobile-en.svg" width="384" height="950">
+        <img src="{{ base_path }}/images/research/differentiable-lc/problem-flow-en.svg" alt="A physical model predicts how concentration changes inside the column from a gradient program and candidate parameters. Reading the outlet concentration over time gives a curve whose peak marks the retention time." width="1200" height="326" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 1 · Inputs, concentration dynamics, and outlet observations. The two curves illustrate the prescribed gradient program and the measurable outlet concentration.</figcaption>
+  </figure>
+  <p>The forward problem predicts the curve from a set of parameters. The inverse problem starts with the measured curve and searches for the parameters. Every candidate needs a new prediction, so the cost of the forward solve adds up quickly.</p>
+</section>
+
+<section class="retro-chapter" id="lc-surrogate">
+  <p class="retro-kicker">Learning the forward model</p>
+  <h2><span class="retro-chapter__number">02</span> Two neural surrogates for faster forward solves</h2>
+  <p class="retro-lede">The study first solves the general rate model (GRM) in COMSOL for a range of parameters and gradient programs. Both networks train on those simulated concentration fields so they can predict outlet curves quickly during inversion.</p>
+  <h3>PINN · Query concentration at a point in space and time</h3>
+  <p>The physics-informed neural network (PINN) takes physical parameters, experimental conditions, and space-time coordinates. It predicts local concentrations in the bulk liquid, within particle pores, and in the adsorbed phase. During training, it fits the simulation data and uses automatic differentiation to compute spatial and temporal derivatives. These derivatives help evaluate how closely the predictions satisfy the governing equations, initial conditions, and boundary conditions.</p>
+  <figure class="retro-figure lc-schematic">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/surrogate-flow-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/surrogate-flow-mobile-en.svg" width="520" height="924">
+        <img src="{{ base_path }}/images/research/differentiable-lc/surrogate-flow-en.svg" alt="Finite-element reference fields and physical constraints train the PINN offline. With weights frozen, it predicts concentration from experimental conditions, candidate parameters, and space-time coordinates. Querying the outlet over time gives the chromatogram." width="1120" height="524" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 2 · PINN training and forward prediction. Fixing the position at the column outlet and querying a batch of time points yields the outlet curve.</figcaption>
+  </figure>
+  <h3>FNO · Advance the entire concentration field one step at a time</h3>
+  <p>The Fourier neural operator (FNO) takes the current concentration field on a grid, the physical parameters, and the experimental conditions. Its Fourier layers mix information along the column axis to predict the field at the next time step. During training, the FNO feeds its predictions back into the network and compares the resulting trajectory with COMSOL across multiple steps. The training error covers the bulk liquid, particle pores, and adsorbed phase.</p>
+  <figure class="retro-figure lc-schematic">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/fno-forward-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/fno-forward-mobile-en.svg" width="520" height="950">
+        <img src="{{ base_path }}/images/research/differentiable-lc/fno-forward-en.svg" alt="Conditioned on experimental settings and physical parameters, the FNO advances the concentration field step by step. Training compares multi-step predictions with finite-element fields. During prediction, the bulk concentration at the outlet is read at each step." width="1120" height="564" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 3 · FNO training and forward prediction. The same operator advances every time step. The bulk concentration at the outlet across those steps forms the curve.</figcaption>
+  </figure>
+  <div class="retro-table-scroll">
+    <table class="retro-comparison lc-comparison">
+      <caption>Table 1 · Forward prediction on 1,388 test samples with detectable peaks in the finite-element reference curves.</caption>
+      <thead><tr><th scope="col">Metric</th><th scope="col">PINN</th><th scope="col">FNO</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Median outlet concentration root-mean-square error (RMSE, dimensionless)</th><td>0.00278</td><td>0.00318</td></tr>
+        <tr><th scope="row">Predictions without a detectable peak</th><td>1.59%</td><td>19.4%</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section class="retro-chapter" id="lc-inversion">
+  <p class="retro-kicker">Inverse solvers</p>
+  <h2><span class="retro-chapter__number">03</span> Searching for parameters that fit the measured curves</h2>
+  <p class="retro-lede">Both workflows fix the network weights and the known experimental programs, then search for one set of physical parameters that explains several measured curves. They differ in how they choose the next candidates.</p>
+  <h3>PINN + L-BFGS · Update one parameter set using gradients</h3>
+  <p>The solver squares the difference at each sampled time, averages over the curve, and then averages across the experimental programs. Automatic differentiation gives the gradient of that error with respect to the nine physical parameters. L-BFGS uses recent changes in the parameters and gradients to approximate the local curvature and choose an update.</p>
+  <figure class="retro-figure lc-schematic">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/inverse-loop-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/inverse-loop-mobile-en.svg" width="640" height="1060">
+        <img src="{{ base_path }}/images/research/differentiable-lc/inverse-loop-en.svg" alt="The frozen PINN predicts an outlet curve for the candidate parameters. Automatic differentiation gives the gradient of the mean squared error with respect to those parameters. L-BFGS updates them for the next iteration." width="1200" height="430" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 4 · The PINN inversion loop. Each round uses the updated physical parameters to predict new curves and refine the fit. The plotted curves are illustrative.</figcaption>
+  </figure>
+  <div class="retro-callout"><p>Across 300 simulated parameter sets, PINN with L-BFGS took about <strong>6 minutes</strong> per inversion on average, versus about <strong>7.5 hours</strong> for the derivative-free Bayesian optimization baseline. With the same objective, the mean relative parameter errors were <strong>7.37%</strong> and <strong>26.62%</strong>, respectively.</p></div>
+  <h3>FNO + genetic algorithm · Screen candidates in batches</h3>
+  <p>Because local gradient optimization with the FNO was sensitive to initialization, the study used a genetic algorithm to search across many candidates at once. In each generation, the FNO predicts curves for all candidates under three gradient programs in batches. The search scores curve shape, peak time, and peak height, then selects, recombines, and mutates promising candidates to form the next generation.</p>
+  <figure class="retro-figure lc-schematic">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/fno-inverse-en.svg">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/fno-inverse-mobile-en.svg" width="640" height="1060">
+        <img src="{{ base_path }}/images/research/differentiable-lc/fno-inverse-en.svg" alt="The FNO predicts outlet curves for batches of candidate parameters. The genetic algorithm scores each candidate on curves and peak features and generates a new population. COMSOL re-simulates the highest-ranked candidates." width="1200" height="430" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 5 · The FNO inversion workflow. After the batched search, COMSOL re-simulates the top eight candidates and reranks them by retention-time RMSE on the three gradient programs used for inversion.</figcaption>
+  </figure>
+  <div class="retro-callout"><p>The representative experiments started with <strong>1,024 candidates</strong> and ran for <strong>15 generations</strong>. On an RTX A6000 with batches of 256 trajectories, the network completed <strong>138.5</strong> 360-step forward rollouts per second. This rate measures FNO rollouts alone. The genetic search and COMSOL re-simulations have separate costs.</p></div>
+</section>
+
+<section class="retro-chapter" id="lc-validation">
+  <p class="retro-kicker">Wet-lab validation</p>
+  <h2><span class="retro-chapter__number">04</span> Can the fitted parameters explain new experiments?</h2>
+  <p class="retro-lede">Both workflows estimate parameters from measured gradient chromatograms and use the GRM to predict curves under fixed solvent compositions. Independent isocratic experiments test how those parameters perform under new conditions.</p>
+  <h3>PINN · Reuse the fitted parameters directly</h3>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/wet-lab.webp">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/wet-lab-mobile.webp" width="1208" height="3708">
+        <img src="{{ base_path }}/images/research/differentiable-lc/wet-lab.webp" alt="For G03-72, the predicted isocratic peaks occur near the measured ones. For G03-33, the gradient peaks cluster early, and the simulation predicts an isocratic peak well before the measured peak near 300 seconds." width="2400" height="2067" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 6 · GRM re-simulations of samples G03-72 and G03-33 using PINN-fitted parameters. Solid lines are measurements and dashed lines are simulations. Gradient experiments supply the fitting data. Isocratic experiments test the same parameter set.</figcaption>
+  </figure>
+  <p>The parameters fitted to gradient data reproduce the isocratic curves for most representative samples. The weakly retained sample G03-33 elutes early, with its outlet peaks clustered in a short time window even across different gradient programs. The simulations roughly match the peak times under those programs, yet predict an isocratic peak well before the green measured peak near 300 seconds.</p>
+  <h3>FNO · Validate after adjusting the desorption constant</h3>
+  <p>For the isocratic experiments, the study doubled the fitted desorption constant, which governs how quickly the sample leaves the particle surface, and retained the other fitted values. The retention-time RMSE across nine gradient curves for three representative compounds was 6.3 seconds. With the adjustment, the RMSE across 13 independent isocratic curves with measurable peaks was 34.7 seconds.</p>
+  <figure class="retro-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/differentiable-lc/fno-wet-lab-en.webp">
+      <picture>
+        <source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/differentiable-lc/fno-wet-lab-mobile-en.webp" width="1188" height="2465">
+        <img src="{{ base_path }}/images/research/differentiable-lc/fno-wet-lab-en.webp" alt="FNO-based inversion for sample 551. Measured and simulated peaks are close for the three gradient programs. Under the independent 10 percent isocratic condition shown in cyan, the GRM peak occurs about 119 seconds early." width="2343" height="1305" loading="lazy">
+      </picture>
+    </a>
+    <figcaption class="retro-figure__caption">Figure 7 · GRM re-simulation of sample 551 after FNO-based inversion. Measurements appear above zero and mirrored GRM simulations below it. The first three gradient programs were used to select the candidate. For the independent 10% isocratic condition in cyan, the simulated peak occurs about 119 seconds early.</figcaption>
+  </figure>
+  <h3>Parameter database</h3>
+  <div class="retro-results-grid" aria-label="Wet-lab dataset and curve fitting results">
+    <div><strong>2,553</strong><p>Measured curves for 851 compounds under three gradient programs</p></div>
+    <div><strong>731</strong><p>Sets of transport and adsorption parameters after excluding weakly retained compounds</p></div>
+    <div><strong>89.3%</strong><p>Share of gradient measurements used for parameter extraction with an absolute peak-time error within 10 seconds</p></div>
+  </div>
+</section>

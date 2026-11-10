@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title desc">
+  <title id="title">One iteration of PINN parameter inversion</title>
+  <desc id="desc">Given an experimental program and nine trial physical parameters, the PINN predicts the outlet curve with fixed weights. The predicted and measured curves are compared point by point to compute the mean squared error. Automatic differentiation computes its gradient with respect to the trial parameters, which L-BFGS updates for the next prediction. The curves are schematic.</desc>
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #243743; }
+      .card { fill: #fff; stroke: #d4e2dc; stroke-width: 2; }
+      .model { fill: #edf6f1; stroke: #9ac2b3; stroke-width: 2; }
+      .step { fill: #25766c; font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+      .heading { font-size: 23px; font-weight: 700; }
+      .body { font-size: 18px; fill: #3f5659; }
+      .small { font-size: 15px; fill: #4b6062; }
+      .arrow { fill: none; stroke: #25766c; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; marker-end: url(#arrow); }
+      .measured, .predicted { fill: none; stroke-width: 3.2; stroke-linecap: round; }
+      .measured { stroke: #274a63; }
+      .predicted { stroke: #25766c; stroke-dasharray: 7 6; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1 1 L8 5 L1 9" fill="none" stroke="#25766c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="430" rx="14" fill="#f7faf7"/>
+  <text x="34" y="52" font-size="28" font-weight="700">Fit parameters with a fixed model</text>
+  <text class="step" x="1166" y="50" text-anchor="end">PINN INVERSION</text>
+
+  <rect class="card" x="34" y="84" width="224" height="250" rx="14"/>
+  <rect class="model" x="294" y="84" width="225" height="250" rx="14"/>
+  <rect class="card" x="555" y="84" width="312" height="250" rx="14"/>
+  <rect class="card" x="903" y="84" width="263" height="250" rx="14"/>
+  <path class="arrow" d="M265 210 H287"/>
+  <path class="arrow" d="M526 210 H548"/>
+  <path class="arrow" d="M874 210 H896"/>
+
+  <g text-anchor="middle">
+    <text class="step" x="146" y="115">01</text>
+    <text class="heading" x="146" y="151">9 trial parameters</text>
+    <g fill="#8bb9a8">
+      <circle cx="118" cy="183" r="6"/><circle cx="146" cy="183" r="6"/><circle cx="174" cy="183" r="6"/>
+      <circle cx="118" cy="208" r="6"/><circle cx="146" cy="208" r="6"/><circle cx="174" cy="208" r="6"/>
+      <circle cx="118" cy="233" r="6"/><circle cx="146" cy="233" r="6"/><circle cx="174" cy="233" r="6"/>
+    </g>
+    <rect x="51" y="271" width="190" height="36" rx="18" fill="#edf2f5"/>
+    <text class="small" x="146" y="294" style="font-size: 14px">Fixed experimental program</text>
+
+    <text class="step" x="406.5" y="115">02</text>
+    <text class="heading" x="406.5" y="151" style="font-size: 21px">Predict outlet curve</text>
+    <g fill="none" stroke="#25766c" stroke-width="2.7" stroke-linecap="round">
+      <rect x="394.5" y="198" width="24" height="18" rx="4"/>
+      <path d="M399.5 198 v-6 a7 7 0 0 1 14 0 v6"/>
+    </g>
+    <text class="body" x="406.5" y="251">PINN weights fixed</text>
+    <text class="small" x="406.5" y="277">Query concentration</text>
+    <text class="small" x="406.5" y="298">at each time point</text>
+
+    <text class="step" x="711" y="115">03</text>
+    <text class="heading" x="711" y="151">Compare full curves</text>
+    <text class="small" x="711" y="308">Compute mean squared error (MSE)</text>
+
+    <text class="step" x="1034.5" y="115">04</text>
+    <text class="heading" x="1034.5" y="151">Update the parameters</text>
+    <text class="body" x="1034.5" y="193">Auto-differentiate the loss</text>
+    <text class="small" x="1034.5" y="216">w.r.t. the trial parameters</text>
+    <path class="arrow" d="M1034.5 228 v25"/>
+    <text class="body" x="1034.5" y="284">L-BFGS updates the values</text>
+  </g>
+  <path d="M584 169 V247 H837" fill="none" stroke="#abbebc" stroke-width="1.5"/>
+  <path class="measured" d="M588 241 C623 241 635 240 648 235 C667 228 672 186 694 183 C719 180 719 220 744 232 C760 240 794 241 832 241"/>
+  <path class="predicted" d="M588 241 C634 241 652 240 667 234 C688 224 690 194 712 192 C735 190 739 223 758 234 C772 241 804 241 832 241"/>
+  <path class="measured" d="M608 269 h28"/>
+  <text class="small" x="645" y="274">Measured</text>
+  <path class="predicted" d="M724 269 h28"/>
+  <text class="small" x="761" y="274">Predicted</text>
+
+  <path class="arrow" d="M1034.5 340 v22 q0 17 -17 17 H163 q-17 0 -17 -17 v-22"/>
+  <rect x="449" y="361" width="302" height="36" rx="18" fill="#e8f3ec"/>
+  <text class="body" x="600" y="385" text-anchor="middle">Repeat with updated parameters</text>
+</svg>

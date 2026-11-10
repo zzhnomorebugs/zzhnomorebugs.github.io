@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="924" viewBox="0 0 520 924" role="img" aria-labelledby="title desc">
+  <title id="title">How the physics-informed neural network speeds up forward solves</title>
+  <desc id="desc">The PINN learns from finite-element reference concentration fields across physical parameters and gradient programs, with equation, initial and boundary residuals in the loss. For prediction, fixed network weights map experimental conditions, parameters, and a time and location to concentrations. Read the outlet over time to obtain the chromatogram.</desc>
+  <defs>
+    <style>
+      text { font-family: "Segoe UI", Arial, sans-serif; fill: #21374a; }
+      .stage { font-size: 27px; font-weight: 700; fill: #116b62; }
+      .heading { font-size: 25px; font-weight: 700; }
+      .body { font-size: 21px; fill: #495f6d; }
+      .note { font-size: 21px; fill: #116b62; }
+      .card { fill: #fff; stroke: #cbd9dc; stroke-width: 1.5; }
+      .model { fill: #deefea; stroke: #74a9a0; stroke-width: 1.5; }
+      .link { fill: none; stroke: #577c7f; stroke-width: 2.5; marker-end: url(#arrow); }
+      .icon { fill: none; stroke: #116b62; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+      .dot { fill: #f7fcfa; stroke: #116b62; stroke-width: 2.5; }
+    </style>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1 1 L6 4 L1 7" fill="none" stroke="#577c7f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <symbol id="field" viewBox="0 0 56 56">
+      <path class="icon" d="M12 9 H49 V36 M7 14 H44 V41" opacity=".65"/>
+      <rect class="icon" x="2" y="19" width="37" height="27" rx="4"/>
+      <path d="M3 31 C13 31 14 23 23 23 C29 23 30 30 38 31 V41 Q38 45 34 45 H7 Q3 45 3 41 Z" fill="#c4e4dc"/>
+      <path class="icon" d="M3 36 C11 36 15 29 22 29 S31 35 38 36"/>
+    </symbol>
+    <symbol id="residual" viewBox="0 0 56 56">
+      <rect class="icon" x="9" y="7" width="38" height="42" rx="6"/>
+      <path class="icon" d="M17 19 L19 21 L23 16 M17 29 L19 31 L23 26 M17 39 L19 41 L23 36 M29 19 H39 M29 29 H39 M29 39 H39"/>
+    </symbol>
+    <symbol id="network" viewBox="0 0 56 56">
+      <path class="icon" d="M9 16 L28 12 M9 16 L28 28 M9 40 L28 28 M9 40 L28 44 M28 12 L47 28 M28 28 H47 M28 44 L47 28" opacity=".65"/>
+      <g class="dot"><circle cx="9" cy="16" r="4"/><circle cx="9" cy="40" r="4"/><circle cx="28" cy="12" r="4"/><circle cx="28" cy="28" r="4"/><circle cx="28" cy="44" r="4"/><circle cx="47" cy="28" r="4"/></g>
+    </symbol>
+    <symbol id="query" viewBox="0 0 56 56">
+      <path class="icon" d="M6 14 H50 M6 28 H50 M6 42 H50"/>
+      <g class="dot"><circle cx="19" cy="14" r="5"/><circle cx="37" cy="28" r="5"/><circle cx="24" cy="42" r="5"/></g>
+    </symbol>
+    <symbol id="curve" viewBox="0 0 56 56">
+      <path class="icon" d="M7 9 V46 H51" opacity=".65"/>
+      <path class="icon" d="M11 40 H17 C24 40 25 14 31 14 C37 14 37 40 45 40 H49"/>
+    </symbol>
+  </defs>
+
+  <rect width="520" height="924" fill="#fafbf9"/>
+  <rect x="20" y="20" width="480" height="362" rx="16" fill="#f0f4f6"/>
+  <rect x="20" y="414" width="480" height="490" rx="16" fill="#edf6f3"/>
+  <text x="46" y="65" class="stage">Offline training</text>
+  <text x="46" y="462" class="stage">Fast forward queries</text>
+
+  <rect x="46" y="85" width="428" height="166" rx="12" class="card"/>
+  <path d="M65 169 H455" stroke="#dce6e7" stroke-width="1.5"/>
+  <use href="#field" x="67" y="99" width="56" height="56"/>
+  <text x="141" y="122" class="heading">COMSOL runs</text>
+  <text x="141" y="151" class="body">Reference fields across conditions</text>
+  <use href="#residual" x="67" y="182" width="56" height="56"/>
+  <text x="141" y="203" class="heading">Physics loss</text>
+  <text x="141" y="232" class="body">PDE, initial and boundary residuals</text>
+
+  <path d="M260 258 V276" class="link"/>
+  <rect x="46" y="284" width="428" height="77" rx="12" class="model"/>
+  <use href="#network" x="67" y="294" width="56" height="56"/>
+  <text x="141" y="316" class="heading">Train PINN</text>
+  <text x="141" y="346" class="body">Fit data and physics constraints</text>
+
+  <rect x="46" y="486" width="428" height="94" rx="12" class="card"/>
+  <use href="#query" x="67" y="505" width="56" height="56"/>
+  <text x="141" y="525" class="heading">Query inputs</text>
+  <text x="141" y="555" class="body">Parameters, settings, space, time</text>
+
+  <path d="M260 587 V606" class="link"/>
+  <rect x="46" y="614" width="428" height="90" rx="12" class="model"/>
+  <use href="#network" x="67" y="631" width="56" height="56"/>
+  <text x="141" y="651" class="heading">Frozen PINN</text>
+  <text x="141" y="681" class="body">Reuse the trained weights</text>
+
+  <path d="M260 711 V730" class="link"/>
+  <rect x="46" y="738" width="428" height="96" rx="12" class="card"/>
+  <use href="#curve" x="67" y="758" width="56" height="56"/>
+  <text x="141" y="777" class="heading">Concentrations</text>
+  <text x="141" y="807" class="body">Read the outlet over time</text>
+  <text x="260" y="875" class="note" text-anchor="middle">Direct network evaluation for each query</text>
+</svg>
