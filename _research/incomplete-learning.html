@@ -16,16 +16,19 @@ project_area_en: "Incomplete observations · Physical field reconstruction"
 order: 3
 published: true
 read_time: false
-date: 2026-10-12
+date: 2026-11-16
 index_title: "Learning from incomplete data: Supervision, mask priors, and local-to-global reconstruction"
 index_title_en: "Learning from incomplete data: Supervision, mask priors, and local-to-global reconstruction"
 excerpt: "Starting with context–query training and ensemble sampling, this explanation develops observation-aligned masks and the limits of identifiability, then moves to local estimation and global residual correction. Method intuition, reconstruction examples, and experimental comparisons show how to learn physical fields from observations that are never complete."
 excerpt_en: "Starting with context–query training and ensemble sampling, this explanation develops observation-aligned masks and the limits of identifiability, then moves to local estimation and global residual correction. Method intuition, reconstruction examples, and experimental comparisons show how to learn physical fields from observations that are never complete."
 project_image: /images/research/incomplete-learning/local-global-architecture.webp
 papers: [incomplet-data, ocean-imputation-mask, global-local-field-reconstruction]
+project_references: [score-sde, ddpm]
 project_chapters:
   - id: incomplete-problem
     label: Incomplete observations
+  - id: incomplete-diffusion
+    label: Diffusion background
   - id: incomplete-supervision
     label: Training and sampling
   - id: incomplete-exposure
@@ -84,14 +87,142 @@ project_chapters:
   </div>
 </section>
 
+<section class="retro-chapter" id="incomplete-diffusion">
+  <p class="retro-kicker">Diffusion background: from noise to conditional means</p>
+  <h2><span class="retro-chapter__number">02</span> Diffusion: prescribed noising, learned scores, and clean-data prediction</h2>
+  <p class="retro-lede">Before introducing missing observations, consider diffusion trained on complete data. A prescribed stochastic process turns data into noise; a network learns the one unknown quantity needed to reverse it. Noise prediction and clean-data prediction are two parameterizations of that same quantity. The conditional-mean interpretation of clean-data prediction will then provide the starting point for context–query learning.</p>
+
+  <h3 id="diffusion-forward">1. Define the forward process and its reverse dynamics</h3>
+  <p>Let \(\boldsymbol x_0\sim p_{\mathrm{data}}\) be a complete field in \(\mathbb R^d\), with finite second moment. Consider the linear, isotropic Itô SDE below, where \(\boldsymbol W_t\) is standard \(d\)-dimensional Brownian motion, \(f(t)\) is a scalar drift coefficient, and \(g(t)\ge0\) is a scalar diffusion coefficient:</p>
+  <div class="retro-equation">\[
+    \mathrm d\boldsymbol x_t=f(t)\boldsymbol x_t\,\mathrm dt+g(t)\,\mathrm d\boldsymbol W_t,
+    \qquad 0\le t\le T.
+  \]</div>
+  <p><strong>Both \(f(t)\) and \(g(t)\) are prescribed schedule functions—hyperparameters chosen before training.</strong> They are not neural networks learned from the data. Solving this linear SDE gives a Gaussian transition kernel and a convenient way to draw a noisy training input directly at any chosen time:</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+      &=\mathcal N(\alpha_t\boldsymbol x_0,\sigma_t^2 I),\\
+    \boldsymbol x_t&=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon,
+      \qquad \boldsymbol\epsilon\sim\mathcal N(0,I),\quad \boldsymbol\epsilon\perp\boldsymbol x_0,\\
+    \alpha_t&=\exp\!\left(\int_0^t f(s)\,\mathrm ds\right),\\
+    \sigma_t^2&=\alpha_t^2\int_0^t\frac{g(s)^2}{\alpha_s^2}\,\mathrm ds,
+      \qquad \alpha_0=1,\quad\sigma_0=0.
+  \end{aligned}
+  \]</div>
+  <p>Thus \(\alpha_t\) scales the clean signal and \(\sigma_t\) gives the conditional noise standard deviation. This reparameterization describes the transition law at a fixed time; using one fixed \(\boldsymbol\epsilon\) for every time would not in general produce a trajectory of the SDE. Conversely, a differentiable pair of schedules determines</p>
+  <div class="retro-equation">\[
+    f(t)=\frac{\dot\alpha_t}{\alpha_t},
+    \qquad
+    g(t)^2=\frac{\mathrm d\sigma_t^2}{\mathrm dt}-2f(t)\sigma_t^2\ge0.
+  \]</div>
+  <p>The nonnegativity constraint means that \(\alpha_t\) and \(\sigma_t\) cannot be chosen independently without restriction. For example, variance-preserving (VP) diffusion sets \(f(t)=-\beta(t)/2\) and \(g(t)=\sqrt{\beta(t)}\), for a chosen \(\beta(t)\ge0\). It gives \(\alpha_t=\exp[-\frac12\int_0^t\beta(s)\,\mathrm ds]\) and \(\sigma_t^2=1-\alpha_t^2\). Choosing \(\alpha_T\) sufficiently small makes \(p_T\) approximately \(\mathcal N(0,I)\); at a finite terminal time this is generally an approximation.</p>
+  <figure class="retro-figure incomplete-diffusion-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/diffusion-forward-en.svg"><picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/incomplete-learning/diffusion-forward-en-mobile.svg" width="580" height="1130"><img src="{{ base_path }}/images/research/incomplete-learning/diffusion-forward-en.svg" width="1200" height="565" loading="lazy" alt="Exact Gaussian-mixture marginals under a prescribed VP diffusion: a two-mode data density gradually becomes approximately standard Gaussian; forward noising and reverse generation run in opposite time directions"></picture></a>
+    <figcaption class="retro-figure__caption">Figure 2 · A one-dimensional example of prescribed noising. The curves are analytic marginal densities, not individual trajectories. The reverse SDE and probability flow ODE traverse the same family of marginals in the opposite direction when the score and terminal distribution are exact; their sample paths differ.</figcaption>
+  </figure>
+  <p>Write \(p_t(\boldsymbol x)=\int q_t(\boldsymbol x\mid\boldsymbol x_0)p_{\mathrm{data}}(\boldsymbol x_0)\,\mathrm d\boldsymbol x_0\), and define the <strong>marginal score</strong> \(s_t(\boldsymbol x)=\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)\). Under the usual regularity conditions, the <a href="#reference-score-sde">reverse-time SDE and probability flow ODE</a> are</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \text{Reverse SDE:}\quad
+    \mathrm d\boldsymbol x_t
+      &=\left[f(t)\boldsymbol x_t-g(t)^2s_t(\boldsymbol x_t)\right]\mathrm dt
+        +g(t)\,\mathrm d\overline{\boldsymbol W}_t,\\
+    \text{Probability flow ODE:}\quad
+    \mathrm d\boldsymbol x_t
+      &=\left[f(t)\boldsymbol x_t-\tfrac12 g(t)^2s_t(\boldsymbol x_t)\right]\mathrm dt.
+  \end{aligned}
+  \]</div>
+  <p><strong>For generation, both equations are integrated from \(T\) toward \(0\), so \(\mathrm dt&lt;0\).</strong> Here \(\overline{\boldsymbol W}_t\) is Brownian motion in reverse time, with increment covariance \(-\mathrm dt\,I\). Starting from \(\boldsymbol x_T\sim p_T\), either exact dynamics recovers the data distribution. The ODE is deterministic conditional on its random initial state; it does not undo a particular realization of forward Brownian noise.</p>
+
+  <h3 id="diffusion-noise-matching">2. Learn the unknown score through noise matching</h3>
+  <p>In the reverse drift, \(f\) and \(g\) are known. <strong>Only the data-dependent score \(s_t\) must be learned.</strong> Although its target value is unavailable, the score of the conditional Gaussian kernel is explicit. Differentiating the marginal density under the integral yields</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+      &=-\frac{\boldsymbol x_t-\alpha_t\boldsymbol x_0}{\sigma_t^2}
+       =-\frac{\boldsymbol\epsilon}{\sigma_t},\\
+    s_t(\boldsymbol x)
+      &=\mathbb E\!\left[\nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+         \mid\boldsymbol x_t=\boldsymbol x,t\right]\\
+      &=-\frac{1}{\sigma_t}\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t=\boldsymbol x,t].
+  \end{aligned}
+  \]</div>
+  <p>Sample \(t\) from a fixed distribution with positive density on the training time interval, independently of \(\boldsymbol x_0\) and \(\boldsymbol\epsilon\). Work on a training interval where \(\alpha_t,\sigma_t&gt;0\) and the relevant weighted second moments are finite, for example away from zero at \(t\in[\delta,T]\), \(\delta&gt;0\). For a positive time weight \(\lambda(t)\), conditional expectation gives the denoising score matching identity</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \mathcal L_{\mathrm{DSM}}(\theta)
+      &=\mathbb E\!\left[\lambda(t)
+        \left\|s_\theta(\boldsymbol x_t,t)+\frac{\boldsymbol\epsilon}{\sigma_t}\right\|_2^2\right]\\
+      &=\mathbb E\!\left[\lambda(t)
+        \|s_\theta(\boldsymbol x_t,t)-s_t(\boldsymbol x_t)\|_2^2\right]+C,
+  \end{aligned}
+  \]</div>
+  <p>where \(C\) is independent of \(\theta\). The computable conditional-kernel target therefore has the same population minimizer as the unknown marginal score. Reparameterize the network output as \(\epsilon_\theta(\boldsymbol x_t,t)=-\sigma_t s_\theta(\boldsymbol x_t,t)\); the objective becomes the <a href="#reference-ddpm">noise-prediction loss</a></p>
+  <div class="retro-equation incomplete-math-key">\[
+  \begin{aligned}
+    \mathcal L_{\mathrm{noise}}(\theta)
+      &=\mathbb E\!\left[w(t)
+        \|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\|_2^2\right],
+      \qquad w(t)=\frac{\lambda(t)}{\sigma_t^2},\\
+    \epsilon_\theta^*(\boldsymbol x_t,t)
+      &=\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t],
+      \qquad s_t(\boldsymbol x_t)=-\frac{\epsilon_\theta^*(\boldsymbol x_t,t)}{\sigma_t}.
+  \end{aligned}
+  \]</div>
+  <p>The common unweighted noise MSE, \(w(t)=1\), corresponds to \(\lambda(t)=\sigma_t^2\). Each training example supplies the actual sampled noise as its regression label, but at the unrestricted population optimum the network returns its <em>conditional mean</em>: a noisy input generally does not identify the particular noise realization that produced it.</p>
+
+  <h3 id="diffusion-data-matching">3. Reparameterize the target: data matching learns a posterior mean</h3>
+  <p>Instead of predicting noise, let \(D_\theta(\boldsymbol x_t,t)\) predict the clean field. Here “data matching” means clean-data regression with squared error. The prescribed noising equation gives an invertible output conversion whenever \(\alpha_t,\sigma_t&gt;0\):</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \epsilon_\theta(\boldsymbol x_t,t)
+      &=\frac{\boldsymbol x_t-\alpha_tD_\theta(\boldsymbol x_t,t)}{\sigma_t},\\
+    \epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon
+      &=\frac{\alpha_t}{\sigma_t}
+        \left(\boldsymbol x_0-D_\theta(\boldsymbol x_t,t)\right),\\
+    \mathcal L_{\mathrm{noise}}(\theta)
+      &=\mathbb E\!\left[w(t)\frac{\alpha_t^2}{\sigma_t^2}
+        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right].
+  \end{aligned}
+  \]</div>
+  <p>Thus noise matching is <strong>exactly a time-weighted data-matching objective</strong> under this output conversion. More generally, write \(\mathcal L_{\mathrm{data}}=\mathbb E[v(t)\|D_\theta-\boldsymbol x_0\|_2^2]\), with \(v(t)&gt;0\). Exact objective equality requires \(v(t)=w(t)\alpha_t^2/\sigma_t^2\). Unweighted data MSE and unweighted noise MSE still have corresponding unrestricted population optima, but they emphasize noise levels differently; finite-capacity training need not behave identically.</p>
+  <p>Why is the optimal data prediction a conditional mean? Set \(m_t(\boldsymbol x)=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t=\boldsymbol x,t]\). At a fixed noisy input, the orthogonal decomposition of squared error gives</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \mathbb E[\|D-\boldsymbol x_0\|_2^2\mid\boldsymbol x_t,t]
+      &=\|D-m_t(\boldsymbol x_t)\|_2^2\\
+      &\quad+\mathbb E[\|\boldsymbol x_0-m_t(\boldsymbol x_t)\|_2^2
+        \mid\boldsymbol x_t,t].
+  \end{aligned}
+  \]</div>
+  <p>The second term cannot be changed by the predictor. Positive time weights do not change this pointwise optimum, so</p>
+  <div class="retro-equation incomplete-math-key">\[
+  \begin{aligned}
+    D_\theta^*(\boldsymbol x_t,t)&=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t],\\
+    \alpha_tD_\theta^*(\boldsymbol x_t,t)
+      +\sigma_t\epsilon_\theta^*(\boldsymbol x_t,t)&=\boldsymbol x_t,\\
+    s_t(\boldsymbol x_t)
+      &=\frac{\alpha_tD_\theta^*(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
+  \end{aligned}
+  \]</div>
+  <figure class="retro-figure incomplete-diffusion-figure">
+    <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/diffusion-targets-en.svg"><picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/incomplete-learning/diffusion-targets-en-mobile.svg" width="580" height="1050"><img src="{{ base_path }}/images/research/incomplete-learning/diffusion-targets-en.svg" width="1200" height="575" loading="lazy" alt="For one fixed noisy input, multiple clean values and noise realizations are possible; the data and noise regression optima are their respective conditional means, related by an affine conversion and yielding the same score"></picture></a>
+    <figcaption class="retro-figure__caption">Figure 3 · Two regression targets for the same noisy input. The posterior mean minimizes squared error; it is not a posterior sample and can lie between plausible clean values. The optimal data and noise outputs encode the same marginal score through the known schedule.</figcaption>
+  </figure>
+  <p>After data-matching training, form \(s_\theta=(\alpha_tD_\theta-\boldsymbol x_t)/\sigma_t^2\) and substitute it into the same reverse SDE or probability flow ODE above. No new sampling principle is needed. A full sample comes from integrating the dynamics across noise levels; a single posterior-mean prediction is a point estimate. The displayed output conversions apply away from singular endpoints; numerical implementations use a small positive terminal cutoff or a suitable endpoint rule.</p>
+  <div class="retro-callout"><strong>The bridge to incomplete-data learning</strong><p>Complete-data matching has input \((\boldsymbol x_t,t)\), a fully observed clean target, and optimum \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\). The next section replaces the input by a noisy context \(O_t\) and scores only measured query coordinates. Its predictor \(f_\theta(t;O_t)\) plays the clean-data-prediction role of \(D_\theta\) here; it is unrelated to the prescribed drift coefficient \(f(t)\). The conditional-mean argument survives, but query selection and coverage determine <em>which</em> conditional mean the masked loss identifies.</p></div>
+</section>
+
+
 <section class="retro-chapter" id="incomplete-supervision">
   <p class="retro-kicker">The context–query framework: training and sampling</p>
-  <h2><span class="retro-chapter__number">02</span> A context–query framework connecting training, reconstruction, and sampling</h2>
+  <h2><span class="retro-chapter__number">03</span> A context–query framework connecting training, reconstruction, and sampling</h2>
   <p class="retro-lede">Error cannot be computed at truly missing locations, but existing measurements can be temporarily hidden. Incomplete Data, Complete Dynamics (IDCD) uses this idea to train a field predictor, then combines predictions from multiple contexts at inference for point reconstruction or multistep generation.</p>
   <p>Consider an intuitive example: blue observations enter the model, while orange observations are temporarily hidden as query answers. The top row partitions pixels, and the bottom row partitions whole blocks. The partition determines whether other samples can provide supervision for the currently missing regions.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/context-query.webp"><img src="{{ base_path }}/images/research/incomplete-learning/context-query.webp" width="2400" height="1548" loading="lazy" alt="Block-missingness example: pixelwise context may uniquely reveal the original observation mask, whereas whole-block context allows multiple original masks to explain the same input"></a>
-    <figcaption class="retro-figure__caption">Figure 2 · Two blocks are missing from a nine-block grid. The pixelwise partition in the top row may leave traces in every observed block, making the context uniquely identify the original mask and turning originally missing blocks into zero-query regions. The bottom row selects whole blocks as context. The same context can arise from multiple original observation masks, allowing other samples to supervise the currently blank locations. Blue denotes context and orange denotes queries; the conclusion depends on the support and coverage of feasible masks.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 4 · Two blocks are missing from a nine-block grid. The pixelwise partition in the top row may leave traces in every observed block, making the context uniquely identify the original mask and turning originally missing blocks into zero-query regions. The bottom row selects whole blocks as context. The same context can arise from multiple original observation masks, allowing other samples to supervise the currently blank locations. Blue denotes context and orange denotes queries; the conclusion depends on the support and coverage of feasible masks.</figcaption>
   </figure>
   <ol class="retro-pipeline" aria-label="IDCD training and sampling framework">
     <li><strong>Training: supervision from existing observations</strong><span>Context serves as input; real measurements at query locations provide the answers.</span></li>
@@ -236,7 +367,7 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-exposure">
   <p class="retro-kicker">Observation geometry determines supervision</p>
-  <h2><span class="retro-chapter__number">03</span> Seeing fewer points is not enough: context must not reveal where answers are never available</h2>
+  <h2><span class="retro-chapter__number">04</span> Seeing fewer points is not enough: context must not reveal where answers are never available</h2>
   <p class="retro-lede">The partition determines the supervision the model actually receives. Random pixel dropout is natural for pixel-sampled data, but for data with whole missing blocks, it may reveal the original missingness geometry too clearly.</p>
   <div class="incomplete-theorem incomplete-principle" id="theorem-query-exposure">
   <h4>Principle · Every unknown coordinate needs a chance to become a query</h4>
@@ -284,11 +415,11 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-mask-prior">
   <p class="retro-kicker">A generative prior over observation masks</p>
-  <h2><span class="retro-chapter__number">04</span> First learn where observations may occur, then learn the values there</h2>
+  <h2><span class="retro-chapter__number">05</span> First learn where observations may occur, then learn the values there</h2>
   <p class="retro-lede">The mask model sees only binary observation geometry. It learns the spatial distribution produced by clouds or orbital sampling, then helps the reconstruction model construct training tasks. It does not access the ground-truth field values to be filled in.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp"><img src="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp" width="2400" height="1002" loading="lazy" alt="Full pipeline: pretrain on real binary masks, generate masks guided by random anchors, intersect with current observations, and train the field reconstruction model"></a>
-    <figcaption class="retro-figure__caption">Figure 3 · Real masks pretrain the generative prior; random observation anchors from the current sample guide generation. Intersecting the generated mask with the original observations produces the context, and the remaining observations become queries. The losses in the figure should be interpreted consistently with the equations in the text: the global cross-entropy has a minus sign and is minimized, and the query mask applies to both prediction and target so that error is computed only at real query locations.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 5 · Real masks pretrain the generative prior; random observation anchors from the current sample guide generation. Intersecting the generated mask with the original observations produces the context, and the remaining observations become queries. The losses in the figure should be interpreted consistently with the equations in the text: the global cross-entropy has a minus sign and is minimized, and the query mask applies to both prediction and target so that error is computed only at real query locations.</figcaption>
   </figure>
   <h3>Modeling binary masks through continuous latent variables</h3>
   <p>The implementation uses a continuous latent-variable parameterization inspired by Bayesian Flow Networks (BFN). Each pixel has \(C=2\) classes: missing and observed. Let \(c\) denote the class and \(\boldsymbol e_c\) its one-hot vector. Embed with scale \(\kappa&gt;0\), then add Gaussian noise:</p>
@@ -390,7 +521,7 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-alignment">
   <p class="retro-kicker">Observation-aligned generation</p>
-  <h2><span class="retro-chapter__number">05</span> Realistic geometry must also overlap current observations to retain useful context</h2>
+  <h2><span class="retro-chapter__number">06</span> Realistic geometry must also overlap current observations to retain useful context</h2>
   <p class="retro-lede">Unconditional generation may produce realistic masks with almost no intersection with the current sample. With too little context, there may be many queries, but the model loses the clues needed to infer spatial structure.</p>
   <p>OAMP randomly retains some anchors from the currently valid observations, rather than forcing every observed location to remain in the context. Random anchors allow different partitions of the same sample.</p>
   <div class="retro-equation">\[
@@ -447,13 +578,13 @@ project_chapters:
     <figure class="retro-figure"><h4>Uniform random partition</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-random.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-random.webp" width="2400" height="2081" loading="lazy" alt="Empirical query-probability heatmap for Black Sea data under a random-context strategy, with probabilities near zero in some ocean regions"></a></figure>
     <figure class="retro-figure"><h4>Observation-aligned partition</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp" width="2400" height="2081" loading="lazy" alt="Empirical query-probability heatmap for Black Sea data under the BFN observation-aligned strategy, with more balanced spatial coverage"></a></figure>
   </div>
-  <p class="retro-caption">Figure 4 · Empirical query probabilities from 200 repeated partitions on Black Sea data, with a 0–1 color scale. This compares the spatial distribution of actual supervision opportunities; a heatmap from finitely many samples cannot prove that a probability is strictly positive. Gray denotes the fixed unobserved-domain mask.</p>
+  <p class="retro-caption">Figure 6 · Empirical query probabilities from 200 repeated partitions on Black Sea data, with a 0–1 color scale. This compares the spatial distribution of actual supervision opportunities; a heatmap from finitely many samples cannot prove that a probability is strictly positive. Gray denotes the fixed unobserved-domain mask.</p>
   <p>Even if a location can be queried across repeated sampling, query-selection bias, finite-data error, and identifiability of the complete distribution remain distinct issues. Mask learning improves how supervision is organized but does not create missing ground truth.</p>
 </section>
 
 <section class="retro-chapter" id="incomplete-identifiability">
   <p class="retro-kicker">What incomplete observations can identify</p>
-  <h2><span class="retro-chapter__number">06</span> Why are structural priors still needed when conditional supervision is valid?</h2>
+  <h2><span class="retro-chapter__number">07</span> Why are structural priors still needed when conditional supervision is valid?</h2>
   <p class="retro-lede">A model may learn effective predictions at supervised conditional states yet still be unable to uniquely determine an arbitrary complete joint distribution from all the fragments. These two questions concern different objects.</p>
   <div class="incomplete-theorem" id="theorem-never-complete">
   <h4>Theorem 10 · Unrestricted complete-field distributions are not generally identifiable from observations that are never complete</h4>
@@ -487,11 +618,11 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-local-global">
   <p class="retro-kicker">Estimate locally, correct globally</p>
-  <h2><span class="retro-chapter__number">07</span> Learn structure from neighborhoods, then revise it with full-domain evidence</h2>
+  <h2><span class="retro-chapter__number">08</span> Learn structure from neighborhoods, then revise it with full-domain evidence</h2>
   <p class="retro-lede">A field that is sparse overall may still contain local patches with relatively rich observations. A shared local model turns these patches into smaller learning tasks. Overlapping predictions form a reference field, and a global model then learns how to correct it.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp"><img src="{{ base_path }}/images/research/incomplete-learning/local-global-architecture.webp" width="2400" height="1352" loading="lazy" alt="Observation-aligned partitioning, a shared local model, overlap averaging to construct a local prior, global residual correction using all context, and query losses in two stages"></a>
-    <figcaption class="retro-figure__caption">Figure 5 · The same context–query interface runs through both learning stages. The local model predicts patches using position coordinates and local noisy observations. Once frozen, all overlapping predictions are assembled into a reference field. The global corrector receives the original context, the reference field, and discrepancy features, predicts a residual, and adds it back to the reference field. Query ground truth enters only the training loss.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 7 · The same context–query interface runs through both learning stages. The local model predicts patches using position coordinates and local noisy observations. Once frozen, all overlapping predictions are assembled into a reference field. The global corrector receives the original context, the reference field, and discrepancy features, predicts a residual, and adds it back to the reference field. Query ground truth enters only the training loss.</figcaption>
   </figure>
   <h3>A shared local predictor: different positions, shared parameters</h3>
   <p>The local model processes one patch at a time. It receives noisy observations and the observation mask within the patch, together with its absolute coordinates in the complete field, and predicts the field values inside it. All patches share one parameter set, allowing local relationships learned across different samples and neighborhoods to jointly support reconstruction. Coordinates tell the model where the patch is located, enabling it to adapt to statistical differences across ocean regions.</p>
@@ -513,7 +644,7 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-reconstruction">
   <p class="retro-kicker">A single observation interface throughout</p>
-  <h2><span class="retro-chapter__number">08</span> Connecting partitioning, local priors, and global correction into one training and reconstruction pipeline</h2>
+  <h2><span class="retro-chapter__number">09</span> Connecting partitioning, local priors, and global correction into one training and reconstruction pipeline</h2>
   <p class="retro-lede">The entire pipeline depends only on available observations. Mask construction determines the practice tasks, the local model builds a reference, and the global model learns corrections. The supplied real measurements are restored during inference.</p>
   <h3>Explicitly show the corrector where the reference field disagrees with observations</h3>
   <p>After supplying the reference field to the full-domain model, their relationship can be made easier to interpret. In addition to the noisy context, observation mask, and local prior, the corrector receives three intuitive auxiliary maps.</p>
@@ -534,20 +665,20 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-results">
   <p class="retro-kicker">Evidence for each link in the method</p>
-  <h2><span class="retro-chapter__number">09</span> Stepwise experimental checks: supervision geometry, real occlusions, and revisable local estimates</h2>
+  <h2><span class="retro-chapter__number">10</span> Stepwise experimental checks: supervision geometry, real occlusions, and revisable local estimates</h2>
   <p class="retro-lede">Different stages answer different questions. First examine whether partitioning creates dead zones, then assess reconstruction under real observation geometry, and finally use parameter-matched comparisons to distinguish the roles of local priors and residual correction.</p>
   <h3>Structured missingness: changing the partition can substantially change learning</h3>
   <p>Under Navier–Stokes with eight of nine blocks observed (an 8/9 observation ratio), switching the same IDCD framework from pixelwise to blockwise partitioning reduces MSE from \(1.4925\pm0.2609\) to \(0.7592\pm0.0386\), a decrease of about <strong>49.1%</strong>. This directly tests the design principle of matching partitions to observation structure, beyond comparing model names alone.</p>
   <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-blocks">
     {% include incomplete-field-animation.html stem="idcd-ns-block" heading="(a) Navier–Stokes · Block missingness" labels="Original field|Model completion" %}
     {% include incomplete-field-animation.html stem="idcd-advection-four-blocks" heading="(b) 2D advection · Four missing blocks" labels="Observed input|Model completion" %}
-    <figcaption class="retro-figure__caption">Figure 6 · Field reconstruction under block missingness. (a) Original Navier–Stokes fields and model completions with one of nine blocks missing, synchronized across 100 time frames (\(T=0,\ldots,99\)). (b) Observed input and completion for 2D advection with four missing blocks, across 50 frames (\(T=0,\ldots,49\)). White indicates missing values; approximately 52.7% of locations are observed. Each pair shares a fixed color scale, revealing the evolution of spatial texture and continuity across missing regions.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 8 · Field reconstruction under block missingness. (a) Original Navier–Stokes fields and model completions with one of nine blocks missing, synchronized across 100 time frames (\(T=0,\ldots,99\)). (b) Observed input and completion for 2D advection with four missing blocks, across 50 frames (\(T=0,\ldots,49\)). White indicates missing values; approximately 52.7% of locations are observed. Each pair shares a fixed color scale, revealing the evolution of spatial texture and continuity across missing regions.</figcaption>
   </figure>
   <h3>Shallow water: inspect completion over the full time sequence</h3>
   <p>We next examine shallow-water reconstruction with four missing blocks. The observed input and model completion replay the entire sequence in sync, revealing field evolution and continuity between missing regions and surrounding observations.</p>
   <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-timeseries">
     {% include incomplete-field-animation.html stem="idcd-shallow-water-four-blocks" heading="Shallow water · Four missing blocks" labels="Observed input|Model completion" %}
-    <figcaption class="retro-figure__caption">Figure 7 · Shallow-water reconstruction with four missing blocks, showing the first saved field channel of one sample. The left panel shows the observed input, with approximately 55.1% of locations observed and missing values in white. The right panel shows model completion, preserving the supplied observations. Both panels share a fixed color scale and replay all 50 physical time frames (\(T=0,\ldots,49\)) in sync, revealing spatial structure and local deviations throughout the sequence.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 9 · Shallow-water reconstruction with four missing blocks, showing the first saved field channel of one sample. The left panel shows the observed input, with approximately 55.1% of locations observed and missing values in white. The right panel shows model completion, preserving the supplied observations. Both panels share a fixed color scale and replay all 50 physical time frames (\(T=0,\ldots,49\)) in sync, revealing spatial structure and local deviations throughout the sequence.</figcaption>
   </figure>
   <h3>Real ocean occlusions: score only where reference measurements exist</h3>
   <p>Real ocean fields do not have complete ground truth. Evaluation overlays another real mask on the current sample's support, with input and scoring locations shared across methods. MSE and PSNR are computed only at locations that were originally observed and are now temporarily hidden.</p>
@@ -594,7 +725,7 @@ project_chapters:
     <figure class="retro-figure"><h4>OAMP</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp"><img src="{{ base_path }}/images/research/incomplete-learning/oamp-smos-ours.webp" width="1202" height="1202" loading="lazy" alt="OAMP for the same Global Ocean SSS sample; white denotes missing source data, and black and red contours in prediction panels distinguish supplied observations from hidden scoring locations"></a></figure>
     </div>
   </div>
-  <p class="retro-caption">Figure 8 · Ocean reconstruction examples at \(64\times 64\). In prediction panels, black contours mark supplied observations and red contours mark scoring locations temporarily hidden from the original observations. White in the reference still denotes locations without source ground truth. Gray marks the fixed unobserved domain. Products are shown separately, and colors should be compared only within the same row. Locations with missing source data have no reference values, so their true errors cannot be determined from these panels.</p>
+  <p class="retro-caption">Figure 10 · Ocean reconstruction examples at \(64\times 64\). In prediction panels, black contours mark supplied observations and red contours mark scoring locations temporarily hidden from the original observations. White in the reference still denotes locations without source ground truth. Gray marks the fixed unobserved domain. Products are shown separately, and colors should be compared only within the same row. Locations with missing source data have no reference values, so their true errors cannot be determined from these panels.</p>
   <h3>A local prior is valuable because the global model can use and correct it</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Parameter-matched comparison of estimator organization">
     <table class="retro-comparison"><caption>Table 4 · Parameter-matched comparison of estimator organization</caption><thead><tr><th scope="col">Estimation approach</th><th scope="col">CHL MSE \(\times 10^{-3}\)</th><th scope="col">NANO MSE \(\times 10^{-3}\)</th><th scope="col">SSS MSE \(\times 10^{-3}\)</th></tr></thead><tbody>
@@ -614,13 +745,13 @@ project_chapters:
     <figure class="retro-figure"><h4>Learned residual</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-residual.webp" width="590" height="590" loading="lazy" alt="Signed residual correction made by the full-domain model to the NANO local prior"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>First four panels: normalized field values</span><img src="{{ base_path }}/images/research/incomplete-learning/field-colorbar.svg" width="276" height="36" loading="lazy" alt="Normalized field-value scale from −1 to 1"></div><div class="incomplete-colorbar"><span>Residual values</span><img src="{{ base_path }}/images/research/incomplete-learning/residual-colorbar.svg" width="276" height="36" loading="lazy" alt="Residual scale from −0.344 to 0.344, clipped beyond the endpoints"></div></div>
-  <p class="retro-caption">Figure 9 · Prediction decomposition for \(64\times 64\) NANO with the full input mask. Black and red contours mark supplied observations and hidden scorable locations, respectively; gray is outside the valid domain, and white in the reference denotes missing source data. All predictions are shown before supplied observations are written back, so the prediction after global correction equals the local prior plus the learned residual. The actual reconstruction output then restores the supplied observations.</p>
+  <p class="retro-caption">Figure 11 · Prediction decomposition for \(64\times 64\) NANO with the full input mask. Black and red contours mark supplied observations and hidden scorable locations, respectively; gray is outside the valid domain, and white in the reference denotes missing source data. All predictions are shown before supplied observations are written back, so the prediction after global correction equals the local prior plus the learned residual. The actual reconstruction output then restores the supplied observations.</p>
   <div class="incomplete-figure-grid">
     <figure class="retro-figure"><h4>Parameter-matched OAMP comparison · Close-up</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-direct.webp" width="545" height="545" loading="lazy" alt="Close-up prediction of the parameter-matched direct full-domain model in the orange-box NANO region"></a></figure>
     <figure class="retro-figure"><h4>Reference observations · Orange box marks the close-up</h4><a class="image-popup incomplete-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp" width="545" height="545" loading="lazy" alt="Full original NANO reference, with an orange rectangle marking the region enlarged on either side"></a></figure>
     <figure class="retro-figure"><h4>Local to global · Close-up</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp" width="545" height="545" loading="lazy" alt="Close-up of the same orange-box NANO region reconstructed by the local-to-global method"></a></figure>
   </div>
-  <p class="retro-caption">Figure 10 · Parameter-matched comparison of NANO details. The left and right panels enlarge the orange region in the central reference, using the same field-value scale as the preceding NANO decomposition. The local-to-global prediction retains more visible fine-scale variation in this example; the overall conclusion is supported by the scores in Tables 3 and 4.</p>
+  <p class="retro-caption">Figure 12 · Parameter-matched comparison of NANO details. The left and right panels enlarge the orange region in the central reference, using the same field-value scale as the preceding NANO decomposition. The local-to-global prediction retains more visible fine-scale variation in this example; the overall conclusion is supported by the scores in Tables 3 and 4.</p>
   <h3>From ocean fields to fluid fields: correcting details inside a missing block</h3>
   <p>The local-to-global organization also applies to simulated physical fields. Below, close-ups compare parameter-matched IDCD direct full-domain prediction and local-to-global prediction for Navier–Stokes with eight of nine blocks observed.</p>
   <div class="incomplete-figure-grid" id="incomplete-ns-detail">
@@ -629,7 +760,7 @@ project_chapters:
     <figure class="retro-figure"><h4>Local to global · Close-up</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/ns-detail-corrected.webp" width="600" height="600" loading="lazy" alt="Local-to-global reconstruction of the same Navier–Stokes region, retaining more visible vorticity structure inside the missing block"></a></figure>
   </div>
   <div class="incomplete-colorbars"><div class="incomplete-colorbar"><span>Normalized field values</span><img src="{{ base_path }}/images/research/incomplete-learning/ns-colorbar.svg" width="276" height="36" loading="lazy" alt="Shared Navier–Stokes field-value scale from −1 through white at zero to +1"></div></div>
-  <p class="retro-caption">Figure 11 · Reconstruction details at \(64\times 64\) with Block 8/9. The left and right panels enlarge the orange region in the central reference field. Black lines mark the observation-block grid, and red dashes mark the missing block. Both predictions restore the supplied observations, and the local-to-global method uses a \(K=8\) context ensemble. In this example, residual correction retains more visible elongated vorticity structures. Field values use a shared color scale from −1 to 1.</p>
+  <p class="retro-caption">Figure 13 · Reconstruction details at \(64\times 64\) with Block 8/9. The left and right panels enlarge the orange region in the central reference field. Black lines mark the observation-block grid, and red dashes mark the missing block. Both predictions restore the supplied observations, and the local-to-global method uses a \(K=8\) context ensemble. In this example, residual correction retains more visible elongated vorticity structures. Field values use a shared color scale from −1 to 1.</p>
   <h3>Does global correction actually use observations outside the neighborhood?</h3>
   <p>Fix a target block and remove only remote observations outside all relevant local patches. The local model receives the same inputs, so the reference field on the target block is unchanged. The actual global output shows a nonzero mean squared displacement on all three products, indicating that the corrector responds to evidence unavailable to local construction.</p>
   <p>A response does not always imply a benefit. Further compare distance groups while deleting the same number of observations: Remote Mid and Remote Far deletions increase mean error for CHL and NANO, with 95% confidence intervals above zero. For SSS, Remote Near deletion increases error, Remote Far deletion decreases it, and the Remote Mid interval crosses zero. The role of remote evidence depends on the data product and distance range.</p>
@@ -638,7 +769,7 @@ project_chapters:
 
 <section class="retro-chapter" id="incomplete-summary">
   <p class="retro-kicker">From fragments to a revisable reconstruction</p>
-  <h2><span class="retro-chapter__number">10</span> One research direction: making existing evidence more useful for learning and reconstruction</h2>
+  <h2><span class="retro-chapter__number">11</span> One research direction: making existing evidence more useful for learning and reconstruction</h2>
   <p class="retro-lede">Learning from incomplete data first requires understanding which targets have supervision, then matching training tasks to real observations, and finally organizing how the model uses limited evidence.</p>
   <ol class="retro-pipeline" aria-label="Three successive questions in the research direction">
     <li><strong>Effective conditional supervision</strong><span>Context serves as input and queries determine the loss; coverage and selection conditions define the learned target.</span></li>

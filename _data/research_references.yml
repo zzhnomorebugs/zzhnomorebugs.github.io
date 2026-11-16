@@ -10,3 +10,11 @@ dfm:
   title: "Discrete Flow Matching"
   authors: "Itai Gat, Tal Remez, Neta Shaul, Felix Kreuk, Ricky T. Q. Chen, Gabriel Synnaeve, Yossi Adi, Yaron Lipman"
   paperurl: "https://arxiv.org/abs/2407.15595"
+score-sde:
+  title: "Score-Based Generative Modeling through Stochastic Differential Equations"
+  authors: "Yang Song, Jascha Sohl-Dickstein, Diederik P. Kingma, Abhishek Kumar, Stefano Ermon, Ben Poole"
+  paperurl: "https://arxiv.org/abs/2011.13456"
+ddpm:
+  title: "Denoising Diffusion Probabilistic Models"
+  authors: "Jonathan Ho, Ajay Jain, Pieter Abbeel"
+  paperurl: "https://arxiv.org/abs/2006.11239"
