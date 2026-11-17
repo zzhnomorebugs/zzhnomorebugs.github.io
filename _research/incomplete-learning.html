@@ -110,68 +110,74 @@ project_chapters:
   \]</div>
   <p>Thus \(\alpha_t\) scales the clean signal and \(\sigma_t\) gives the conditional noise standard deviation. This reparameterization describes the transition law at a fixed time; using one fixed \(\boldsymbol\epsilon\) for every time would not in general produce a trajectory of the SDE. The relation between a differentiable pair of schedules and the SDE coefficients is</p>
   <div class="retro-equation">\[
-    f(t)=\frac{\dot\alpha_t}{\alpha_t},
+    f(t)=\frac{\alpha_t'}{\alpha_t},
     \qquad
     g(t)^2=\frac{\mathrm d\sigma_t^2}{\mathrm dt}-2f(t)\sigma_t^2\ge0.
   \]</div>
-  <p>The nonnegativity constraint means that \(\alpha_t\) and \(\sigma_t\) cannot be chosen independently without restriction. For example, variance-preserving (VP) diffusion sets \(f(t)=-\beta(t)/2\) and \(g(t)=\sqrt{\beta(t)}\), for a chosen \(\beta(t)\ge0\). The corresponding schedules satisfy \(\sigma_t^2=1-\alpha_t^2\). Choosing \(\alpha_T\) sufficiently small makes \(p_T\) approximately \(\mathcal N(0,I)\); at a finite terminal time this is generally an approximation.</p>
+  <p>The nonnegativity constraint means that \(\alpha_t\) and \(\sigma_t\) cannot be chosen independently without restriction. For example, a variance-preserving (VP) schedule satisfies \(\sigma_t^2=1-\alpha_t^2\), with \(\alpha_t\) decreasing. Choosing \(\alpha_T\) sufficiently small makes \(p_T\) approximately \(\mathcal N(0,I)\); at a finite terminal time this is generally an approximation.</p>
   <figure class="retro-figure incomplete-diffusion-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-en.webp"><picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-en-mobile.webp" width="725" height="3600"><img src="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-en.webp" width="1687" height="662" loading="lazy" alt="A fixed Navier–Stokes vorticity snapshot progressively corrupted by Gaussian diffusion noise, using the same blue–white–red colormap and common display range as the later NS examples"></picture></a>
     <figcaption class="retro-figure__caption">Figure 2 · Forward diffusion applied to a numerically simulated Navier–Stokes vorticity snapshot. The physical snapshot stays fixed; only diffusion time increases. Every panel uses the same blue–white–red colormap as the NS examples below and a shared display range of −1 to 1. Values outside this range are clipped only for display.</figcaption>
   </figure>
-  <p>Write \(p_t(\boldsymbol x)=\int q_t(\boldsymbol x\mid\boldsymbol x_0)p_{\mathrm{data}}(\boldsymbol x_0)\,\mathrm d\boldsymbol x_0\), and define the <strong>marginal score</strong> \(s_t(\boldsymbol x)=\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)\). Under the usual regularity conditions, the <a href="#reference-score-sde">reverse-time SDE and probability flow ODE</a> are</p>
+  <p>Write \(p_t(\boldsymbol x)=\int q_t(\boldsymbol x\mid\boldsymbol x_0)p_{\mathrm{data}}(\boldsymbol x_0)\,\mathrm d\boldsymbol x_0\), whose <strong>marginal score</strong> is \(\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)\). Under the usual regularity conditions, the <a href="#reference-score-sde">reverse-time SDE and probability flow ODE</a> are</p>
   <div class="retro-equation">\[
   \begin{aligned}
     \text{Reverse SDE:}\quad
     \mathrm d\boldsymbol x_t
-      &=\left[f(t)\boldsymbol x_t-g(t)^2s_t(\boldsymbol x_t)\right]\mathrm dt
+      &=\left[f(t)\boldsymbol x_t-g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt
         +g(t)\,\mathrm d\overline{\boldsymbol W}_t,\\
     \text{Probability flow ODE:}\quad
     \mathrm d\boldsymbol x_t
-      &=\left[f(t)\boldsymbol x_t-\tfrac12 g(t)^2s_t(\boldsymbol x_t)\right]\mathrm dt.
+      &=\left[f(t)\boldsymbol x_t-\tfrac12 g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt.
   \end{aligned}
   \]</div>
   <p><strong>For generation, both equations are integrated from \(T\) toward \(0\), so \(\mathrm dt&lt;0\).</strong> Here \(\overline{\boldsymbol W}_t\) is Brownian motion in reverse time, with increment covariance \(-\mathrm dt\,I\). Starting from \(\boldsymbol x_T\sim p_T\), either exact dynamics recovers the data distribution. The ODE is deterministic conditional on its random initial state; it does not undo a particular realization of forward Brownian noise.</p>
 
-  <h3 id="diffusion-noise-matching">2. Learn the unknown score through noise matching</h3>
-  <p>In the reverse drift, \(f\) and \(g\) are known. <strong>Only the data-dependent score \(s_t\) must be learned.</strong> Although its target value is unavailable, the score of the conditional Gaussian kernel is explicit. Differentiating the marginal density under the integral yields</p>
+  <h3 id="diffusion-noise-matching">2. From score matching to noise matching and data matching</h3>
+  <p>In the reverse drift, \(f\) and \(g\) are known. <strong>Only the data-dependent score \(\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\) must be learned.</strong> Although its target value is unavailable, the score of the conditional Gaussian kernel is explicit. Differentiating the marginal density under the integral yields</p>
   <div class="retro-equation">\[
   \begin{aligned}
     \nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
-      &=-\frac{\boldsymbol x_t-\alpha_t\boldsymbol x_0}{\sigma_t^2}
-       =-\frac{\boldsymbol\epsilon}{\sigma_t},\\
-    s_t(\boldsymbol x)
+      &=-\frac{\boldsymbol x_t-\alpha_t\boldsymbol x_0}{\sigma_t^2}\\
+      &=-\frac{\boldsymbol\epsilon}{\sigma_t},\\
+    \nabla_{\boldsymbol x}\log p_t(\boldsymbol x)
       &=\mathbb E\!\left[\nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
          \mid\boldsymbol x_t=\boldsymbol x,t\right]\\
       &=-\frac{1}{\sigma_t}\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t=\boldsymbol x,t].
   \end{aligned}
   \]</div>
-  <p>Sample \(t\) from a fixed distribution with positive density on the training time interval, independently of \(\boldsymbol x_0\) and \(\boldsymbol\epsilon\). Work on a training interval where \(\alpha_t,\sigma_t&gt;0\) and the relevant weighted second moments are finite, for example away from zero at \(t\in[\delta,T]\), \(\delta&gt;0\). For a positive time weight \(\lambda(t)\), conditional expectation gives the denoising score matching identity</p>
+  <p>Sample \(t\) independently of \(\boldsymbol x_0\) and \(\boldsymbol\epsilon\), and parameterize the learned score as \(-\epsilon_\theta(\boldsymbol x_t,t)/\sigma_t\). On a nondegenerate training interval with finite weighted second moments, a positive time weight \(\lambda(t)\) gives the denoising score matching identity</p>
   <div class="retro-equation">\[
   \begin{aligned}
     \mathcal L_{\mathrm{DSM}}(\theta)
       &=\mathbb E\!\left[\lambda(t)
-        \left\|s_\theta(\boldsymbol x_t,t)+\frac{\boldsymbol\epsilon}{\sigma_t}\right\|_2^2\right]\\
+        \left\|\frac{-\epsilon_\theta(\boldsymbol x_t,t)+\boldsymbol\epsilon}{\sigma_t}\right\|_2^2\right]\\
       &=\mathbb E\!\left[\lambda(t)
-        \|s_\theta(\boldsymbol x_t,t)-s_t(\boldsymbol x_t)\|_2^2\right]+C,
+        \left\|-\frac{\epsilon_\theta(\boldsymbol x_t,t)}{\sigma_t}
+          -\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right\|_2^2\right]+C.
   \end{aligned}
   \]</div>
-  <p>where \(C\) is independent of \(\theta\). The computable conditional-kernel target therefore has the same population minimizer as the unknown marginal score. Reparameterize the network output as \(\epsilon_\theta(\boldsymbol x_t,t)=-\sigma_t s_\theta(\boldsymbol x_t,t)\); the objective becomes the <a href="#reference-ddpm">noise-prediction loss</a></p>
-  <div class="retro-equation incomplete-math-key">\[
+  <p>Here \(C\) is independent of \(\theta\), so fitting the computable conditional-kernel target has the same population minimizer as fitting the unknown marginal score. With \(w(t)=\lambda(t)/\sigma_t^2\), the objective becomes the <a href="#reference-ddpm">noise-prediction loss</a>. The following theorem collects this objective and its clean-data counterpart.</p>
+  <div class="incomplete-theorem" id="theorem-diffusion-objectives">
+  <h4>Theorem 1 · Noise matching and data matching recover the score</h4>
+  <p>Let \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\), where \(\boldsymbol x_0\) has finite second moment and \(\boldsymbol\epsilon\sim\mathcal N(0,I)\) is independent of \(\boldsymbol x_0\). Sample \(t\) independently from a fixed distribution with positive density on a training interval where \(\alpha_t,\sigma_t&gt;0\), for example \([\delta,T]\) with \(\delta&gt;0\). For strictly positive weights \(w(t),v(t)\) and finite relevant expectations, the squared-error objectives below have the following unrestricted population-optimal predictors, almost surely:</p>
+  <div class="retro-equation">\[
   \begin{aligned}
     \mathcal L_{\mathrm{noise}}(\theta)
       &=\mathbb E\!\left[w(t)
-        \|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\|_2^2\right],
-      \qquad w(t)=\frac{\lambda(t)}{\sigma_t^2},\\
+        \|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\|_2^2\right],\\
     \epsilon_\theta^*(\boldsymbol x_t,t)
-      &=\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t],
-      \qquad s_t(\boldsymbol x_t)=-\frac{\epsilon_\theta^*(\boldsymbol x_t,t)}{\sigma_t}.
+      &=\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\\
+      &=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t),\\[0.8em]
+    \mathcal L_{\mathrm{data}}(\theta)
+      &=\mathbb E\!\left[v(t)
+        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right],\\
+    D_\theta^*(\boldsymbol x_t,t)
+      &=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\\
+      &=\frac{\boldsymbol x_t+\sigma_t^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)}{\alpha_t}.
   \end{aligned}
   \]</div>
-  <p>The common unweighted noise MSE, \(w(t)=1\), corresponds to \(\lambda(t)=\sigma_t^2\). Each training example supplies the actual sampled noise as its regression label, but at the unrestricted population optimum the network returns its <em>conditional mean</em>: a noisy input generally does not identify the particular noise realization that produced it.</p>
-
-  <h3 id="diffusion-data-matching">3. Reparameterize the target: data matching learns a posterior mean</h3>
-  <p>Instead of predicting noise, let \(D_\theta(\boldsymbol x_t,t)\) predict the clean field. Here “data matching” means clean-data regression with squared error. The prescribed noising equation gives an invertible output conversion whenever \(\alpha_t,\sigma_t&gt;0\):</p>
+  <p><strong>Exact objective equality.</strong> Relate the two network outputs by the invertible conversion below. The losses are then exactly equal when their weights satisfy \(v(t)=w(t)\alpha_t^2/\sigma_t^2\):</p>
   <div class="retro-equation">\[
   \begin{aligned}
     \epsilon_\theta(\boldsymbol x_t,t)
@@ -181,30 +187,36 @@ project_chapters:
         \left(\boldsymbol x_0-D_\theta(\boldsymbol x_t,t)\right),\\
     \mathcal L_{\mathrm{noise}}(\theta)
       &=\mathbb E\!\left[w(t)\frac{\alpha_t^2}{\sigma_t^2}
-        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right].
+        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right]\\
+      &=\mathcal L_{\mathrm{data}}(\theta).
   \end{aligned}
   \]</div>
-  <p>Thus noise matching is <strong>exactly a time-weighted data-matching objective</strong> under this output conversion. More generally, write \(\mathcal L_{\mathrm{data}}=\mathbb E[v(t)\|D_\theta-\boldsymbol x_0\|_2^2]\), with \(v(t)&gt;0\). Exact objective equality requires \(v(t)=w(t)\alpha_t^2/\sigma_t^2\). Unweighted data MSE and unweighted noise MSE still have corresponding unrestricted population optima, but they emphasize noise levels differently; finite-capacity training need not behave identically.</p>
-  <p>Why is the optimal data prediction a conditional mean? Set \(m_t(\boldsymbol x)=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t=\boldsymbol x,t]\). At a fixed noisy input, the orthogonal decomposition of squared error gives</p>
+  <p><strong>Proof.</strong> For either target \(\boldsymbol Y=\boldsymbol\epsilon\) or \(\boldsymbol Y=\boldsymbol x_0\), and any prediction \(h=h(\boldsymbol x_t,t)\), conditional squared error decomposes as</p>
   <div class="retro-equation">\[
   \begin{aligned}
-    \mathbb E[\|D-\boldsymbol x_0\|_2^2\mid\boldsymbol x_t,t]
-      &=\|D-m_t(\boldsymbol x_t)\|_2^2\\
-      &\quad+\mathbb E[\|\boldsymbol x_0-m_t(\boldsymbol x_t)\|_2^2
-        \mid\boldsymbol x_t,t].
+    \mathbb E[\|h-\boldsymbol Y\|_2^2\mid\boldsymbol x_t,t]
+      &=\left\|h-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2\\
+      &\quad+\mathbb E\!\left[
+        \left\|\boldsymbol Y-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2
+        \mid\boldsymbol x_t,t\right].
   \end{aligned}
   \]</div>
-  <p>The second term cannot be changed by the predictor. Positive time weights do not change this pointwise optimum, so</p>
-  <div class="retro-equation incomplete-math-key">\[
-  \begin{aligned}
-    D_\theta^*(\boldsymbol x_t,t)&=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t],\\
+  <p>The second term is independent of \(h\), so the corresponding conditional mean minimizes either positively weighted loss. The Gaussian-kernel identity above gives the optimal noise predictor's relation to the score. Taking conditional expectations of the noising equation gives</p>
+  <div class="retro-equation">\[
     \alpha_tD_\theta^*(\boldsymbol x_t,t)
-      +\sigma_t\epsilon_\theta^*(\boldsymbol x_t,t)&=\boldsymbol x_t,\\
-    s_t(\boldsymbol x_t)
-      &=\frac{\alpha_tD_\theta^*(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
-  \end{aligned}
+      +\sigma_t\epsilon_\theta^*(\boldsymbol x_t,t)=\boldsymbol x_t.
   \]</div>
-  <p>After data-matching training, form \(s_\theta=(\alpha_tD_\theta-\boldsymbol x_t)/\sigma_t^2\) and substitute it into the same reverse SDE or probability flow ODE above. No new sampling principle is needed. A full sample comes from integrating the dynamics across noise levels; a single posterior-mean prediction is a point estimate. The displayed output conversions apply away from singular endpoints; numerical implementations use a small positive terminal cutoff or a suitable endpoint rule.</p>
+  <p>Substituting the optimal noise predictor gives the displayed formula for \(D_\theta^*\). Finally, the output conversion gives the samplewise residual identity and hence the equality of the two reweighted objectives.</p>
+  <p class="incomplete-scope"><strong>Scope.</strong> Arbitrary strictly positive time weights preserve these unrestricted population optima, but do not in general make the losses equal or yield identical training behavior for finite-capacity networks. Unweighted noise MSE, \(w(t)=1\), corresponds to \(\lambda(t)=\sigma_t^2\). Each training label is the sampled noise or clean field; the optimal prediction is its conditional mean, rather than a uniquely recovered realization.</p>
+  </div>
+
+  <h3 id="diffusion-data-matching">3. Use clean-data predictions in the reverse dynamics</h3>
+  <p>After data-matching training, recover a score approximation from the predicted clean field:</p>
+  <div class="retro-equation">\[
+    \nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)
+      \approx\frac{\alpha_tD_\theta(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
+  \]</div>
+  <p>Substitute this expression into the same reverse SDE or probability flow ODE above. A full sample comes from integrating the dynamics across noise levels; a single posterior-mean prediction is a point estimate. These output conversions apply away from singular endpoints; numerical implementations use a small positive terminal cutoff or a suitable endpoint rule.</p>
   <div class="retro-callout"><strong>The bridge to incomplete-data learning</strong><p>Complete-data matching has input \((\boldsymbol x_t,t)\), a fully observed clean target, and optimum \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\). The next section replaces the input by a noisy context \(O_t\) and scores only measured query coordinates. Its predictor \(f_\theta(t;O_t)\) plays the clean-data-prediction role of \(D_\theta\) here; it is unrelated to the prescribed drift coefficient \(f(t)\). The conditional-mean argument survives, but query selection and coverage determine <em>which</em> conditional mean the masked loss identifies.</p></div>
 </section>
 
@@ -241,7 +253,7 @@ project_chapters:
   <h3>What exactly does squared loss learn?</h3>
   <p>We first need to distinguish general query selection from the special case of mask independence. Real observations may depend on the field itself. Only under the corresponding conditions can the conditional mean given a query event simplify to the commonly stated conditional mean given the context.</p>
   <div class="incomplete-theorem" id="theorem-weighted-mse">
-  <h4>Theorem 1 · The optimum of coordinatewise weighted mean squared error</h4>
+  <h4>Theorem 2 · The optimum of coordinatewise weighted mean squared error</h4>
   <p>Let random vectors \(X,Y,Z\in\mathbb R^d\) have finite relevant second moments, and let \(g:\operatorname{Space}(Y)\to\mathbb R^d\) be a deterministic measurable function. Consider the objective</p>
   \[
   L(g)=\mathbb E\left[\|Z\odot g(Y)-Z\odot X\|^2\right].
@@ -254,13 +266,13 @@ project_chapters:
   <p>Vector division is coordinatewise. If a coordinate has a zero denominator, its output does not affect the objective and therefore cannot be determined by this loss.</p>
 </div>
   <div class="incomplete-theorem" id="theorem-query-conditional-mean">
-  <h4>Theorem 2 · Query loss identifies the query-conditional mean</h4>
+  <h4>Theorem 3 · Query loss identifies the query-conditional mean</h4>
   <p>Let \(O_t=(\boldsymbol{x}_{\mathrm{ctx},t},\boldsymbol M_{\mathrm{ctx}})\), with the predictor receiving only \((t,O_t)\). For coordinate \(i\), assume finite relevant second moments and positive query exposure in the current state, \(\Pr(\boldsymbol M_{\mathrm{qry},i}=1\mid t,O_t)>0\). For the masked squared loss on observed queries, the unrestricted predictor has optimum</p>
   <div class="retro-equation">\[\mu_{O,i}(t,O_t)=\mathbb E_{\mathrm{train}}\!\left[\boldsymbol{x}_{0,i}\mid t,O_t,\boldsymbol M_{\mathrm{qry},i}=1\right].\]</div>
   <p>Here \(\boldsymbol{x}_{0,i}\) can be a scalar or a channel vector. No additional independence condition that removes the query-selection event is assumed for the actual acquisition and partition mechanisms, so \(\boldsymbol M_{\mathrm{qry},i}=1\) must be retained. If conditional query exposure is zero, the loss does not constrain the prediction of that coordinate in that state.</p>
 </div>
   <div class="incomplete-theorem" id="theorem-context-optimum">
-  <h4>Theorem 3 · Optimal prediction and learning frequency when query information is hidden</h4>
+  <h4>Theorem 4 · Optimal prediction and learning frequency when query information is hidden</h4>
   <p>Let the complete data be \(X_0\) and the original observations be \(X_{\mathrm{obs}}=M\odot X_0\), where \(M\) is independent of the data. Choose \(C=M_{\mathrm{ctx}}\subseteq M\) and \(Q=M_{\mathrm{qry}}\subseteq M\), with mask sampling depending only on observation structure. The model receives only \(t\) and \(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\), without \(Q\) or the original \(M\). Let</p>
   \[
   X_{\mathrm{obs},t}=M\odot(\alpha_tX_{\mathrm{obs}}+\sigma_t\epsilon),\quad
@@ -308,7 +320,7 @@ project_chapters:
   \]</div>
   <p>Here, single-step means one denoising prediction near zero noise; \(K\) contexts still require \(K\) model evaluations. The average fills missing locations within the valid domain, while the supplied real observations are written back to the output. For reconstruction tasks with concentrated posteriors, the conditional mean can serve as a representative answer. Representing multiple possible completions requires further consideration of multistep generation.</p>
   <div class="incomplete-theorem" id="theorem-ensemble-limit">
-  <h4>Theorem 4 · Ensembling reduces variance while retaining information gaps and systematic bias</h4>
+  <h4>Theorem 5 · Ensembling reduces variance while retaining information gaps and systematic bias</h4>
 <p><strong>Assumption: an uncorrelated decomposition of ensemble error.</strong></p>
   <p>Write the model output as</p>
   \[
@@ -384,7 +396,7 @@ project_chapters:
   <h3>From handcrafted rules to intersections of a mask distribution</h3>
   <p>When the sensing mechanism is known, pixels can be sampled pixelwise and blocks as whole blocks. Real satellite occlusions, however, involve cloud clusters, narrow tracks, and complex boundaries that are difficult to capture with a single rule. A more general approach is to learn the observation-mask distribution and generate context by intersecting two masks. Observation-Aligned Mask Priors (OAMP) makes this step learnable.</p>
   <div class="incomplete-theorem" id="ocean-theorem-intersection">
-  <h4>Theorem 5 · Conditional query positivity from independent mask intersections</h4>
+  <h4>Theorem 6 · Conditional query positivity from independent mask intersections</h4>
 <p><strong>Assumption: complete intersection coverage.</strong></p>
   <p>Let the support of the real binary observation-mask distribution be \(S=\{\boldsymbol{x}\in\{0,1\}^d:P(\boldsymbol{M}=\boldsymbol{x})&gt;0\}\). Call \(\boldsymbol{m}\) a valid context mask if and only if there exist \(\boldsymbol{x},\boldsymbol{y}\in S\) such that \(\boldsymbol{x}\odot\boldsymbol{y}=\boldsymbol{m}\). For every such \(\boldsymbol{m}\) and every coordinate with \(m_i=0\), assume that there exist \(\boldsymbol{M}_a,\boldsymbol{M}_b\in S\) satisfying both</p>
   \[
@@ -425,7 +437,7 @@ project_chapters:
   \]</div>
   <p>Softmax acts along the class axis of each pixel. The network sees probability vectors and outputs predicted probabilities for clean classes; arbitrary spatial dependencies between pixels are allowed. Here \(\kappa\) distinguishes this scale from the earlier ensemble size. Below we retain the scaling notation \(K\equiv\kappa\) used in the mathematical statements.</p>
   <div class="incomplete-theorem" id="ocean-theorem-softmax">
-  <h4>Theorem 6 · Softmax factorization</h4>
+  <h4>Theorem 7 · Softmax factorization</h4>
   <p>Suppose \(h:\mathbb{R}^{C}\to\mathbb{R}^{m}\) satisfies, for every \(\boldsymbol{x}\in\mathbb{R}^{C}\) and \(a\in\mathbb{R}\), \(h(\boldsymbol{x}+a\boldsymbol{1})=h(\boldsymbol{x})\). Define the relative interior of the probability simplex as</p>
   \[
     \Delta^{C-1}_{\circ}=\operatorname{ri}(\Delta^{C-1})
@@ -440,7 +452,7 @@ project_chapters:
   <p>Finite logits do not reach the simplex boundary, so the theorem does not specify boundary values. If a continuous extension to the closed simplex exists, it is unique; continuity of \(h\) alone does not guarantee its existence. For example, \(h(\boldsymbol{x})=x_1-x_2\) corresponds to \(g(\boldsymbol{p})=\log(p_1/p_2)\), which has no finite continuous extension to the entire boundary.</p>
 </div>
   <div class="incomplete-theorem" id="ocean-theorem-posterior">
-  <h4>Theorem 7 · Shift invariance of the optimal data predictor</h4>
+  <h4>Theorem 8 · Shift invariance of the optimal data predictor</h4>
   <p>Let \(c\in\{1,\ldots,C\}\) have prior \(\pi_j=P(c=j)\), let \(K&gt;0\), and set \(\boldsymbol{x}_0=K\boldsymbol{e}_c\). Fix time \(t\) and suppose</p>
   \[
     \boldsymbol{x}_t=\alpha_tK\boldsymbol{e}_c+\sigma_t\boldsymbol{\epsilon},
@@ -463,15 +475,15 @@ project_chapters:
 </div>
   <p>These two results answer a key architectural question: discarding the common shift of the logits loses no information needed by the optimal data predictor. The full score, however, includes a linear latent-variable term and cannot itself be treated as a shift-invariant function.</p>
   <div class="incomplete-theorem" id="ocean-theorem-reparameterization">
-  <h4>Theorem 8 · Exact reparameterization of discrete data matching and noise matching</h4>
-  <p>Let \(\boldsymbol{x}_0=K\boldsymbol{e}_c\), \(K&gt;0\), and \(\boldsymbol{x}_t=\alpha_t\boldsymbol{x}_0+\sigma_t\boldsymbol{\epsilon}\), with independent noise \(\boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C)\). The following equalities apply at nondegenerate times with \(\alpha_t&gt;0\) and \(\sigma_t&gt;0\); endpoints require separate limits. Assume strictly positive time weights, finite expectations, and the same time-sampling distribution. If \(s_t^*=\nabla_{\boldsymbol{x}}\log p_t\), the population-optimal predictors under squared loss are</p>
+  <h4>Theorem 9 · Exact reparameterization of discrete data matching and noise matching</h4>
+  <p>Let \(\boldsymbol{x}_0=K\boldsymbol{e}_c\), \(K&gt;0\), and \(\boldsymbol{x}_t=\alpha_t\boldsymbol{x}_0+\sigma_t\boldsymbol{\epsilon}\), with independent noise \(\boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C)\). The following equalities apply at nondegenerate times with \(\alpha_t&gt;0\) and \(\sigma_t&gt;0\); endpoints require separate limits. Assume strictly positive time weights, finite expectations, and the same time-sampling distribution. The population-optimal predictors under squared loss are</p>
   \[
     \boldsymbol{\epsilon}_t^*(\boldsymbol{x})
     =\mathbb{E}[\boldsymbol{\epsilon}\mid\boldsymbol{x}_t=\boldsymbol{x}]
-    =-\sigma_t\boldsymbol{s}_t^*(\boldsymbol{x}),
+    =-\sigma_t\nabla_{\boldsymbol x}\log p_t(\boldsymbol x),
     \qquad
     D_t^*(\boldsymbol{x})
-    =\frac{\boldsymbol{x}+\sigma_t^2\boldsymbol{s}_t^*(\boldsymbol{x})}{\alpha_t}.
+    =\frac{\boldsymbol{x}+\sigma_t^2\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)}{\alpha_t}.
   \]
   <p>Define the class-probability network and its corresponding noise predictor as</p>
   \[
@@ -496,14 +508,13 @@ project_chapters:
   \]
   <p>With data weight \(w(t)=w_{\mathrm{NM}}(t)\alpha_t^2K^2/\sigma_t^2\), the discrete data-matching loss and this noise-matching loss are exactly equal. Other strictly positive time weights have the same population optimum at each time for unrestricted predictors, but neither equal objectives nor identical optimal parameters are guaranteed for finite-capacity models. For complete masks, sum the equalities over all pixel-class coordinates.</p>
   \[
-    \boldsymbol{s}_{\theta}(t,\boldsymbol{x})
-    =-\frac{\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})}{\sigma_t}
+    -\frac{\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})}{\sigma_t}
     =\frac{\alpha_tK\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}))-\boldsymbol{x}}{\sigma_t^2}.
   \]
   <p>When the predicted class probabilities equal the true posterior, this expression equals the true score. The data predictor is shift invariant, whereas the full score and noise predictor satisfy, respectively,</p>
   \[
-    \boldsymbol{s}_t^*(\boldsymbol{x}+a\boldsymbol{1})
-    =\boldsymbol{s}_t^*(\boldsymbol{x})-\frac{a}{\sigma_t^2}\boldsymbol{1},
+    \left.\nabla_{\boldsymbol u}\log p_t(\boldsymbol u)\right|_{\boldsymbol u=\boldsymbol x+a\boldsymbol 1}
+    =\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)-\frac{a}{\sigma_t^2}\boldsymbol{1},
     \qquad
     \boldsymbol{\epsilon}_t^*(\boldsymbol{x}+a\boldsymbol{1})
     =\boldsymbol{\epsilon}_t^*(\boldsymbol{x})+\frac{a}{\sigma_t}\boldsymbol{1}.
@@ -534,7 +545,7 @@ project_chapters:
   \]</div>
   <p>Guidance acts on the latent variables during reverse sampling, with \(w_g\) controlling its strength. The loss is normalized over the whole spatial domain, so variation in the number of observations per sample does not directly change the denominator. After generation, use \(\boldsymbol M_{\mathrm{ctx}}=\boldsymbol M\odot\widehat{\boldsymbol M}\) and \(\boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\widehat{\boldsymbol M})\). Anchors constrain generation; they are not new field measurements.</p>
   <div class="incomplete-theorem" id="ocean-theorem-guided">
-  <h4>Theorem 9 · Marginal query positivity under capacity-guided partitioning</h4>
+  <h4>Theorem 10 · Marginal query positivity under capacity-guided partitioning</h4>
 <p><strong>Assumption: complete coverage at a fixed intersection capacity.</strong></p>
   <p>Fix an observation mask \(\boldsymbol{M}\in\{0,1\}^d\), and write \(|\boldsymbol{M}|=\sum_iM_i\) for the number of valid observations. Let \(C_k\) denote the hard constraint satisfied by the generated mask:</p>
   \[
@@ -581,7 +592,7 @@ project_chapters:
   <h2><span class="retro-chapter__number">07</span> Why are structural priors still needed when conditional supervision is valid?</h2>
   <p class="retro-lede">A model may learn effective predictions at supervised conditional states yet still be unable to uniquely determine an arbitrary complete joint distribution from all the fragments. These two questions concern different objects.</p>
   <div class="incomplete-theorem" id="theorem-never-complete">
-  <h4>Theorem 10 · Unrestricted complete-field distributions are not generally identifiable from observations that are never complete</h4>
+  <h4>Theorem 11 · Unrestricted complete-field distributions are not generally identifiable from observations that are never complete</h4>
   <p>Vectorize the complete field within the valid domain as \(\boldsymbol{x}_0\in\mathbb R^d\). Let the binary observation mask \(\boldsymbol M\) have a fixed, known distribution \(q\), independent of \(\boldsymbol{x}_0\). If \(\Pr_q(\boldsymbol M=\boldsymbol 1_d)=0\), then within the unrestricted class of all probability distributions on \(\mathbb R^d\), the complete-field distribution cannot be identified from \((\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M)\). Therefore, no recovery algorithm is consistent for every complete-field distribution in this class.</p>
   <p>Specifically, define the observation operator</p>
   <div class="retro-equation">\[\mathcal T_q(P)=\operatorname{Law}_{P,q}(\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M).\]</div>
