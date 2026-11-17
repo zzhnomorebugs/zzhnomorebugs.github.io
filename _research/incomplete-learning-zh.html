@@ -160,54 +160,14 @@ project_chapters:
   <p>其中 \(C\) 与 \(\theta\) 无关，因此拟合可计算的条件核目标，与拟合未知的边缘 score 具有相同的总体最优解。令 \(w(t)=\lambda(t)/\sigma_t^2\)，目标就成为<a href="#reference-ddpm">噪声预测损失</a>。下面把它与干净数据预测的目标统一写成一个定理。</p>
   <div class="incomplete-theorem" id="theorem-diffusion-objectives">
   <h4>Theorem 1 · 噪声匹配与数据匹配恢复同一个 score</h4>
-  <p>设 \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\)，其中 \(\boldsymbol x_0\) 具有有限二阶矩，\(\boldsymbol\epsilon\sim\mathcal N(0,I)\) 且独立于 \(\boldsymbol x_0\)。独立地从固定分布采样 \(t\)，该分布在训练区间上具有正密度；区间内 \(\alpha_t,\sigma_t&gt;0\)，例如取 \([\delta,T]\)、\(\delta&gt;0\)。若时间权重 \(w(t),v(t)\) 严格为正，相关期望有限，则下列平方误差目标在不受模型容量限制时，几乎处处具有对应的总体最优预测函数：</p>
+  <p>在高斯加噪模型 \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\) 下，设 \(\boldsymbol x_0\) 具有有限二阶矩，\(\boldsymbol\epsilon\sim\mathcal N(0,I)\) 且独立于 \(\boldsymbol x_0\)，\(t\) 独立采样，训练区间内 \(\alpha_t,\sigma_t&gt;0\)。若时间权重 \(w(t)\) 严格为正、相关期望有限，则两种目标及其非受限总体最优预测函数几乎处处满足</p>
   <div class="retro-equation">\[
   \begin{aligned}
-    \mathcal L_{\mathrm{noise}}(\theta)
-      &=\mathbb E\!\left[w(t)
-        \|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\|_2^2\right],\\
-    \epsilon_\theta^*(\boldsymbol x_t,t)
-      &=\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\\
-      &=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t),\\[0.8em]
-    \mathcal L_{\mathrm{data}}(\theta)
-      &=\mathbb E\!\left[v(t)
-        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right],\\
-    D_\theta^*(\boldsymbol x_t,t)
-      &=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\\
-      &=\frac{\boldsymbol x_t+\sigma_t^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)}{\alpha_t}.
+    \mathcal L_{\mathrm{noise}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\right\|^2\right],\quad &\epsilon_\theta^*(\boldsymbol x_t,t)&=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t);\\[0.8em]
+    \mathcal L_{\mathrm{data}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\right\|^2\right],\quad &D_\theta^*(\boldsymbol x_t,t)&=\frac{1}{\alpha_t}\boldsymbol x_t+\frac{\sigma_t^2}{\alpha_t}\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t).
   \end{aligned}
   \]</div>
-  <p><strong>目标函数的精确等价。</strong>用下式在两种网络输出之间作可逆转换。当权重满足 \(v(t)=w(t)\alpha_t^2/\sigma_t^2\) 时，两个损失严格相等：</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \epsilon_\theta(\boldsymbol x_t,t)
-      &=\frac{\boldsymbol x_t-\alpha_tD_\theta(\boldsymbol x_t,t)}{\sigma_t},\\
-    \epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon
-      &=\frac{\alpha_t}{\sigma_t}
-        \left(\boldsymbol x_0-D_\theta(\boldsymbol x_t,t)\right),\\
-    \mathcal L_{\mathrm{noise}}(\theta)
-      &=\mathbb E\!\left[w(t)\frac{\alpha_t^2}{\sigma_t^2}
-        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right]\\
-      &=\mathcal L_{\mathrm{data}}(\theta).
-  \end{aligned}
-  \]</div>
-  <p><strong>证明。</strong>分别取目标 \(\boldsymbol Y=\boldsymbol\epsilon\) 或 \(\boldsymbol Y=\boldsymbol x_0\)。对于任意预测 \(h=h(\boldsymbol x_t,t)\)，条件平方误差可分解为</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \mathbb E[\|h-\boldsymbol Y\|_2^2\mid\boldsymbol x_t,t]
-      &=\left\|h-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2\\
-      &\quad+\mathbb E\!\left[
-        \left\|\boldsymbol Y-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2
-        \mid\boldsymbol x_t,t\right].
-  \end{aligned}
-  \]</div>
-  <p>第二项与 \(h\) 无关，因此对应的条件均值使任意正时间权重下的损失最小。上面的高斯核恒等式给出最优噪声预测与 score 的关系；再对加噪方程取条件期望，得到</p>
-  <div class="retro-equation">\[
-    \alpha_tD_\theta^*(\boldsymbol x_t,t)
-      +\sigma_t\epsilon_\theta^*(\boldsymbol x_t,t)=\boldsymbol x_t.
-  \]</div>
-  <p>代入最优噪声预测，即得 \(D_\theta^*\) 的表达式。最后，输出转换直接给出逐样本残差恒等式，从而得到两种目标在匹配权重下的精确相等。</p>
-  <p class="incomplete-scope"><strong>适用范围。</strong>任意严格为正的时间权重都保留这些非受限总体最优解，但一般不能使损失数值相等，也不能保证有限容量网络的训练表现相同。无权重噪声 MSE，即 \(w(t)=1\)，对应 \(\lambda(t)=\sigma_t^2\)。训练标签是实际采到的噪声或干净场；最优预测是它们的条件均值，而不是唯一还原某一次具体实现。</p>
+  <p>这两个最优预测分别是条件均值 \(\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\) 与 \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\)。正时间权重不改变这些逐点总体最优解；使用相同权重并不表示两个损失的数值相等。</p>
   </div>
 
   <h3 id="diffusion-data-matching">3. 将干净数据预测代回反向动力学</h3>

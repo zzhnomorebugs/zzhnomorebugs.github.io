@@ -160,54 +160,14 @@ project_chapters:
   <p>Here \(C\) is independent of \(\theta\), so fitting the computable conditional-kernel target has the same population minimizer as fitting the unknown marginal score. With \(w(t)=\lambda(t)/\sigma_t^2\), the objective becomes the <a href="#reference-ddpm">noise-prediction loss</a>. The following theorem collects this objective and its clean-data counterpart.</p>
   <div class="incomplete-theorem" id="theorem-diffusion-objectives">
   <h4>Theorem 1 · Noise matching and data matching recover the score</h4>
-  <p>Let \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\), where \(\boldsymbol x_0\) has finite second moment and \(\boldsymbol\epsilon\sim\mathcal N(0,I)\) is independent of \(\boldsymbol x_0\). Sample \(t\) independently from a fixed distribution with positive density on a training interval where \(\alpha_t,\sigma_t&gt;0\), for example \([\delta,T]\) with \(\delta&gt;0\). For strictly positive weights \(w(t),v(t)\) and finite relevant expectations, the squared-error objectives below have the following unrestricted population-optimal predictors, almost surely:</p>
+  <p>Under the Gaussian noising model \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\), assume that \(\boldsymbol x_0\) has finite second moment, \(\boldsymbol\epsilon\sim\mathcal N(0,I)\) is independent of \(\boldsymbol x_0\), and \(t\) is sampled independently on a training interval where \(\alpha_t,\sigma_t&gt;0\). For a strictly positive time weight \(w(t)\) and finite relevant expectations, the objectives and their unrestricted population-optimal predictors are, almost surely,</p>
   <div class="retro-equation">\[
   \begin{aligned}
-    \mathcal L_{\mathrm{noise}}(\theta)
-      &=\mathbb E\!\left[w(t)
-        \|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\|_2^2\right],\\
-    \epsilon_\theta^*(\boldsymbol x_t,t)
-      &=\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\\
-      &=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t),\\[0.8em]
-    \mathcal L_{\mathrm{data}}(\theta)
-      &=\mathbb E\!\left[v(t)
-        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right],\\
-    D_\theta^*(\boldsymbol x_t,t)
-      &=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\\
-      &=\frac{\boldsymbol x_t+\sigma_t^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)}{\alpha_t}.
+    \mathcal L_{\mathrm{noise}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\right\|^2\right],\quad &\epsilon_\theta^*(\boldsymbol x_t,t)&=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t);\\[0.8em]
+    \mathcal L_{\mathrm{data}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\right\|^2\right],\quad &D_\theta^*(\boldsymbol x_t,t)&=\frac{1}{\alpha_t}\boldsymbol x_t+\frac{\sigma_t^2}{\alpha_t}\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t).
   \end{aligned}
   \]</div>
-  <p><strong>Exact objective equality.</strong> Relate the two network outputs by the invertible conversion below. The losses are then exactly equal when their weights satisfy \(v(t)=w(t)\alpha_t^2/\sigma_t^2\):</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \epsilon_\theta(\boldsymbol x_t,t)
-      &=\frac{\boldsymbol x_t-\alpha_tD_\theta(\boldsymbol x_t,t)}{\sigma_t},\\
-    \epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon
-      &=\frac{\alpha_t}{\sigma_t}
-        \left(\boldsymbol x_0-D_\theta(\boldsymbol x_t,t)\right),\\
-    \mathcal L_{\mathrm{noise}}(\theta)
-      &=\mathbb E\!\left[w(t)\frac{\alpha_t^2}{\sigma_t^2}
-        \|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\|_2^2\right]\\
-      &=\mathcal L_{\mathrm{data}}(\theta).
-  \end{aligned}
-  \]</div>
-  <p><strong>Proof.</strong> For either target \(\boldsymbol Y=\boldsymbol\epsilon\) or \(\boldsymbol Y=\boldsymbol x_0\), and any prediction \(h=h(\boldsymbol x_t,t)\), conditional squared error decomposes as</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \mathbb E[\|h-\boldsymbol Y\|_2^2\mid\boldsymbol x_t,t]
-      &=\left\|h-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2\\
-      &\quad+\mathbb E\!\left[
-        \left\|\boldsymbol Y-\mathbb E[\boldsymbol Y\mid\boldsymbol x_t,t]\right\|_2^2
-        \mid\boldsymbol x_t,t\right].
-  \end{aligned}
-  \]</div>
-  <p>The second term is independent of \(h\), so the corresponding conditional mean minimizes either positively weighted loss. The Gaussian-kernel identity above gives the optimal noise predictor's relation to the score. Taking conditional expectations of the noising equation gives</p>
-  <div class="retro-equation">\[
-    \alpha_tD_\theta^*(\boldsymbol x_t,t)
-      +\sigma_t\epsilon_\theta^*(\boldsymbol x_t,t)=\boldsymbol x_t.
-  \]</div>
-  <p>Substituting the optimal noise predictor gives the displayed formula for \(D_\theta^*\). Finally, the output conversion gives the samplewise residual identity and hence the equality of the two reweighted objectives.</p>
-  <p class="incomplete-scope"><strong>Scope.</strong> Arbitrary strictly positive time weights preserve these unrestricted population optima, but do not in general make the losses equal or yield identical training behavior for finite-capacity networks. Unweighted noise MSE, \(w(t)=1\), corresponds to \(\lambda(t)=\sigma_t^2\). Each training label is the sampled noise or clean field; the optimal prediction is its conditional mean, rather than a uniquely recovered realization.</p>
+  <p>These optimal predictors are the conditional means \(\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\) and \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\), respectively. Positive time weights preserve these pointwise population optima; using the same weight does not make the two losses numerically equal.</p>
   </div>
 
   <h3 id="diffusion-data-matching">3. Use clean-data predictions in the reverse dynamics</h3>
