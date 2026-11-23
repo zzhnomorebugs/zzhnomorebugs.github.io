@@ -6,7 +6,7 @@
 
   var chapters = Array.prototype.slice.call(project.querySelectorAll(".retro-chapter"));
   var outline = Array.prototype.slice.call(project.querySelectorAll(".retro-outline a"));
-  var references = Array.prototype.slice.call(project.querySelectorAll('.retro-content a[href^="#reference-"]'));
+  var references = Array.prototype.slice.call(project.querySelectorAll('.retro-content a[href^="#reference-"], .incomplete-project .retro-content a[href^="#"]'));
   if (!chapters.length) return;
 
   var scheduled = false;
