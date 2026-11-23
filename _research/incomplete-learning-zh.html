@@ -16,7 +16,7 @@ project_area_en: "Incomplete observations · Physical field reconstruction"
 order: 3
 published: true
 read_time: false
-date: 2026-11-23
+date: 2026-11-24
 index_title: "从不完整观测学习：信息边界、有效监督与场重建"
 index_title_en: "Learning from incomplete observations: Information limits, supervision, and field reconstruction"
 excerpt: "从不完整观测的信息边界出发，理解条件预测如何获得监督，再让训练划分适应真实观测形状，并通过局部估计与全局修正改善场重建。方法、实验证据和数学条件沿同一条问题链逐步展开。"
@@ -37,8 +37,6 @@ project_chapters:
     label: 局部估计与修正
   - id: incomplete-summary
     label: 回顾与边界
-  - id: incomplete-theory
-    label: 数学补充
 ---
 
 {% include base_path %}
@@ -73,7 +71,25 @@ project_chapters:
     </tbody></table>
   </div>
 
-  <p>这个例子指出：即使每个坐标都曾被测到，缺少共同观测仍可能留下无法判断的关联。在掩码独立于场、且每个样本都不完整的设定下，对不加限制的完整场分布，不存在普遍一致的恢复保证。<a href="#theorem-never-complete">完整命题与证明</a>给出了这一边界。</p>
+  <p>这个二维例子中的歧义可以推广到任意维度：只要每次观测都少了至少一个坐标，就可能有不同的完整关联产生完全相同的观测。下面明确这一结论的对象与假设。</p>
+<div class="incomplete-theorem" id="theorem-never-complete">
+  <h4>Theorem 1 · 从未完整观测时，非受限完整场分布不能普遍识别</h4>
+  <p>设完整场在有效区域向量化为 \(\boldsymbol{x}_0\in\mathbb R^d\)，二值观测掩码 \(\boldsymbol M\) 的分布 \(q\) 固定且已知，并且独立于 \(\boldsymbol{x}_0\)。若 \(\Pr_q(\boldsymbol M=\boldsymbol 1_d)=0\)，则在 \(\mathbb R^d\) 上所有概率分布组成的非受限类别中，完整场分布不能由 \((\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M)\) 识别。因此，不存在对这个类别内每一种完整场分布都一致的恢复算法。</p>
+  <p>具体地，定义观测算子</p>
+  <div class="retro-equation">\[\mathcal T_q(P)=\operatorname{Law}_{P,q}(\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M).\]</div>
+  <p>可识别性要求：对类别内所有 \(P_1,P_2\)，\(\mathcal T_q(P_1)=\mathcal T_q(P_2)\Rightarrow P_1=P_2\)。取 \(\boldsymbol{x}_0\in\{-1,+1\}^d\)，分别在下列两个互不相交、均有 \(2^{d-1}\) 个元素的集合上定义均匀分布 \(P_+,P_-\)：</p>
+  <div class="retro-equation">\[\mathcal X_+=\left\{\boldsymbol x:\prod_{i=1}^d x_i=+1\right\},\qquad\mathcal X_-=\left\{\boldsymbol x:\prod_{i=1}^d x_i=-1\right\}.\]</div>
+  <p>对任一真子集 \(S\subsetneq[d]\) 和任一符号赋值 \(\boldsymbol x_S\)，剩余坐标中至少有一个未赋值。在固定乘积的约束下，除最后一个符号外均可自由选择，因此两种分布下都恰有 \(2^{d-|S|-1}\) 个合法补全：</p>
+  <div class="retro-equation">\[P_+(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=P_-(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=\frac{2^{d-|S|-1}}{2^{d-1}}=2^{-|S|}.\]</div>
+  <p>对任一 \(q(m)>0\) 的掩码，\(S_m=\{i:m_i=1\}\subsetneq[d]\)。设 \(\boldsymbol Y=\boldsymbol M\odot\boldsymbol{x}_0\)，则条件观测律及其联合律相同：</p>
+  <div class="retro-equation">\[\begin{aligned}\operatorname{Law}_{P_+}(\boldsymbol Y\mid\boldsymbol M=m)&=\operatorname{Law}_{P_-}(\boldsymbol Y\mid\boldsymbol M=m),\\\Pr_{P_+,q}(\boldsymbol Y\in A,\boldsymbol M=m)&=q(m)\Pr_{P_+}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=q(m)\Pr_{P_-}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=\Pr_{P_-,q}(\boldsymbol Y\in A,\boldsymbol M=m).\end{aligned}\]</div>
+  <p>故 \(\mathcal T_q(P_+)=\mathcal T_q(P_-)\)，但 \(P_+\ne P_-\)。从任意 \(n\) 个独立同分布的观测对得到的估计器 \(\widehat P_n\)，在这两个世界中具有相同的输出分布（内部随机性可作相同耦合），不能分别收敛到两个不同的真分布。</p>
+  <p>二维时，令 \(\boldsymbol M=(1,0)\) 或 \((0,1)\)，各以 \(1/2\) 的概率出现并独立于场。取</p>
+  <div class="retro-equation">\[\begin{aligned}P_1((1,1))=P_1((-1,-1))&=\tfrac12,\\P_2((1,-1))=P_2((-1,1))&=\tfrac12.\end{aligned}\]</div>
+  <p>两个完整场的相关结构相反，却给出同一观测律；只观测 \(x_{0,1}\) 时，缺失坐标的条件均值分别是</p>
+  <div class="retro-equation">\[\mathbb E_{P_1}[x_{0,2}\mid x_{0,1}]=x_{0,1},\qquad\mathbb E_{P_2}[x_{0,2}\mid x_{0,1}]=-x_{0,1}.\]</div>
+  <p>这说明缺乏联合暴露会产生预测歧义。结论不排除引入结构假设后的可识别性，也不否定有正查询暴露状态上的监督学习；这里的掩码独立假设仅用于本定理，真实海洋实验仍使用实际采集掩码。</p>
+</div>
   <p>信息边界并不否定所有重建任务。已有测量可以监督它们实际支持的条件关系，物理场中重复出现的空间结构也可以通过建模假设被利用。需要分别回答：观测允许学到哪些预测，训练如何提供这些监督，以及模型怎样利用有限证据。</p>
   <div class="retro-callout"><strong>在可用证据内学习</strong><p>先从条件预测理解重建，再把已有观测转化为训练目标，让训练任务适应真实观测形状，最后组织局部估计与全域修正。整个过程不增加原本缺失的真值，也不把良好的重建表现当作任意完整分布可识别的证明。</p></div>
 </section>
@@ -83,24 +99,91 @@ project_chapters:
   <p class="retro-kicker">Conditional prediction and generation</p>
   <h2><span class="retro-chapter__number">02</span> 条件预测如何连接场重建与生成</h2>
 <p class="retro-lede">先暂时假设训练数据完整，看看条件预测如何连接场重建与生成。人为规定的加噪过程逐渐扰动物理场，模型学习预测干净场，再把预测转化为反向更新所需的 score。</p>
-  <h3>从完整场构造带噪输入</h3>
-  <p>固定一张物理场快照，按扩散时间 \(t\) 增加高斯噪声。扩散时间控制噪声强度，与场自身随物理时间演化的帧序号不同：</p>
-  <div class="retro-equation incomplete-math-key">\[
-    \boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon,
-    \qquad \boldsymbol\epsilon\sim\mathcal N(0,I),\quad\boldsymbol\epsilon\perp\boldsymbol x_0.
+  <h3 id="diffusion-forward">1. 明确定义加噪过程，以及反向 SDE / ODE</h3>
+  <p>设完整场 \(\boldsymbol x_0\sim p_{\mathrm{data}}\) 位于 \(\mathbb R^d\)，且二阶矩有限。考虑下面这个线性、各向同性的 Itô SDE，其中 \(\boldsymbol W_t\) 是标准 \(d\) 维布朗运动，\(f(t)\) 是标量漂移系数，\(g(t)\ge0\) 是标量扩散系数：</p>
+  <div class="retro-equation">\[
+    \mathrm d\boldsymbol x_t=f(t)\boldsymbol x_t\,\mathrm dt+g(t)\,\mathrm d\boldsymbol W_t,
+    \qquad 0\le t\le T.
   \]</div>
-  <p>\(\alpha_t\) 和 \(\sigma_t\) 是预先指定的信号与噪声调度。模型接收带噪场及其噪声时刻，预测干净场 \(D_\theta(\boldsymbol x_t,t)\)。</p>
-<figure class="retro-figure incomplete-diffusion-figure">
+  <p><strong>\(f(t)\)、\(g(t)\) 都是训练前人为指定的调度函数，可以视为函数形式的超参数。</strong>它们不是需要从数据中拟合的神经网络。对于这个线性 SDE，加噪分布是高斯分布；用信号与噪声调度，可以在任意指定时刻直接构造带噪训练输入：</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+      &=\mathcal N(\alpha_t\boldsymbol x_0,\sigma_t^2 I),\\
+    \boldsymbol x_t&=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon,
+      \qquad \boldsymbol\epsilon\sim\mathcal N(0,I),\quad \boldsymbol\epsilon\perp\boldsymbol x_0,\\
+    \alpha_0&=1,\qquad\sigma_0=0.
+  \end{aligned}
+  \]</div>
+  <p>因此，\(\alpha_t\) 控制干净信号的缩放，\(\sigma_t\) 是给定干净样本时的噪声标准差。这个重参数化描述的是固定时刻的转移分布；把同一个 \(\boldsymbol\epsilon\) 固定下来用于所有时刻，一般不会得到原 SDE 的样本路径。可微的调度曲线与 SDE 系数之间满足</p>
+  <div class="retro-equation">\[
+    f(t)=\frac{\alpha_t'}{\alpha_t},
+    \qquad
+    g(t)^2=\frac{\mathrm d\sigma_t^2}{\mathrm dt}-2f(t)\sigma_t^2\ge0.
+  \]</div>
+  <p>非负条件意味着 \(\alpha_t\)、\(\sigma_t\) 不能毫无限制地独立指定。例如 variance-preserving（VP）调度满足 \(\sigma_t^2=1-\alpha_t^2\)，其中 \(\alpha_t\) 随时间递减。当 \(\alpha_T\) 足够小时，\(p_T\) 近似为 \(\mathcal N(0,I)\)；有限终止时间下通常不是严格相等。</p>
+
+  <figure class="retro-figure incomplete-diffusion-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-zh.webp"><picture><source media="(max-width: 740px)" srcset="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-zh-mobile.webp" width="725" height="3600"><img src="{{ base_path }}/images/research/incomplete-learning/diffusion-ns-zh.webp" width="1687" height="662" loading="lazy" alt="同一张Navier–Stokes涡量快照逐步加入高斯扩散噪声，沿用后文NS示例的蓝白红色图和共同显示范围"></picture></a>
     <figcaption class="retro-figure__caption">图 2 · 对数值模拟的 Navier–Stokes 涡量快照进行正向扩散加噪。物理快照保持不变，增加的是扩散时间。所有面板沿用后文 NS 示例的蓝白红色图和 −1 到 1 的共同显示范围；超出范围的数值仅在显示时截断。</figcaption>
   </figure>
-  <h3>平方误差学习条件均值，条件均值给出 score</h3>
-  <p>用完整干净场作为目标计算平方误差。在有限二阶矩、严格正时间权重和非受限预测器的总体极限下，最优预测为 \(D^*(\boldsymbol x_t,t)=\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\)。在 \(\alpha_t,\sigma_t&gt;0\) 的高斯加噪模型下，它与带噪分布的 score 满足：</p>
-  <div class="retro-equation incomplete-math-key">\[
-    \nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)
-      =\frac{\alpha_tD^*(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
+  <p>记 \(p_t(\boldsymbol x)=\int q_t(\boldsymbol x\mid\boldsymbol x_0)p_{\mathrm{data}}(\boldsymbol x_0)\,\mathrm d\boldsymbol x_0\)，其<strong>边缘分布的 score</strong> 为 \(\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)\)。在通常的正则条件下，对应的<a href="#reference-score-sde">反向 SDE 与 probability flow ODE</a> 为</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \text{Reverse SDE:}\quad
+    \mathrm d\boldsymbol x_t
+      &=\left[f(t)\boldsymbol x_t-g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt
+        +g(t)\,\mathrm d\overline{\boldsymbol W}_t,\\
+    \text{Probability flow ODE:}\quad
+    \mathrm d\boldsymbol x_t
+      &=\left[f(t)\boldsymbol x_t-\tfrac12 g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt.
+  \end{aligned}
   \]</div>
-  <p>因此可以通过预测干净场来学习反向更新。实际网络近似这个条件均值；预测噪声是另一种参数化。<a href="#theorem-diffusion-objectives">两种目标与 score 的关系</a>以及<a href="#diffusion-forward">反向 SDE / ODE 的完整形式</a>在数学补充中展开。</p>
+  <p><strong>用于生成时，两式都从 \(T\) 积分到 \(0\)，因此 \(\mathrm dt&lt;0\)。</strong>\(\overline{\boldsymbol W}_t\) 是反向时间中的布朗运动，增量协方差为 \(-\mathrm dt\,I\)。从 \(\boldsymbol x_T\sim p_T\) 出发，两种精确动力学都能恢复数据分布。ODE 在给定随机初值后是确定的；它并不是把某一次正向布朗噪声的具体实现逐步撤销。</p>
+  <h3 id="diffusion-noise-matching">2. 从 score matching 到 noise matching 与 data matching</h3>
+  <p>反向漂移中的 \(f\)、\(g\) 已知，<strong>需要学习的只有依赖数据分布的 score \(\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\)</strong>。它没有直接可用的标签，但给定干净样本后的高斯核 score 可以显式计算。对边缘密度在积分号内求导，得到</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+      &=-\frac{\boldsymbol x_t-\alpha_t\boldsymbol x_0}{\sigma_t^2}\\
+      &=-\frac{\boldsymbol\epsilon}{\sigma_t},\\
+    \nabla_{\boldsymbol x}\log p_t(\boldsymbol x)
+      &=\mathbb E\!\left[\nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
+         \mid\boldsymbol x_t=\boldsymbol x,t\right]\\
+      &=-\frac{1}{\sigma_t}\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t=\boldsymbol x,t].
+  \end{aligned}
+  \]</div>
+  <p>独立于 \(\boldsymbol x_0\)、\(\boldsymbol\epsilon\) 采样 \(t\)，并将学习到的 score 参数化为 \(-\epsilon_\theta(\boldsymbol x_t,t)/\sigma_t\)。在非退化且相关加权二阶矩有限的训练区间上，取正时间权重 \(\lambda(t)\)，denoising score matching 满足</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \mathcal L_{\mathrm{DSM}}(\theta)
+      &=\mathbb E\!\left[\lambda(t)
+        \left\|\frac{-\epsilon_\theta(\boldsymbol x_t,t)+\boldsymbol\epsilon}{\sigma_t}\right\|_2^2\right]\\
+      &=\mathbb E\!\left[\lambda(t)
+        \left\|-\frac{\epsilon_\theta(\boldsymbol x_t,t)}{\sigma_t}
+          -\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right\|_2^2\right]+C.
+  \end{aligned}
+  \]</div>
+  <p>其中 \(C\) 与 \(\theta\) 无关，因此拟合可计算的条件核目标，与拟合未知的边缘 score 具有相同的总体最优解。令 \(w(t)=\lambda(t)/\sigma_t^2\)，目标就成为<a href="#reference-ddpm">噪声预测损失</a>。下面把它与干净数据预测的目标统一写成一个定理。</p>
+  <div class="incomplete-theorem" id="theorem-diffusion-objectives">
+  <h4>Theorem 2 · 噪声匹配与数据匹配恢复同一个 score</h4>
+  <p>在高斯加噪模型 \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\) 下，设 \(\boldsymbol x_0\) 具有有限二阶矩，\(\boldsymbol\epsilon\sim\mathcal N(0,I)\) 且独立于 \(\boldsymbol x_0\)，\(t\) 独立采样，训练区间内 \(\alpha_t,\sigma_t&gt;0\)。若时间权重 \(w(t)\) 严格为正、相关期望有限，则两种目标及其非受限总体最优预测函数几乎处处满足</p>
+  <div class="retro-equation">\[
+  \begin{aligned}
+    \mathcal L_{\mathrm{noise}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\right\|^2\right],\quad &\epsilon_\theta^*(\boldsymbol x_t,t)&=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t);\\[0.8em]
+    \mathcal L_{\mathrm{data}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\right\|^2\right],\quad &D_\theta^*(\boldsymbol x_t,t)&=\frac{1}{\alpha_t}\boldsymbol x_t+\frac{\sigma_t^2}{\alpha_t}\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t).
+  \end{aligned}
+  \]</div>
+  <p>这两个最优预测分别是条件均值 \(\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\) 与 \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\)。正时间权重不改变这些逐点总体最优解；使用相同权重并不表示两个损失的数值相等。</p>
+  </div>
+
+  <h3 id="diffusion-data-matching">3. 将干净数据预测代回反向动力学</h3>
+  <p>完成 data matching 训练后，由预测的干净场构造 score 的近似：</p>
+  <div class="retro-equation">\[
+    \nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)
+      \approx\frac{\alpha_tD_\theta(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
+  \]</div>
+  <p>把它代回前面的反向 SDE 或 probability flow ODE 即可采样。完整样本来自跨噪声时刻的动力学积分；单次后验均值预测只是点估计。上述输出转换应避开奇异端点，数值实现通常在很小的正时间截断，或另设合适的端点处理。</p>
   <h3>给定观测后，生成缺失区域</h3>
   <p>无条件生成从高噪声状态出发，按从 \(T\) 到 \(0\) 的方向进行反向更新。补全则需要以给定的测量及其位置为条件，利用相应的条件 score 更新未知部分，并在输出中保留真实观测。条件均值提供点估计；表达多种可能补全还需要跨噪声时刻的采样过程。</p>
   <div class="retro-callout"><strong>训练目标从哪里来？</strong><p>完整数据下，干净场的每个坐标都能成为答案。现在训练样本本身不完整，只能从已有测量中构造目标。接下来保留平方误差的条件预测思路，重新分析输入是什么、哪些位置有监督，以及掩码损失究竟学到哪个条件均值。</p></div>
@@ -121,6 +204,19 @@ project_chapters:
     <li><strong>重建：集成子上下文预测</strong><span>在近零噪声时刻重复取上下文，平均预测并恢复给定观测。</span></li>
     <li><strong>生成：逐步反向更新</strong><span>在反向扩散的各步使用集成预测，生成可能的补全。</span></li>
   </ol>
+  <h3>符号与训练角色</h3>
+<div class="retro-table-scroll" tabindex="0" role="region" aria-label="主要符号">
+    <table class="retro-comparison incomplete-notation"><caption>表 2 · 主要符号与训练角色</caption>
+      <thead><tr><th scope="col">符号</th><th scope="col">含义</th><th scope="col">在训练中扮演的角色</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">\(\boldsymbol M\)</th><td>样本原始观测支持</td><td>固定不变，限定哪些值能够成为输入或目标</td></tr>
+        <tr><th scope="row">\(\boldsymbol M_{\mathrm{ctx}}\)</th><td>上下文 context</td><td>送入模型的观测子集，可在访问样本时重新采样</td></tr>
+        <tr><th scope="row">\(\boldsymbol M_{\mathrm{qry}}\)</th><td>查询 query</td><td>选择损失计算位置，不作为额外模型输入</td></tr>
+        <tr><th scope="row">\(\widehat{\boldsymbol M}\)</th><td>生成的观测形状</td><td>用于选择上下文，不生成场数值或伪标签</td></tr>
+        <tr><th scope="row">\(\boldsymbol\Pi_t\)</th><td>局部场先验</td><td>当前观测下的中间场估计，供全局模型修正</td></tr>
+      </tbody>
+    </table>
+  </div>
   <h3>训练：把一部分已有观测变成问题，另一部分变成答案</h3>
   <p>首先取 \(\boldsymbol M_{\mathrm{ctx}},\boldsymbol M_{\mathrm{qry}}\le\boldsymbol M\)。IDCD 的一般分析允许两者重叠，并不预设它们必须穷尽或互斥；后续的观测对齐方案采用明确的互斥划分 \(\boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\boldsymbol M_{\mathrm{ctx}})\)。所有监督值都来自原始可观测支持。</p>
   <div class="retro-equation">\[
@@ -136,17 +232,70 @@ project_chapters:
   \end{aligned}
   \]</div>
   <p>网络预测干净场，输入只有时间、带噪上下文和上下文掩码。查询掩码留在损失端。这种信息安排使一个上下文对应的所有有效查询共同约束预测，而不是让模型针对已知的评分位置做特殊处理。</p>
-
-  <h3>有查询机会的位置，才能得到条件监督</h3>
+  <h3 id="theorem-query-conditional-mean">有查询机会的位置，才能得到条件监督</h3>
   <p>令 \(Q=\boldsymbol M_{\mathrm{qry}}\)。给定输入 \((t,O_t)\)，如果坐标 \(i\) 以正概率被选为查询，掩码平方损失的总体最优预测为</p>
   <div class="retro-equation incomplete-math-key">\[
     f_i^*(t;O_t)=\mathbb E[\boldsymbol x_{0,i}\mid t,O_t,Q_i=1],
     \qquad \Pr(Q_i=1\mid t,O_t)&gt;0.
   \]</div>
-  <p>这首先是“被选为查询时”的条件均值。只有在给定输入后，查询选择与目标满足相应条件独立关系时，才可简化为 \(\mathbb E[\boldsymbol x_{0,i}\mid t,O_t]\)。若查询概率为零，该状态下的输出不受损失约束。<a href="#theorem-query-conditional-mean">一般查询目标</a>和<a href="#theorem-context-optimum">独立掩码下的特殊情形</a>需分别理解。</p>
+  <p>这首先是“被选为查询时”的条件均值。只有在给定输入后，查询选择与目标满足相应条件独立关系时，才可简化为 \(\mathbb E[\boldsymbol x_{0,i}\mid t,O_t]\)。若查询概率为零，该状态下的输出不受损失约束。如果进一步采用独立掩码，并满足下面的条件，就能同时刻画最优输出与各坐标的学习机会。</p>
+  <div class="incomplete-theorem" id="theorem-context-optimum">
+  <h4>Theorem 3 · 隐藏 query 信息时的最优预测与学习频率</h4>
+  <p>以下固定扩散时间 \(t\)，所有条件期望与概率均在该时间下理解。设完整数据为 \(X_0\)，原始观测为 \(X_{\mathrm{obs}}=M\odot X_0\)，其中 \(M\) 与数据独立。取 \(C=M_{\mathrm{ctx}}\subseteq M\)、\(Q=M_{\mathrm{qry}}\subseteq M\)，掩码抽样仅依赖观测结构；模型只接收 \(t\) 与 \(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\)，不接收 \(Q\) 或原始 \(M\)。令</p>
+  \[
+  X_{\mathrm{obs},t}=M\odot(\alpha_tX_{\mathrm{obs}}+\sigma_t\epsilon),\quad
+  \epsilon\sim\mathcal N(0,I),\qquad
+  \mathcal L=\|Q\odot(x_\theta(t,\mathrm{ctx})-X_{\mathrm{obs}})\|^2.
+  \]
+  <p>设 \(x_\theta^*\) 达到总体期望损失的最优解，相关二阶矩有限，且 \(X_0\) 与 \(Q\) 在给定 \(\mathrm{ctx}\) 后条件独立。固定 \(C\)，记 \(p_i=\mathbb P(Q_i=1\mid C)\)，并要求 \(\mathbb P(Q_i=1\mid\mathrm{ctx})=p_i\)。则：</p>
+  <p><strong>（i）最优输出。</strong></p>
+  \[
+  (x_\theta^*(t,\mathrm{ctx}))_i=
+  \begin{cases}
+  \mathbb E[(X_0)_i\mid\mathrm{ctx}],&p_i>0,\\
+  \text{任意值},&p_i=0.
+  \end{cases}
+  \]
+  <p>特别地，对给定 \(C\)，若所有可能 query 掩码的支持并集覆盖全部坐标，即 \(\bigcup_{Q:\,\mathbb P(Q\mid C)>0}\operatorname{supp}(Q)=\{1,\ldots,d\}\)，则</p>
+  \[
+  x_\theta^*(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}].
+  \]
+  <p><strong>（ii）梯度幅度。</strong>对固定 context 掩码下的抽样分布，在 \(p_i>0\) 时有</p>
+  \[
+  \frac{\partial\mathcal L}{\partial(x_\theta)_i}=2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i),
+  \]
+  \[
+  \mathbb E\left[\left(\frac{\partial\mathcal L}{\partial(x_\theta)_i}\right)^2\right]
+  =4p_i\mathbb E\left[((x_\theta)_i-(X_{\mathrm{obs}})_i)^2\mid Q_i=1\right].
+  \]
+  <p>在条件误差因子固定时，期望梯度平方随 \(p_i\) 线性变化。若 \(p_i=0\)，该坐标的损失梯度恒为零，此时无需定义零概率事件上的条件期望。</p>
+  <p><strong>（iii）更新机会。</strong>坐标 \(i\) 被纳入损失、能够贡献参数更新的概率为</p>
+  \[
+  \mathbb P(\text{坐标 }i\text{ 进入参数更新项}\mid C)
+  =\mathbb P(Q_i=1\mid C)=p_i.
+  \]
+  <p>该坐标的参数梯度贡献为 \(2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i)\,\partial(x_\theta)_i/\partial\theta\)。若被选中时残差与相应雅可比不为零，实际非零更新频率也等于 \(p_i\)；残差已为零时，进入损失并不意味着产生非零更新。</p>
+</div>
   <h3 id="incomplete-exposure">上下文的形状与大小，都在改变监督</h3>
   <p>一个样本没有测到的位置，仍可能在其他样本的相容上下文下成为 query。关键是给定这种上下文之后，该位置是否还有机会被观测并参与损失。对于整块缺失的数据，零散保留像素可能暴露原始缺失块的位置；按完整块取上下文则允许同一输入形状对应不同原始观测。图 3 展示了这一差别。</p>
-  <p>上下文还存在信息量与学习机会的权衡：保留过多，留给 query 的机会可能不足；保留过少，模型判断缺失区域的线索又会减少。因此，划分应兼顾可学习位置的覆盖和保留观测的信息量。<a href="#theorem-query-exposure">查询覆盖原则</a>进一步说明了正查询概率与学习频率的关系。</p>
+  <p>上下文还存在信息量与学习机会的权衡：保留过多，留给 query 的机会可能不足；保留过少，模型判断缺失区域的线索又会减少。因此，划分应兼顾可学习位置的覆盖和保留观测的信息量。把这种要求写成查询概率，可以看出哪些位置还缺少学习机会。</p>
+  <div id="theorem-query-exposure">
+  <p>有效的 context–query 抽样应满足以下两条条件。第一，对每个 context 以外的坐标 \(i\)，必须有正的条件 query 概率：</p>
+  \[
+  C_i=0\quad\Longrightarrow\quad\mathbb P(Q_i=1\mid C)>0.
+  \]
+  <p>第二，为了平衡各坐标的学习频率，这些概率应尽量接近：</p>
+  \[
+  \mathbb P(Q_i=1\mid C)\approx\mathbb P(Q_j=1\mid C),
+  \qquad\forall i,j:\ C_i=C_j=0.
+  \]
+  <p>由全概率公式，</p>
+  \[
+  \mathbb P(Q_i=1\mid C)
+  =\sum_M\mathbb P(Q_i=1\mid C,M)\mathbb P(M\mid C).
+  \]
+<p>因此，对每个待预测坐标，都需要存在与当前 \(C\) 相容、且具有正概率的原始掩码 \(M\)，其中该坐标被实际观测，并有机会被选为 query。近似均匀是平衡学习的设计目标；正查询概率是查询损失识别相应条件均值的关键条件。</p>
+</div>
   <h3 id="incomplete-ensemble">采样：用多个上下文的预测形成重建</h3>
   <p>训练时模型学会的是子上下文预测，推理时却拥有全部已给定观测。IDCD 先对这些观测施加一次近零噪声，再从同一份带噪观测里重复抽取上下文，分别预测并取平均；这一操作首先降低上下文抽样引起的方差。</p>
   <div class="retro-equation">\[
@@ -157,10 +306,58 @@ project_chapters:
     \qquad 0&lt;\delta\ll1.
   \]</div>
   <p>这里的 single-step 指一次接近零噪声时刻的去噪预测；\(K\) 个上下文仍需 \(K\) 次模型求值。平均结果用于补充有效域内的缺失位置，给定的真实观测则写回输出。对于后验较集中的重建任务，条件均值可以作为代表性答案；若要表示多种可能补全，则需进一步考虑多步生成。</p>
-    <p>在固定观测、独立抽取上下文及相应非相关误差分解条件下，集成的方差项按 \(1/K\) 衰减；平均模型偏差和子上下文相对全部观测的信息差仍可能留下误差底。<a href="#theorem-ensemble-limit">集成误差分解</a>给出了具体条件与极限。</p>
+    <p>平均次数增加时，哪些误差会缩小，哪些仍会留下？固定观测后，下面的分解把上下文抽样方差、信息差与系统偏差分别写出；其中的独立性与非相关条件需要明确保留。</p>
+  <div class="incomplete-theorem" id="theorem-ensemble-limit">
+  <h4>Theorem 4 · 集成降低方差，并保留信息差与系统偏差</h4>
+<p><strong>假设：集成误差的非相关分解。</strong></p>
+  <p>将模型输出写为</p>
+  \[
+  x_\theta(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}]+b(\mathrm{ctx})+\epsilon_{\mathrm{bias}}(\mathrm{ctx}),
+  \qquad\mathbb E[\epsilon_{\mathrm{bias}}]=0.
+  \]
+  <p>其中 \(b\) 是随 context 变化的确定性偏差，\(\epsilon_{\mathrm{bias}}\) 是零均值随机误差。所有项的二阶矩有限，并假设以下三个中心化分量两两不相关：</p>
+  \[
+  \mathbb E[X_0\mid\mathrm{ctx}]-\mathbb E[\mathbb E[X_0\mid\mathrm{ctx}]],\qquad
+  b(\mathrm{ctx})-\mathbb E[b(\mathrm{ctx})],\qquad
+  \epsilon_{\mathrm{bias}}(\mathrm{ctx}).
+  \]
+  <p>不同集成成员的随机误差 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(i)})\) 与 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(j)})\) 在 \(i\ne j\) 时独立。对固定完整观测的集成分析，下述中心化、不相关性和零均值均按给定该观测的条件分布理解。</p>
+  <p>设 \(\mathrm{obs}=(M\odot X_{\mathrm{obs},t},M)\) 为完整可用观测，\(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\) 为其子观测，\(C\subseteq M\) 的抽样不额外依赖数据值。令</p>
+  \[
+  \mu=\mathbb E[X_0\mid\mathrm{obs}],\qquad
+  \mu_c=\mathbb E[X_0\mid\mathrm{ctx}].
+  \]
+  <p>若相关二阶矩有限，并满足嵌套观测的塔式关系 \(\mathbb E[\mu\mid\mathrm{ctx}]=\mu_c\)，则 context 所丢失的信息对应以下均方差：</p>
+  \[
+  \mathbb E[\|\mu_c-\mu\|^2]
+  =\mathbb E[\operatorname{Var}(X_0\mid\mathrm{ctx})]
+  -\mathbb E[\operatorname{Var}(X_0\mid\mathrm{obs})].
+  \]
+  <p>这里向量方差表示协方差矩阵的迹，即均方欧氏偏差。进一步固定 \(\mathrm{obs}\)，独立同分布地抽取 \(K\) 个 context 掩码，并满足上述非相关误差分解。以 \(\mathbb E_c\)、\(\operatorname{Var}_c\) 表示给定该观测后的 context 与模型随机误差分布，令</p>
+  \[
+  \widehat\mu_K=\frac1K\sum_{k=1}^Kx_\theta(t,\mathrm{ctx}^{(k)}).
+  \]
+  <p>集成估计的均方误差精确分解为</p>
+  \[
+  \begin{aligned}
+  \mathbb E_c[\|\widehat\mu_K-\mu\|^2]
+  ={}&\left\|\underbrace{\mathbb E_c[\mu_c]-\mu}_{\text{信息差}}
+  +\underbrace{\mathbb E_c[b(\mathrm{ctx})]}_{\text{平均模型偏差}}\right\|^2\\
+  &+\frac1K\left(\underbrace{\operatorname{Var}_c(\mu_c)}_{\text{context 引入的方差}}
+  +\underbrace{\operatorname{Var}_c(b(\mathrm{ctx}))+\operatorname{Var}_c(\epsilon_{\mathrm{bias}})}_{\text{模型方差}}\right).
+  \end{aligned}
+  \]
+  <p>因此，</p>
+  \[
+  \lim_{K\to\infty}\mathbb E_c[\|\widehat\mu_K-\mu\|^2]
+  =\left\|\mathbb E_c[\mu_c]-\mu+\mathbb E_c[b(\mathrm{ctx})]\right\|^2.
+  \]
+  <p>数据方差、随 context 变化的偏差方差和随机误差方差都按 \(1/K\) 缩小；平均系统偏差并不随集成消失。只有 \(\mathbb E_c[\mu_c]+\mathbb E_c[b]=\mu\) 时，该极限才为零。</p>
+</div>
   <div class="retro-callout"><strong>集成降低方差，不自动消除信息缺口</strong><p>当 \(K\) 增大，随机上下文引起的方差项衰减；上下文不足和系统偏差形成的误差底仍可能存在。需要更好的上下文与更好的估计结构，不能只靠增加平均次数。</p></div>
   <h3>从单步重建到多步生成</h3>
-  <p>多步版本从高斯噪声开始。先固定上述近零噪声下的观测条件集成预测；反向扩散的每一步，再从当前完整生成状态抽取一个随机掩码，得到动态去噪预测，并与固定的观测条件预测作加权融合。更新时，已观测位置使用给定测量对应的噪声项，缺失位置使用融合预测对应的噪声项；最终仍写回原始观测。融合权重属于启发式实现选择，上述均值与平方误差结论本身不构成完整采样分布的恢复保证。</p>  <h3>结构化缺失：改变划分，就能显著改变学习结果</h3>
+  <p>多步版本从高斯噪声开始。先固定上述近零噪声下的观测条件集成预测；反向扩散的每一步，再从当前完整生成状态抽取一个随机掩码，得到动态去噪预测，并与固定的观测条件预测作加权融合。更新时，已观测位置使用给定测量对应的噪声项，缺失位置使用融合预测对应的噪声项；最终仍写回原始观测。融合权重属于启发式实现选择，上述均值与平方误差结论本身不构成完整采样分布的恢复保证。</p>
+  <h3>结构化缺失：改变划分，就能显著改变学习结果</h3>
   <p>在 Navier–Stokes 的九块中观测八块（8/9 观测比例）设置下，相同 IDCD 框架从像素划分改为块划分，MSE 从 \(1.4925\pm0.2609\) 降为 \(0.7592\pm0.0386\)，约降低 <strong>49.1%</strong>。这直接检验了“划分应匹配观测结构”的设计，而不是仅比较模型名称。</p>
   <figure class="retro-figure incomplete-animation-group" id="incomplete-idcd-blocks">
     {% include incomplete-field-animation.html stem="idcd-ns-block" heading="(a) Navier–Stokes · 块状缺失" labels="原始场|模型补全" %}
@@ -189,8 +386,30 @@ project_chapters:
     \qquad
     \boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\widehat{\boldsymbol M}).
   \]</div>
-  <p>交集内的真实测量作为输入，其余已有测量留作 query。模型生成的是训练划分所用的形状，不生成伪标签。独立同分布掩码的交集在<a href="#ocean-theorem-intersection">交集覆盖完备性</a>假设下能提供条件查询正性；因此要关注掩码支撑是否丰富，不能只看平均缺失率。</p>
+  <p>交集内的真实测量作为输入，其余已有测量留作 query。模型生成的是训练划分所用的形状，不生成伪标签。先考虑从真实分布独立抽取两幅掩码的理想情形：在什么条件下，它们的交集能够为上下文外的位置留下查询机会？</p>
 
+  <div class="incomplete-theorem" id="ocean-theorem-intersection">
+  <h4>Theorem 5 · 独立掩码交集带来的条件查询正性</h4>
+<p><strong>假设：交集覆盖完备性。</strong></p>
+  <p>记真实二值观测掩码分布的支撑集为 \(S=\{\boldsymbol{x}\in\{0,1\}^d:P(\boldsymbol{M}=\boldsymbol{x})&gt;0\}\)。称 \(\boldsymbol{m}\) 为有效上下文掩码，当且仅当存在 \(\boldsymbol{x},\boldsymbol{y}\in S\) 使 \(\boldsymbol{x}\odot\boldsymbol{y}=\boldsymbol{m}\)。对每个这样的 \(\boldsymbol{m}\)，以及每个 \(m_i=0\) 的坐标，假设存在 \(\boldsymbol{M}_a,\boldsymbol{M}_b\in S\) 同时满足</p>
+  \[
+    \boldsymbol{M}_a\odot\boldsymbol{M}_b=\boldsymbol{m},
+    \qquad (\boldsymbol{M}_a)_i=1.
+  \]
+  <p>第一项要求两幅支撑内掩码可以生成该上下文；第二项要求该坐标至少能在其中一幅观测里出现。永久没有观测的坐标不满足此假设。</p>
+  <p>设 \(\boldsymbol{M}_1,\boldsymbol{M}_2\in\{0,1\}^d\) 从同一分布 \(P(\boldsymbol{M})\) <strong>独立</strong>采样，定义</p>
+  \[
+    \boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{M}_1\odot\boldsymbol{M}_2,
+    \qquad
+    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}_1\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
+  \]
+  <p>若交集覆盖完备性成立，则对任意有效上下文 \(\boldsymbol{m}\) 及任意 \(m_i=0\) 的坐标，均有</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m}\big)&gt;0.
+  \]
+  <p>证明要点：有效性保证分母 \(P(\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m})&gt;0\)；假设中的掩码对以 \(P(\boldsymbol{M}_a)P(\boldsymbol{M}_b)&gt;0\) 的概率出现，且在 \(m_i=0\) 时使 \((M_{\mathrm{qry}})_i=(M_1)_i=1\)，所以分子也严格为正。这是支撑与覆盖条件下的结论，不是任意掩码分布的无条件保证。</p>
+</div>
+  <p>这一定理说明需要保留怎样的掩码支撑。实际方法先学习观测形状，再用当前观测引导生成；引导是否改变覆盖条件，需要在后面的采样分析中另行检查。</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp"><img src="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp" width="2400" height="1002" loading="lazy" alt="真实二值掩码预训练、随机锚点引导掩码生成、与当前观测求交集并训练场重建模型的完整流程"></a>
     <figcaption class="retro-figure__caption">图 6 · 真实掩码用于预训练生成先验；当前样本的随机观测锚点引导生成；生成掩码与原始观测求交得到上下文，剩余观测成为查询。图中损失统一按正文公式理解：全局交叉熵带负号并最小化，查询掩码同时作用于预测与目标，误差只在真实查询位置计算。</figcaption>
@@ -203,11 +422,76 @@ project_chapters:
     \qquad \widehat{\boldsymbol e}_\eta
       \big(t,\operatorname{softmax}(\boldsymbol z_t)\big)\in\Delta^{C-1}.
   \]</div>
-  <p>Softmax 在每个像素的类别轴上进行。网络看到的是概率向量，并输出干净类别的预测概率；各像素之间可以具有任意空间依赖。这里用 \(\kappa\) 区别于前面的集成次数；数学补充中保留缩放记号 \(K\equiv\kappa\)。</p>
-
-  <p>在这个高斯编码下，类别后验对同一像素全部 logits 的共同平移不变，所以最优数据预测器可以只接收逐像素 Softmax 概率。完整 score 还包含显式的潜变量线性项，不能一起删去。<a href="#ocean-theorem-softmax">Softmax 因子分解</a>、<a href="#ocean-theorem-posterior">后验不变性</a>和<a href="#ocean-theorem-reparameterization">数据匹配的重参数化</a>说明了这些关系的条件。</p>
+  <p>Softmax 在每个像素的类别轴上进行。网络看到的是概率向量，并输出干净类别的预测概率；各像素之间可以具有任意空间依赖。这里用 \(\kappa\) 区别于前面的集成次数；下文定理沿用缩放记号 \(K\equiv\kappa\)。</p>
+  <h3>Softmax 输入保留了预测器需要的哪些信息？</h3>
+  <p>Softmax 会丢弃同一像素全部 logits 的共同平移。如果目标预测器对这种平移本来就不敏感，那么这一压缩不会损失它所需的信息。下面的因子分解给出准确条件。</p>
+<div class="incomplete-theorem" id="ocean-theorem-softmax">
+  <h4>Theorem 6 · Softmax 因子分解</h4>
+  <p>设 \(h:\mathbb{R}^{C}\to\mathbb{R}^{m}\) 满足对任意 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 和 \(a\in\mathbb{R}\)，\(h(\boldsymbol{x}+a\boldsymbol{1})=h(\boldsymbol{x})\)。定义概率单纯形的相对内部</p>
+  \[
+    \Delta^{C-1}_{\circ}=\operatorname{ri}(\Delta^{C-1})
+    =\left\{\boldsymbol{p}\in\mathbb{R}^{C}:p_j&gt;0,\ \sum_{j=1}^{C}p_j=1\right\}.
+  \]
+  <p>则存在唯一函数 \(g:\Delta^{C-1}_{\circ}\to\mathbb{R}^{m}\)，使对所有 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 都有</p>
+  \[
+    h(\boldsymbol{x})=g(\operatorname{softmax}(\boldsymbol{x})),
+    \qquad g(\boldsymbol{p})=h(\log\boldsymbol{p}).
+  \]
+  <p>这里对数逐坐标作用。因为 \(\log\operatorname{softmax}(\boldsymbol{x})=\boldsymbol{x}-\log(\sum_je^{x_j})\boldsymbol{1}\)，平移不变性给出存在性；\(\operatorname{softmax}(\log\boldsymbol{p})=\boldsymbol{p}\) 给出唯一性。对 \(d\) 个像素，如果每个像素的 \(C\) 维 logits 均可独立加常数而不改变 \(h\)，则结论逐块推广为经 \((\Delta^{C-1}_{\circ})^d\) 的唯一分解。</p>
+  <p>有限 logits 不到达单纯形边界，所以定理不规定边界值。如果到闭单纯形的连续延拓存在，它唯一；单凭 \(h\) 连续不能保证该延拓存在。例如 \(h(\boldsymbol{x})=x_1-x_2\) 对应 \(g(\boldsymbol{p})=\log(p_1/p_2)\)，在整个边界上没有有限连续延拓。</p>
+</div>
+  <p id="ocean-theorem-posterior">在这里固定幅度的 one-hot 高斯编码下，噪声独立于类别，并在堆叠的类别坐标上独立、各向同性。对一个像素的全部 logits 同时加常数时，每种类别配置的后验未归一化权重都乘上同一个因子，归一化后抵消。因此最优数据预测器满足上述平移不变性，可以只接收逐像素 Softmax 概率；即使不同像素具有联合先验，这个结论仍成立。输入的 Softmax 概率本身不必等于类别后验。</p>
+  <h3>从类别预测恢复噪声预测与 score</h3>
+  <p>现在把类别概率网络写成干净潜变量预测器。这样既能联系前面的 data matching，也能明确损失之间需要怎样的时间权重，以及 score 中为什么仍要保留原始潜变量的线性项。</p>
+<div class="incomplete-theorem" id="ocean-theorem-reparameterization">
+  <h4>Theorem 7 · 离散数据匹配与噪声匹配的精确重参数化</h4>
+  <p>设 \(\boldsymbol{x}_0=K\boldsymbol{e}_c\)、\(K&gt;0\)，且 \(\boldsymbol{x}_t=\alpha_t\boldsymbol{x}_0+\sigma_t\boldsymbol{\epsilon}\)，其中独立噪声 \(\boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C)\)。以下等式适用于 \(\alpha_t&gt;0\)、\(\sigma_t&gt;0\) 的非退化时间；端点须单独取极限。设时间权重严格为正、期望有限，采用同一时间采样分布。平方损失的总体最优预测器为</p>
+  \[
+    \boldsymbol{\epsilon}_t^*(\boldsymbol{x})
+    =\mathbb{E}[\boldsymbol{\epsilon}\mid\boldsymbol{x}_t=\boldsymbol{x}]
+    =-\sigma_t\nabla_{\boldsymbol x}\log p_t(\boldsymbol x),
+    \qquad
+    D_t^*(\boldsymbol{x})
+    =\frac{\boldsymbol{x}+\sigma_t^2\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)}{\alpha_t}.
+  \]
+  <p>定义类别概率网络及其对应噪声预测器为</p>
+  \[
+    D_{\theta}(t,\boldsymbol{x})=K\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x})),
+    \qquad
+    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})
+    =\frac{\boldsymbol{x}-\alpha_tD_{\theta}(t,\boldsymbol{x})}{\sigma_t}.
+  \]
+  <p>则对每个样本和每组参数，都有</p>
+  \[
+    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}
+    =\frac{\alpha_tK}{\sigma_t}
+       \left(\boldsymbol{e}_c-\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))\right),
+  \]
+  \[
+    \begin{aligned}
+    \mathcal{J}_{\mathrm{noise}}(\theta)
+    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\|\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}\|^2\right]\\
+    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\frac{\alpha_t^2K^2}{\sigma_t^2}
+    \|\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))-\boldsymbol{e}_c\|^2\right].
+    \end{aligned}
+  \]
+  <p>取数据权重 \(w(t)=w_{\mathrm{NM}}(t)\alpha_t^2K^2/\sigma_t^2\) 时，离散数据匹配损失与该噪声匹配损失精确相等。其他严格正的时间权重在无限制预测器下具有相同的逐时间总体最优解，但有限容量模型下不保证目标相等或最优参数相同。完整掩码的等式对所有像素类别坐标求和即可。</p>
+  \[
+    -\frac{\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})}{\sigma_t}
+    =\frac{\alpha_tK\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}))-\boldsymbol{x}}{\sigma_t^2}.
+  \]
+  <p>当类别概率预测等于真实后验时，该式等于真实 score。数据预测器平移不变，而完整 score 与噪声预测器分别满足</p>
+  \[
+    \left.\nabla_{\boldsymbol u}\log p_t(\boldsymbol u)\right|_{\boldsymbol u=\boldsymbol x+a\boldsymbol 1}
+    =\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)-\frac{a}{\sigma_t^2}\boldsymbol{1},
+    \qquad
+    \boldsymbol{\epsilon}_t^*(\boldsymbol{x}+a\boldsymbol{1})
+    =\boldsymbol{\epsilon}_t^*(\boldsymbol{x})+\frac{a}{\sigma_t}\boldsymbol{1}.
+  \]
+  <p>因此只有 Softmax 输入的网络通过数据预测器间接表示 score，必须保留显式的线性潜变量项。上述精确重参数化针对所定义的高斯潜变量模型；与原始 Bayesian Flow Network 完全等价还要求潜变量参数化与噪声日程一致。</p>
+</div>
   <p>重建出的 score 可用于反向概率流 ODE。生成从高斯终端近似开始，最后逐像素取最大 logit 对应的类别，得到二值 \(\widehat{\boldsymbol M}\)。精确关系针对指定的高斯潜变量模型；与其他 BFN 写法的等价需要匹配潜变量与时间日程。</p>
-<h3 id="incomplete-alignment">生成真实形状之后，还要保留有用的上下文</h3>
+  <h3 id="incomplete-alignment">生成真实形状之后，还要保留有用的上下文</h3>
   <p>无条件生成可以得到真实感的掩码，却可能和当前样本几乎没有交集。上下文过少，查询虽多，模型却失去了判断空间结构所需的线索。</p>
   <p>OAMP 从当前有效观测里随机保留一部分锚点，而不是把所有观测位置都强制留在上下文。随机锚点使同一样本仍能形成不同划分。</p>
   <div class="retro-equation">\[
@@ -225,7 +509,40 @@ project_chapters:
   \end{aligned}
   \]</div>
   <p>引导作用于反向采样的潜变量，\(w_g\) 控制其强度。损失在整个空间上归一化，避免因样本观测数量变化而直接改变归一化分母。生成后采用 \(\boldsymbol M_{\mathrm{ctx}}=\boldsymbol M\odot\widehat{\boldsymbol M}\)、\(\boldsymbol M_{\mathrm{qry}}=\boldsymbol M\odot(1-\widehat{\boldsymbol M})\)。锚点只是生成约束，不是新的场测量。</p>
-    <p>固定交集大小时，只要每个已有观测位置都能被某个有正概率的可行掩码排除，就有跨采样的查询机会。实际实现使用随机锚点与软引导，交集大小可以变化；它并非精确采样这一硬约束分布。<a href="#ocean-theorem-guided">容量约束下的充分条件</a>不能替代对实际覆盖的检查。</p>
+    <p>引导增强了上下文与当前观测的交集，也可能压缩可行划分的范围。先看一个理想化问题：精确固定交集大小以后，怎样保证每个已有观测位置仍有机会成为查询？实际使用的随机锚点与软引导并不精确采样这种硬约束分布，需与下面的充分条件区分。</p>
+  <div class="incomplete-theorem" id="ocean-theorem-guided">
+  <h4>Theorem 8 · 容量引导分割下的边际查询正性</h4>
+<p><strong>假设：固定交集容量下的覆盖完备性。</strong></p>
+  <p>固定观测掩码 \(\boldsymbol{M}\in\{0,1\}^d\)，以 \(|\boldsymbol{M}|=\sum_iM_i\) 表示有效观测数。令 \(C_k\) 为生成掩码满足的硬约束</p>
+  \[
+    C_k:\quad |\widehat{\boldsymbol{M}}\odot\boldsymbol{M}|=k,
+    \qquad 0&lt;k&lt;|\boldsymbol{M}|.
+  \]
+  <p>记条件生成分布的支撑为</p>
+  \[
+    S_{\mathrm{guided}}=\{\widehat{\boldsymbol{m}}\in\{0,1\}^d:P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)&gt;0\}.
+  \]
+  <p>假设对每个 \(M_i=1\) 的坐标，都存在至少一个 \(\widehat{\boldsymbol{M}}_a\in S_{\mathrm{guided}}\) 使 \((\widehat{\boldsymbol{M}}_a)_i=0\)。也就是说，限制上下文容量之后，没有某个有效坐标被所有支撑内掩码永远保留。</p>
+  <p>固定 \(\boldsymbol{M}\in\{0,1\}^d\)，设 \(\widehat{\boldsymbol{M}}\sim P(\widehat{\boldsymbol{M}}\mid C_k)\) 满足上面的硬交集约束，并定义</p>
+  \[
+    \boldsymbol{M}_{\mathrm{ctx}}=\widehat{\boldsymbol{M}}\odot\boldsymbol{M},
+    \qquad
+    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
+  \]
+  <p>若固定交集容量下的覆盖完备性成立，则对每个 \(M_i=1\) 的有效观测坐标，</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)&gt;0.
+  \]
+  <p>因为 \(\boldsymbol{M}\) 为二值掩码，\(\boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\widehat{\boldsymbol{M}})\)。所以在 \(M_i=1\) 时，</p>
+  \[
+    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)
+    =P(\widehat M_i=0\mid C_k)
+    =\sum_{\substack{\widehat{\boldsymbol{m}}\in S_{\mathrm{guided}}\\\widehat m_i=0}}
+      P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)
+    \ge P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{M}}_a\mid C_k)&gt;0.
+  \]
+  <p><strong>适用范围：</strong>此处的正性条件以固定观测与容量事件 \(C_k\) 为条件，表示跨采样的边际查询机会；它不等价于给定每个上下文后的条件查询正性。实际采样采用随机锚点与软交叉熵引导，没有精确固定交集大小；因此上述定理给出支撑层面的充分条件，实际采样器的覆盖还需实验检查。</p>
+</div>
   <h3>覆盖的数学条件与实际采样表现</h3>
   <p>独立交集定理以“给定上下文”为条件；容量引导定理则以固定观测和容量事件为条件。两者解决不同层次的覆盖问题。实际使用的软引导不等于精确采样硬约束分布，不能仅由定理推断每个实际上下文都满足正性。</p>
   <div class="incomplete-figure-grid incomplete-heatmaps">
@@ -233,7 +550,8 @@ project_chapters:
     <figure class="retro-figure"><h4>观测对齐划分</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp"><img src="{{ base_path }}/images/research/incomplete-learning/query-aligned.webp" width="2400" height="2081" loading="lazy" alt="Black Sea 数据在 BFN 观测对齐策略下的经验查询概率热图，空间覆盖更均衡"></a></figure>
   </div>
   <p class="retro-caption">图 7 · Black Sea 上重复 200 次划分得到的经验查询概率，色标为 0–1。这里比较的是实际监督机会的空间分布；有限次采样热图不能证明概率严格大于零。灰色为固定的非观测域掩码。</p>
-  <p>即使一个位置在跨轮次采样中能被查询，也仍要区分查询选择偏差、有限数据误差与完整分布的可识别性。掩码学习改善监督组织方式，但不会凭空补充缺失真值。</p>  <h3>观测对齐掩码：三类海洋场的定性对照</h3>
+  <p>即使一个位置在跨轮次采样中能被查询，也仍要区分查询选择偏差、有限数据误差与完整分布的可识别性。掩码学习改善监督组织方式，但不会凭空补充缺失真值。</p>
+  <h3>观测对齐掩码：三类海洋场的定性对照</h3>
   <p>在相同样本与相同给定观测下，比较 MissDiff 与 OAMP 的重建。每行先展示原始不完整参考，再看两种模型如何补出有效域中的场；重点观察隐藏测量所在区域的空间变化。</p>
   <div class="incomplete-oamp-examples" id="incomplete-oamp-visuals">
     <h4 class="incomplete-dataset-label">Black Sea CHL</h4>
@@ -285,7 +603,8 @@ project_chapters:
       +\underbrace{\text{全局残差}}_{\text{根据全部上下文学习修正}}.
   \]</div>
   <p>残差输出头初始化为零，因此全域训练开始时，预测恰好就是局部先验。随后模型学习在什么位置、向什么方向、修正多少，允许改变任意预测位置。局部模型始终冻结；每次上下文改变，都重新构建与之对应的先验。</p>
-  <p>监督仍来自真实查询值：在查询位置，用“暂时隐藏的测量减去局部先验”告诉模型需要的修正。局部估计不必已经是最强的独立预测器，它的作用是提供一个有结构、可以被全域证据修订的起点。</p><h3 id="incomplete-reconstruction">从局部参考到完整的训练与重建流程</h3>
+  <p>监督仍来自真实查询值：在查询位置，用“暂时隐藏的测量减去局部先验”告诉模型需要的修正。局部估计不必已经是最强的独立预测器，它的作用是提供一个有结构、可以被全域证据修订的起点。</p>
+  <h3 id="incomplete-reconstruction">从局部参考到完整的训练与重建流程</h3>
   <p>整个流程始终只依赖可用观测。掩码构造决定如何练习，局部模型建立参考，全局模型学习修正；推理时再恢复给定的真实测量。</p>
   <h3>显式告诉修正器：参考场在哪些地方与观测不一致</h3>
   <p>把参考场交给全域模型之后，还可以让两者的关系更容易读懂。除了带噪上下文、观测掩码与局部先验，修正器还接收三张直观的辅助图。</p>
@@ -301,7 +620,8 @@ project_chapters:
     <li><strong>保留真实测量。</strong>输出时把给定观测写回，并仅填充有效域中的缺失位置。</li>
   </ol>
   <p>同一评测样本的各个上下文共用一次近零加噪，每个上下文各自完成一遍局部预测与全域修正。海洋默认的 full-mask 模式只评估一次，使用全部已给定观测；这里的“全部”不意味着获得完整参考场。它也不同于只随机抽取一次子上下文。</p>
-  <p>\(64\times 64\) 下，CHL 与 NANO 使用 \(32\times 32\)、步幅 16 的九个重叠片段；SSS 使用 \(16\times 16\)、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>  <h3 id="incomplete-results">真实海洋遮挡：只在存在参考测量的位置评分</h3>
+  <p>\(64\times 64\) 下，CHL 与 NANO 使用 \(32\times 32\)、步幅 16 的九个重叠片段；SSS 使用 \(16\times 16\)、步幅 8 的 49 个片段，尺度由验证集选择。局部模型先建立参考，全域模型再修订参考，最后把真实测量写回，使输出保留所有已供给观测。</p>
+  <h3 id="incomplete-results">真实海洋遮挡：只在存在参考测量的位置评分</h3>
   <p>真实海洋场本来就没有完整真值。评测把另一幅真实掩码叠加到当前样本支持上，输入与评分位置在方法间共享；只在“原始已观测、现在暂时隐藏”的位置计算 MSE 与 PSNR。</p>
   <p>因此实验支持对隐藏测量的重建能力，不能直接验证海洋源数据从未观测区域的真实误差。OAMP 在三类真实海洋数据、最高 \(256\times 256\) 的实验中检验观测对齐掩码；以下 \(64\times 64\) 数字来自同一组局部到全局对照，避免跨实验口径比较。</p>
   <div class="retro-results-grid">
@@ -310,7 +630,7 @@ project_chapters:
     <div><strong>34.5%</strong><span class="retro-result__label">Global Ocean SSS</span><p>相对该数据集最低 MSE 外部基线 MSM 的降幅</p></div>
   </div>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="64乘64海洋重建完整对照">
-    <table class="retro-comparison"><caption>表 2 · \(64\times 64\) 海洋重建对照</caption>
+    <table class="retro-comparison"><caption>表 3 · \(64\times 64\) 海洋重建对照</caption>
       <thead><tr><th scope="col" rowspan="2">方法</th><th scope="col" colspan="2">Black Sea CHL</th><th scope="col" colspan="2">Baltic Sea NANO</th><th scope="col" colspan="2">Global Ocean SSS</th></tr><tr><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th><th scope="col">MSE ↓ \(\times 10^{-3}\)</th><th scope="col">PSNR ↑ dB</th></tr></thead>
       <tbody>
         <tr><th scope="row">DINEOF</th><td>21.457</td><td>16.89</td><td>37.398</td><td>14.37</td><td>44.451</td><td>13.68</td></tr>
@@ -326,7 +646,7 @@ project_chapters:
   <p class="retro-caption">\(64\times 64\)、真实掩码叠加评测。学习模型为独立训练种子的均值 ± 标准差，DINEOF 为点估计。MSE 汇总所有评分空间—通道值的平方误差；PSNR 对样本分数取平均，二者均在归一化并裁剪的评测空间计算。</p>
   <h3>局部先验的价值，来自它能被全局模型利用和修正</h3>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="参数匹配的估计器组织对照">
-    <table class="retro-comparison"><caption>表 3 · 参数匹配的估计器组织对照</caption><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE \(\times 10^{-3}\)</th><th scope="col">NANO MSE \(\times 10^{-3}\)</th><th scope="col">SSS MSE \(\times 10^{-3}\)</th></tr></thead><tbody>
+    <table class="retro-comparison"><caption>表 4 · 参数匹配的估计器组织对照</caption><thead><tr><th scope="col">估计方式</th><th scope="col">CHL MSE \(\times 10^{-3}\)</th><th scope="col">NANO MSE \(\times 10^{-3}\)</th><th scope="col">SSS MSE \(\times 10^{-3}\)</th></tr></thead><tbody>
       <tr><th scope="row">Local Prior · 仅局部估计</th><td>\(15.227\pm 0.103\)</td><td>\(30.576\pm 0.479\)</td><td>\(32.053\pm 0.276\)</td></tr>
       <tr><th scope="row">Full Direct · 全域直接预测</th><td>\(9.350\pm 0.306\)</td><td>\(23.559\pm 0.834\)</td><td>\(32.895\pm 0.967\)</td></tr>
       <tr><th scope="row">Prior Direct · 先验作为输入</th><td>\(8.546\pm 0.062\)</td><td>\(21.445\pm 0.417\)</td><td>\(30.151\pm 0.197\)</td></tr>
@@ -349,7 +669,7 @@ project_chapters:
     <figure class="retro-figure"><h4>参考观测 · 橙色框标记放大区域</h4><a class="image-popup incomplete-roi-figure" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp"><span class="incomplete-roi" aria-hidden="true"></span><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-reference.webp" width="545" height="545" loading="lazy" alt="NANO 原始参考全图，橙色矩形标出两侧的局部放大区域"></a></figure>
     <figure class="retro-figure"><h4>局部到全局 · 局部放大</h4><a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp"><img src="{{ base_path }}/images/research/incomplete-learning/nano-detail-corrected.webp" width="545" height="545" loading="lazy" alt="相同 NANO 橙色框区域经局部到全局方法重建后的细节放大图"></a></figure>
   </div>
-  <p class="retro-caption">图 11 · 参数匹配的 NANO 细节对照，左右为中间参考图橙色区域的放大，场值色标与前一组 NANO 分解图一致。局部到全局预测在这个案例中保留了更明显的细尺度变化；总体结论由表 2、表 3 的评分支持。</p>
+  <p class="retro-caption">图 11 · 参数匹配的 NANO 细节对照，左右为中间参考图橙色区域的放大，场值色标与前一组 NANO 分解图一致。局部到全局预测在这个案例中保留了更明显的细尺度变化；总体结论由表 3、表 4 的评分支持。</p>
   <h3>从海洋场到流体场：缺失块内的细节修正</h3>
   <p>局部到全局的组织方式也可以用于模拟物理场。下面在 Navier–Stokes 的九块中观测八块设置下，将参数匹配的 IDCD 全域直接预测与局部到全局预测放大比较。</p>
   <div class="incomplete-figure-grid" id="incomplete-ns-detail">
@@ -373,404 +693,4 @@ project_chapters:
   <p>已有测量通过上下文—查询划分成为输入和答案；查询覆盖与选择机制限定了平方损失能够学到的条件预测。掩码先验进一步学习真实观测的空间形状，再用当前观测引导采样，兼顾监督机会与上下文信息量。</p>
   <p>在这样的训练接口下，模型可以先从邻域建立场估计，再根据全域上下文学习残差修正。局部估计即使不是最强的独立预测器，也能提供有用的中间表示。参数匹配对照和远端观测干预分别检验了这种表示的重建价值，以及全域模型是否利用邻域之外的证据。</p>
   <p>这条路线始终在已有信息内工作：查询覆盖不能替代缺失机制假设，集成不能自动消除偏差，确定性先验不会增加新观测，也不会使任意完整分布变得可识别。部分块缺失重建仍有边界接缝；真实海洋源缺失区域没有可评分真值，当前实验主要验证隐藏测量上的点重建质量。</p>
-</section>
-
-
-<section class="retro-chapter" id="incomplete-theory">
-  <p class="retro-kicker">Mathematical details and assumptions</p>
-  <h2><span class="retro-chapter__number">07</span> 数学补充：成立条件与推导</h2>
-<p class="retro-lede">下面给出主线所用的数学条件与推导。可识别性讨论限定完整分布恢复的对象；条件均值、查询覆盖和集成分析分别说明训练与预测能够保证什么。各项结论的条件不可互相替代。</p>
-  <h3>符号与训练角色</h3>
-<div class="retro-table-scroll" tabindex="0" role="region" aria-label="主要符号">
-    <table class="retro-comparison incomplete-notation"><caption>表 4 · 主要符号与训练角色</caption>
-      <thead><tr><th scope="col">符号</th><th scope="col">含义</th><th scope="col">在训练中扮演的角色</th></tr></thead>
-      <tbody>
-        <tr><th scope="row">\(\boldsymbol M\)</th><td>样本原始观测支持</td><td>固定不变，限定哪些值能够成为输入或目标</td></tr>
-        <tr><th scope="row">\(\boldsymbol M_{\mathrm{ctx}}\)</th><td>上下文 context</td><td>送入模型的观测子集，可在访问样本时重新采样</td></tr>
-        <tr><th scope="row">\(\boldsymbol M_{\mathrm{qry}}\)</th><td>查询 query</td><td>选择损失计算位置，不作为额外模型输入</td></tr>
-        <tr><th scope="row">\(\widehat{\boldsymbol M}\)</th><td>生成的观测形状</td><td>用于选择上下文，不生成场数值或伪标签</td></tr>
-        <tr><th scope="row">\(\boldsymbol\Pi_t\)</th><td>局部场先验</td><td>当前观测下的中间场估计，供全局模型修正</td></tr>
-      </tbody>
-    </table>
-  </div>
-  <h3>完整场分布的可识别性边界</h3>
-<div class="incomplete-theorem" id="theorem-never-complete">
-  <h4>Theorem 1 · 从未完整观测时，非受限完整场分布不能普遍识别</h4>
-  <p>设完整场在有效区域向量化为 \(\boldsymbol{x}_0\in\mathbb R^d\)，二值观测掩码 \(\boldsymbol M\) 的分布 \(q\) 固定且已知，并且独立于 \(\boldsymbol{x}_0\)。若 \(\Pr_q(\boldsymbol M=\boldsymbol 1_d)=0\)，则在 \(\mathbb R^d\) 上所有概率分布组成的非受限类别中，完整场分布不能由 \((\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M)\) 识别。因此，不存在对这个类别内每一种完整场分布都一致的恢复算法。</p>
-  <p>具体地，定义观测算子</p>
-  <div class="retro-equation">\[\mathcal T_q(P)=\operatorname{Law}_{P,q}(\boldsymbol M\odot\boldsymbol{x}_0,\boldsymbol M).\]</div>
-  <p>可识别性要求：对类别内所有 \(P_1,P_2\)，\(\mathcal T_q(P_1)=\mathcal T_q(P_2)\Rightarrow P_1=P_2\)。取 \(\boldsymbol{x}_0\in\{-1,+1\}^d\)，分别在下列两个互不相交、均有 \(2^{d-1}\) 个元素的集合上定义均匀分布 \(P_+,P_-\)：</p>
-  <div class="retro-equation">\[\mathcal X_+=\left\{\boldsymbol x:\prod_{i=1}^d x_i=+1\right\},\qquad\mathcal X_-=\left\{\boldsymbol x:\prod_{i=1}^d x_i=-1\right\}.\]</div>
-  <p>对任一真子集 \(S\subsetneq[d]\) 和任一符号赋值 \(\boldsymbol x_S\)，剩余坐标中至少有一个未赋值。在固定乘积的约束下，除最后一个符号外均可自由选择，因此两种分布下都恰有 \(2^{d-|S|-1}\) 个合法补全：</p>
-  <div class="retro-equation">\[P_+(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=P_-(\boldsymbol{x}_{0,S}=\boldsymbol x_S)=\frac{2^{d-|S|-1}}{2^{d-1}}=2^{-|S|}.\]</div>
-  <p>对任一 \(q(m)>0\) 的掩码，\(S_m=\{i:m_i=1\}\subsetneq[d]\)。设 \(\boldsymbol Y=\boldsymbol M\odot\boldsymbol{x}_0\)，则条件观测律及其联合律相同：</p>
-  <div class="retro-equation">\[\begin{aligned}\operatorname{Law}_{P_+}(\boldsymbol Y\mid\boldsymbol M=m)&=\operatorname{Law}_{P_-}(\boldsymbol Y\mid\boldsymbol M=m),\\\Pr_{P_+,q}(\boldsymbol Y\in A,\boldsymbol M=m)&=q(m)\Pr_{P_+}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=q(m)\Pr_{P_-}(\boldsymbol Y\in A\mid\boldsymbol M=m)\\&=\Pr_{P_-,q}(\boldsymbol Y\in A,\boldsymbol M=m).\end{aligned}\]</div>
-  <p>故 \(\mathcal T_q(P_+)=\mathcal T_q(P_-)\)，但 \(P_+\ne P_-\)。从任意 \(n\) 个独立同分布的观测对得到的估计器 \(\widehat P_n\)，在这两个世界中具有相同的输出分布（内部随机性可作相同耦合），不能分别收敛到两个不同的真分布。</p>
-  <p>二维时，令 \(\boldsymbol M=(1,0)\) 或 \((0,1)\)，各以 \(1/2\) 的概率出现并独立于场。取</p>
-  <div class="retro-equation">\[\begin{aligned}P_1((1,1))=P_1((-1,-1))&=\tfrac12,\\P_2((1,-1))=P_2((-1,1))&=\tfrac12.\end{aligned}\]</div>
-  <p>两个完整场的相关结构相反，却给出同一观测律；只观测 \(x_{0,1}\) 时，缺失坐标的条件均值分别是</p>
-  <div class="retro-equation">\[\mathbb E_{P_1}[x_{0,2}\mid x_{0,1}]=x_{0,1},\qquad\mathbb E_{P_2}[x_{0,2}\mid x_{0,1}]=-x_{0,1}.\]</div>
-  <p>这说明缺乏联合暴露会产生预测歧义。结论不排除引入结构假设后的可识别性，也不否定有正查询暴露状态上的监督学习；这里的掩码独立假设仅用于本定理，真实海洋实验仍使用实际采集掩码。</p>
-</div>
-  <h3 id="diffusion-forward">1. 明确定义加噪过程，以及反向 SDE / ODE</h3>
-  <p>设完整场 \(\boldsymbol x_0\sim p_{\mathrm{data}}\) 位于 \(\mathbb R^d\)，且二阶矩有限。考虑下面这个线性、各向同性的 Itô SDE，其中 \(\boldsymbol W_t\) 是标准 \(d\) 维布朗运动，\(f(t)\) 是标量漂移系数，\(g(t)\ge0\) 是标量扩散系数：</p>
-  <div class="retro-equation">\[
-    \mathrm d\boldsymbol x_t=f(t)\boldsymbol x_t\,\mathrm dt+g(t)\,\mathrm d\boldsymbol W_t,
-    \qquad 0\le t\le T.
-  \]</div>
-  <p><strong>\(f(t)\)、\(g(t)\) 都是训练前人为指定的调度函数，可以视为函数形式的超参数。</strong>它们不是需要从数据中拟合的神经网络。对于这个线性 SDE，加噪分布是高斯分布；用信号与噪声调度，可以在任意指定时刻直接构造带噪训练输入：</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    q_t(\boldsymbol x_t\mid\boldsymbol x_0)
-      &=\mathcal N(\alpha_t\boldsymbol x_0,\sigma_t^2 I),\\
-    \boldsymbol x_t&=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon,
-      \qquad \boldsymbol\epsilon\sim\mathcal N(0,I),\quad \boldsymbol\epsilon\perp\boldsymbol x_0,\\
-    \alpha_0&=1,\qquad\sigma_0=0.
-  \end{aligned}
-  \]</div>
-  <p>因此，\(\alpha_t\) 控制干净信号的缩放，\(\sigma_t\) 是给定干净样本时的噪声标准差。这个重参数化描述的是固定时刻的转移分布；把同一个 \(\boldsymbol\epsilon\) 固定下来用于所有时刻，一般不会得到原 SDE 的样本路径。可微的调度曲线与 SDE 系数之间满足</p>
-  <div class="retro-equation">\[
-    f(t)=\frac{\alpha_t'}{\alpha_t},
-    \qquad
-    g(t)^2=\frac{\mathrm d\sigma_t^2}{\mathrm dt}-2f(t)\sigma_t^2\ge0.
-  \]</div>
-  <p>非负条件意味着 \(\alpha_t\)、\(\sigma_t\) 不能毫无限制地独立指定。例如 variance-preserving（VP）调度满足 \(\sigma_t^2=1-\alpha_t^2\)，其中 \(\alpha_t\) 随时间递减。当 \(\alpha_T\) 足够小时，\(p_T\) 近似为 \(\mathcal N(0,I)\)；有限终止时间下通常不是严格相等。</p>
-
-  <p>记 \(p_t(\boldsymbol x)=\int q_t(\boldsymbol x\mid\boldsymbol x_0)p_{\mathrm{data}}(\boldsymbol x_0)\,\mathrm d\boldsymbol x_0\)，其<strong>边缘分布的 score</strong> 为 \(\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)\)。在通常的正则条件下，对应的<a href="#reference-score-sde">反向 SDE 与 probability flow ODE</a> 为</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \text{Reverse SDE:}\quad
-    \mathrm d\boldsymbol x_t
-      &=\left[f(t)\boldsymbol x_t-g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt
-        +g(t)\,\mathrm d\overline{\boldsymbol W}_t,\\
-    \text{Probability flow ODE:}\quad
-    \mathrm d\boldsymbol x_t
-      &=\left[f(t)\boldsymbol x_t-\tfrac12 g(t)^2\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right]\mathrm dt.
-  \end{aligned}
-  \]</div>
-  <p><strong>用于生成时，两式都从 \(T\) 积分到 \(0\)，因此 \(\mathrm dt&lt;0\)。</strong>\(\overline{\boldsymbol W}_t\) 是反向时间中的布朗运动，增量协方差为 \(-\mathrm dt\,I\)。从 \(\boldsymbol x_T\sim p_T\) 出发，两种精确动力学都能恢复数据分布。ODE 在给定随机初值后是确定的；它并不是把某一次正向布朗噪声的具体实现逐步撤销。</p>
-
-  <h3 id="diffusion-noise-matching">2. 从 score matching 到 noise matching 与 data matching</h3>
-  <p>反向漂移中的 \(f\)、\(g\) 已知，<strong>需要学习的只有依赖数据分布的 score \(\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\)</strong>。它没有直接可用的标签，但给定干净样本后的高斯核 score 可以显式计算。对边缘密度在积分号内求导，得到</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
-      &=-\frac{\boldsymbol x_t-\alpha_t\boldsymbol x_0}{\sigma_t^2}\\
-      &=-\frac{\boldsymbol\epsilon}{\sigma_t},\\
-    \nabla_{\boldsymbol x}\log p_t(\boldsymbol x)
-      &=\mathbb E\!\left[\nabla_{\boldsymbol x_t}\log q_t(\boldsymbol x_t\mid\boldsymbol x_0)
-         \mid\boldsymbol x_t=\boldsymbol x,t\right]\\
-      &=-\frac{1}{\sigma_t}\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t=\boldsymbol x,t].
-  \end{aligned}
-  \]</div>
-  <p>独立于 \(\boldsymbol x_0\)、\(\boldsymbol\epsilon\) 采样 \(t\)，并将学习到的 score 参数化为 \(-\epsilon_\theta(\boldsymbol x_t,t)/\sigma_t\)。在非退化且相关加权二阶矩有限的训练区间上，取正时间权重 \(\lambda(t)\)，denoising score matching 满足</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \mathcal L_{\mathrm{DSM}}(\theta)
-      &=\mathbb E\!\left[\lambda(t)
-        \left\|\frac{-\epsilon_\theta(\boldsymbol x_t,t)+\boldsymbol\epsilon}{\sigma_t}\right\|_2^2\right]\\
-      &=\mathbb E\!\left[\lambda(t)
-        \left\|-\frac{\epsilon_\theta(\boldsymbol x_t,t)}{\sigma_t}
-          -\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)\right\|_2^2\right]+C.
-  \end{aligned}
-  \]</div>
-  <p>其中 \(C\) 与 \(\theta\) 无关，因此拟合可计算的条件核目标，与拟合未知的边缘 score 具有相同的总体最优解。令 \(w(t)=\lambda(t)/\sigma_t^2\)，目标就成为<a href="#reference-ddpm">噪声预测损失</a>。下面把它与干净数据预测的目标统一写成一个定理。</p>
-  <div class="incomplete-theorem" id="theorem-diffusion-objectives">
-  <h4>Theorem 2 · 噪声匹配与数据匹配恢复同一个 score</h4>
-  <p>在高斯加噪模型 \(\boldsymbol x_t=\alpha_t\boldsymbol x_0+\sigma_t\boldsymbol\epsilon\) 下，设 \(\boldsymbol x_0\) 具有有限二阶矩，\(\boldsymbol\epsilon\sim\mathcal N(0,I)\) 且独立于 \(\boldsymbol x_0\)，\(t\) 独立采样，训练区间内 \(\alpha_t,\sigma_t&gt;0\)。若时间权重 \(w(t)\) 严格为正、相关期望有限，则两种目标及其非受限总体最优预测函数几乎处处满足</p>
-  <div class="retro-equation">\[
-  \begin{aligned}
-    \mathcal L_{\mathrm{noise}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|\epsilon_\theta(\boldsymbol x_t,t)-\boldsymbol\epsilon\right\|^2\right],\quad &\epsilon_\theta^*(\boldsymbol x_t,t)&=-\sigma_t\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t);\\[0.8em]
-    \mathcal L_{\mathrm{data}}(\theta)&=\mathbb E_{t,\boldsymbol x_0,\boldsymbol\epsilon}\!\left[w(t)\left\|D_\theta(\boldsymbol x_t,t)-\boldsymbol x_0\right\|^2\right],\quad &D_\theta^*(\boldsymbol x_t,t)&=\frac{1}{\alpha_t}\boldsymbol x_t+\frac{\sigma_t^2}{\alpha_t}\nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t).
-  \end{aligned}
-  \]</div>
-  <p>这两个最优预测分别是条件均值 \(\mathbb E[\boldsymbol\epsilon\mid\boldsymbol x_t,t]\) 与 \(\mathbb E[\boldsymbol x_0\mid\boldsymbol x_t,t]\)。正时间权重不改变这些逐点总体最优解；使用相同权重并不表示两个损失的数值相等。</p>
-  </div>
-
-  <h3 id="diffusion-data-matching">3. 将干净数据预测代回反向动力学</h3>
-  <p>完成 data matching 训练后，由预测的干净场构造 score 的近似：</p>
-  <div class="retro-equation">\[
-    \nabla_{\boldsymbol x_t}\log p_t(\boldsymbol x_t)
-      \approx\frac{\alpha_tD_\theta(\boldsymbol x_t,t)-\boldsymbol x_t}{\sigma_t^2}.
-  \]</div>
-  <p>把它代回前面的反向 SDE 或 probability flow ODE 即可采样。完整样本来自跨噪声时刻的动力学积分；单次后验均值预测只是点估计。上述输出转换应避开奇异端点，数值实现通常在很小的正时间截断，或另设合适的端点处理。</p>
-  <h3>平方损失究竟学到什么？</h3>
-  <p>需要先区分一般的查询选择规律与掩码独立的特殊情形。真实观测可能依赖场本身；只有满足相应条件时，才能从“被查询时的条件均值”简化为通常写出的“给定上下文的条件均值”。</p>
-  <div class="incomplete-theorem" id="theorem-weighted-mse">
-  <h4>Theorem 3 · 逐坐标加权均方误差的最优解</h4>
-  <p>设随机向量 \(X,Y,Z\in\mathbb R^d\) 的相关二阶矩有限，\(g:\operatorname{Space}(Y)\to\mathbb R^d\) 是确定的可测函数，目标为</p>
-  \[
-  L(g)=\mathbb E\left[\|Z\odot g(Y)-Z\odot X\|^2\right].
-  \]
-  <p>若 \(\mathbb E[Z\odot Z\mid Y]\) 的每个坐标几乎处处严格为正，则在几乎处处相等的意义下，唯一最优函数为</p>
-  \[
-  g^*(Y)=\frac{\mathbb E[Z\odot Z\odot X\mid Y]}{\mathbb E[Z\odot Z\mid Y]},\qquad
-  g_i^*(Y)=\frac{\mathbb E[Z_i^2X_i\mid Y]}{\mathbb E[Z_i^2\mid Y]}.
-  \]
-  <p>向量除法按坐标进行。若某坐标分母为零，该坐标的输出不影响目标函数，因此无法由这一损失确定。</p>
-</div>
-  <div class="incomplete-theorem" id="theorem-query-conditional-mean">
-  <h4>Theorem 4 · 查询损失识别的是查询条件均值</h4>
-  <p>令 \(O_t=(\boldsymbol{x}_{\mathrm{ctx},t},\boldsymbol M_{\mathrm{ctx}})\)，预测器只接收 \((t,O_t)\)。对坐标 \(i\)，假设相关二阶矩有限，并且当前状态有正查询暴露 \(\Pr(\boldsymbol M_{\mathrm{qry},i}=1\mid t,O_t)>0\)。对于观察查询上的掩码平方损失，非受限预测器的最优值为</p>
-  <div class="retro-equation">\[\mu_{O,i}(t,O_t)=\mathbb E_{\mathrm{train}}\!\left[\boldsymbol{x}_{0,i}\mid t,O_t,\boldsymbol M_{\mathrm{qry},i}=1\right].\]</div>
-  <p>这里 \(\boldsymbol{x}_{0,i}\) 可以是一个值或一个通道向量。真实采集与分区机制不预设能够消去查询选择事件的额外独立条件，因此必须保留 \(\boldsymbol M_{\mathrm{qry},i}=1\)。若条件查询暴露为零，损失就不约束该状态下该坐标的预测。</p>
-</div>
-  <div class="incomplete-theorem" id="theorem-context-optimum">
-  <h4>Theorem 5 · 隐藏 query 信息时的最优预测与学习频率</h4>
-  <p>设完整数据为 \(X_0\)，原始观测为 \(X_{\mathrm{obs}}=M\odot X_0\)，其中 \(M\) 与数据独立。取 \(C=M_{\mathrm{ctx}}\subseteq M\)、\(Q=M_{\mathrm{qry}}\subseteq M\)，掩码抽样仅依赖观测结构；模型只接收 \(t\) 与 \(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\)，不接收 \(Q\) 或原始 \(M\)。令</p>
-  \[
-  X_{\mathrm{obs},t}=M\odot(\alpha_tX_{\mathrm{obs}}+\sigma_t\epsilon),\quad
-  \epsilon\sim\mathcal N(0,I),\qquad
-  \mathcal L=\|Q\odot(x_\theta(t,\mathrm{ctx})-X_{\mathrm{obs}})\|^2.
-  \]
-  <p>设 \(x_\theta^*\) 达到总体期望损失的最优解，相关二阶矩有限，且 \(X_0\) 与 \(Q\) 在给定 \(\mathrm{ctx}\) 后条件独立。固定 \(C\)，记 \(p_i=\mathbb P(Q_i=1\mid C)\)，并要求 \(\mathbb P(Q_i=1\mid\mathrm{ctx})=p_i\)。则：</p>
-  <p><strong>（i）最优输出。</strong></p>
-  \[
-  (x_\theta^*(t,\mathrm{ctx}))_i=
-  \begin{cases}
-  \mathbb E[(X_0)_i\mid\mathrm{ctx}],&p_i>0,\\
-  \text{任意值},&p_i=0.
-  \end{cases}
-  \]
-  <p>特别地，对给定 \(C\)，若所有可能 query 掩码的支持并集覆盖全部坐标，即 \(\bigcup_{Q:\,\mathbb P(Q\mid C)>0}\operatorname{supp}(Q)=\{1,\ldots,d\}\)，则</p>
-  \[
-  x_\theta^*(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}].
-  \]
-  <p><strong>（ii）梯度幅度。</strong>对固定 context 掩码下的抽样分布，在 \(p_i>0\) 时有</p>
-  \[
-  \frac{\partial\mathcal L}{\partial(x_\theta)_i}=2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i),
-  \]
-  \[
-  \mathbb E\left[\left(\frac{\partial\mathcal L}{\partial(x_\theta)_i}\right)^2\right]
-  =4p_i\mathbb E\left[((x_\theta)_i-(X_{\mathrm{obs}})_i)^2\mid Q_i=1\right].
-  \]
-  <p>在条件误差因子固定时，期望梯度平方随 \(p_i\) 线性变化。若 \(p_i=0\)，该坐标的损失梯度恒为零，此时无需定义零概率事件上的条件期望。</p>
-  <p><strong>（iii）更新机会。</strong>坐标 \(i\) 被纳入损失、能够贡献参数更新的概率为</p>
-  \[
-  \mathbb P(\text{坐标 }i\text{ 进入参数更新项}\mid C)
-  =\mathbb P(Q_i=1\mid C)=p_i.
-  \]
-  <p>该坐标的参数梯度贡献为 \(2Q_i((x_\theta)_i-(X_{\mathrm{obs}})_i)\,\partial(x_\theta)_i/\partial\theta\)。若被选中时残差与相应雅可比不为零，实际非零更新频率也等于 \(p_i\)；残差已为零时，进入损失并不意味着产生非零更新。</p>
-</div>
-  <p>因此，某个样本在位置 \(i\) 没有观测，并不意味着所有样本在相似上下文下都不能监督 \(i\)。真正重要的是：在训练分布中，给定这种上下文后，这个位置是否仍有可能被查询。没有这种机会，输出在该状态下就不受损失约束。</p>
-
-  <h3>多上下文集成的误差分解</h3>
-<div class="incomplete-theorem" id="theorem-ensemble-limit">
-  <h4>Theorem 6 · 集成降低方差，并保留信息差与系统偏差</h4>
-<p><strong>假设：集成误差的非相关分解。</strong></p>
-  <p>将模型输出写为</p>
-  \[
-  x_\theta(t,\mathrm{ctx})=\mathbb E[X_0\mid\mathrm{ctx}]+b(\mathrm{ctx})+\epsilon_{\mathrm{bias}}(\mathrm{ctx}),
-  \qquad\mathbb E[\epsilon_{\mathrm{bias}}]=0.
-  \]
-  <p>其中 \(b\) 是随 context 变化的确定性偏差，\(\epsilon_{\mathrm{bias}}\) 是零均值随机误差。所有项的二阶矩有限，并假设以下三个中心化分量两两不相关：</p>
-  \[
-  \mathbb E[X_0\mid\mathrm{ctx}]-\mathbb E[\mathbb E[X_0\mid\mathrm{ctx}]],\qquad
-  b(\mathrm{ctx})-\mathbb E[b(\mathrm{ctx})],\qquad
-  \epsilon_{\mathrm{bias}}(\mathrm{ctx}).
-  \]
-  <p>不同集成成员的随机误差 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(i)})\) 与 \(\epsilon_{\mathrm{bias}}(\mathrm{ctx}^{(j)})\) 在 \(i\ne j\) 时独立。对固定完整观测的集成分析，下述中心化、不相关性和零均值均按给定该观测的条件分布理解。</p>
-  <p>设 \(\mathrm{obs}=(M\odot X_{\mathrm{obs},t},M)\) 为完整可用观测，\(\mathrm{ctx}=(C\odot X_{\mathrm{obs},t},C)\) 为其子观测，\(C\subseteq M\) 的抽样不额外依赖数据值。令</p>
-  \[
-  \mu=\mathbb E[X_0\mid\mathrm{obs}],\qquad
-  \mu_c=\mathbb E[X_0\mid\mathrm{ctx}].
-  \]
-  <p>若相关二阶矩有限，并满足嵌套观测的塔式关系 \(\mathbb E[\mu\mid\mathrm{ctx}]=\mu_c\)，则 context 所丢失的信息对应以下均方差：</p>
-  \[
-  \mathbb E[\|\mu_c-\mu\|^2]
-  =\mathbb E[\operatorname{Var}(X_0\mid\mathrm{ctx})]
-  -\mathbb E[\operatorname{Var}(X_0\mid\mathrm{obs})].
-  \]
-  <p>这里向量方差表示协方差矩阵的迹，即均方欧氏偏差。进一步固定 \(\mathrm{obs}\)，独立同分布地抽取 \(K\) 个 context 掩码，并满足上述非相关误差分解。以 \(\mathbb E_c\)、\(\operatorname{Var}_c\) 表示给定该观测后的 context 与模型随机误差分布，令</p>
-  \[
-  \widehat\mu_K=\frac1K\sum_{k=1}^Kx_\theta(t,\mathrm{ctx}^{(k)}).
-  \]
-  <p>集成估计的均方误差精确分解为</p>
-  \[
-  \begin{aligned}
-  \mathbb E_c[\|\widehat\mu_K-\mu\|^2]
-  ={}&\left\|\underbrace{\mathbb E_c[\mu_c]-\mu}_{\text{信息差}}
-  +\underbrace{\mathbb E_c[b(\mathrm{ctx})]}_{\text{平均模型偏差}}\right\|^2\\
-  &+\frac1K\left(\underbrace{\operatorname{Var}_c(\mu_c)}_{\text{context 引入的方差}}
-  +\underbrace{\operatorname{Var}_c(b(\mathrm{ctx}))+\operatorname{Var}_c(\epsilon_{\mathrm{bias}})}_{\text{模型方差}}\right).
-  \end{aligned}
-  \]
-  <p>因此，</p>
-  \[
-  \lim_{K\to\infty}\mathbb E_c[\|\widehat\mu_K-\mu\|^2]
-  =\left\|\mathbb E_c[\mu_c]-\mu+\mathbb E_c[b(\mathrm{ctx})]\right\|^2.
-  \]
-  <p>数据方差、随 context 变化的偏差方差和随机误差方差都按 \(1/K\) 缩小；平均系统偏差并不随集成消失。只有 \(\mathbb E_c[\mu_c]+\mathbb E_c[b]=\mu\) 时，该极限才为零。</p>
-</div>
-  <h3>查询覆盖与学习机会</h3>
-<div class="incomplete-theorem incomplete-principle" id="theorem-query-exposure">
-  <h4>Principle · 每个未知坐标都要有机会成为 query</h4>
-  <p>有效的 context–query 抽样应满足以下两条条件。第一，对每个 context 以外的坐标 \(i\)，必须有正的条件 query 概率：</p>
-  \[
-  C_i=0\quad\Longrightarrow\quad\mathbb P(Q_i=1\mid C)>0.
-  \]
-  <p>第二，为了平衡各坐标的学习频率，这些概率应尽量接近：</p>
-  \[
-  \mathbb P(Q_i=1\mid C)\approx\mathbb P(Q_j=1\mid C),
-  \qquad\forall i,j:\ C_i=C_j=0.
-  \]
-  <p>由全概率公式，</p>
-  \[
-  \mathbb P(Q_i=1\mid C)
-  =\sum_M\mathbb P(Q_i=1\mid C,M)\mathbb P(M\mid C).
-  \]
-<p>因此，对每个待预测坐标，都需要存在与当前 \(C\) 相容、且具有正概率的原始掩码 \(M\)，其中该坐标被实际观测，并有机会被选为 query。近似均匀是平衡学习的设计目标；正查询概率是查询损失识别相应条件均值的关键条件。</p>
-</div>
-  <h3>独立掩码交集的覆盖条件</h3>
-<div class="incomplete-theorem" id="ocean-theorem-intersection">
-  <h4>Theorem 7 · 独立掩码交集带来的条件查询正性</h4>
-<p><strong>假设：交集覆盖完备性。</strong></p>
-  <p>记真实二值观测掩码分布的支撑集为 \(S=\{\boldsymbol{x}\in\{0,1\}^d:P(\boldsymbol{M}=\boldsymbol{x})&gt;0\}\)。称 \(\boldsymbol{m}\) 为有效上下文掩码，当且仅当存在 \(\boldsymbol{x},\boldsymbol{y}\in S\) 使 \(\boldsymbol{x}\odot\boldsymbol{y}=\boldsymbol{m}\)。对每个这样的 \(\boldsymbol{m}\)，以及每个 \(m_i=0\) 的坐标，假设存在 \(\boldsymbol{M}_a,\boldsymbol{M}_b\in S\) 同时满足</p>
-  \[
-    \boldsymbol{M}_a\odot\boldsymbol{M}_b=\boldsymbol{m},
-    \qquad (\boldsymbol{M}_a)_i=1.
-  \]
-  <p>第一项要求两幅支撑内掩码可以生成该上下文；第二项要求该坐标至少能在其中一幅观测里出现。永久没有观测的坐标不满足此假设。</p>
-  <p>设 \(\boldsymbol{M}_1,\boldsymbol{M}_2\in\{0,1\}^d\) 从同一分布 \(P(\boldsymbol{M})\) <strong>独立</strong>采样，定义</p>
-  \[
-    \boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{M}_1\odot\boldsymbol{M}_2,
-    \qquad
-    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}_1\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
-  \]
-  <p>若交集覆盖完备性成立，则对任意有效上下文 \(\boldsymbol{m}\) 及任意 \(m_i=0\) 的坐标，均有</p>
-  \[
-    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m}\big)&gt;0.
-  \]
-  <p>证明要点：有效性保证分母 \(P(\boldsymbol{M}_{\mathrm{ctx}}=\boldsymbol{m})&gt;0\)；假设中的掩码对以 \(P(\boldsymbol{M}_a)P(\boldsymbol{M}_b)&gt;0\) 的概率出现，且在 \(m_i=0\) 时使 \((M_{\mathrm{qry}})_i=(M_1)_i=1\)，所以分子也严格为正。这是支撑与覆盖条件下的结论，不是任意掩码分布的无条件保证。</p>
-</div>
-  <h3>二值掩码的连续潜变量参数化</h3>
-
-  <p>实现采用受 Bayesian Flow Network（BFN）启发的连续潜变量参数化。每个像素有 \(C=2\) 个类别：缺失与观测。令 \(c\) 为类别、\(\boldsymbol e_c\) 为 one-hot 向量，使用缩放 \(\kappa&gt;0\) 嵌入后加高斯噪声：</p>
-  <div class="retro-equation">\[
-    \boldsymbol z_0=\kappa\boldsymbol e_c,\qquad
-    \boldsymbol z_t=\alpha_t\boldsymbol z_0+\sigma_t\boldsymbol\epsilon,
-    \qquad \widehat{\boldsymbol e}_\eta
-      \big(t,\operatorname{softmax}(\boldsymbol z_t)\big)\in\Delta^{C-1}.
-  \]</div>
-  <p>Softmax 在每个像素的类别轴上进行。网络看到的是概率向量，并输出干净类别的预测概率；各像素之间可以具有任意空间依赖。这里用 \(\kappa\) 区别于前面的集成次数；数学补充中保留缩放记号 \(K\equiv\kappa\)。</p>
-  <div class="incomplete-theorem" id="ocean-theorem-softmax">
-  <h4>Theorem 8 · Softmax 因子分解</h4>
-  <p>设 \(h:\mathbb{R}^{C}\to\mathbb{R}^{m}\) 满足对任意 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 和 \(a\in\mathbb{R}\)，\(h(\boldsymbol{x}+a\boldsymbol{1})=h(\boldsymbol{x})\)。定义概率单纯形的相对内部</p>
-  \[
-    \Delta^{C-1}_{\circ}=\operatorname{ri}(\Delta^{C-1})
-    =\left\{\boldsymbol{p}\in\mathbb{R}^{C}:p_j&gt;0,\ \sum_{j=1}^{C}p_j=1\right\}.
-  \]
-  <p>则存在唯一函数 \(g:\Delta^{C-1}_{\circ}\to\mathbb{R}^{m}\)，使对所有 \(\boldsymbol{x}\in\mathbb{R}^{C}\) 都有</p>
-  \[
-    h(\boldsymbol{x})=g(\operatorname{softmax}(\boldsymbol{x})),
-    \qquad g(\boldsymbol{p})=h(\log\boldsymbol{p}).
-  \]
-  <p>这里对数逐坐标作用。因为 \(\log\operatorname{softmax}(\boldsymbol{x})=\boldsymbol{x}-\log(\sum_je^{x_j})\boldsymbol{1}\)，平移不变性给出存在性；\(\operatorname{softmax}(\log\boldsymbol{p})=\boldsymbol{p}\) 给出唯一性。对 \(d\) 个像素，如果每个像素的 \(C\) 维 logits 均可独立加常数而不改变 \(h\)，则结论逐块推广为经 \((\Delta^{C-1}_{\circ})^d\) 的唯一分解。</p>
-  <p>有限 logits 不到达单纯形边界，所以定理不规定边界值。如果到闭单纯形的连续延拓存在，它唯一；单凭 \(h\) 连续不能保证该延拓存在。例如 \(h(\boldsymbol{x})=x_1-x_2\) 对应 \(g(\boldsymbol{p})=\log(p_1/p_2)\)，在整个边界上没有有限连续延拓。</p>
-</div>
-  <div class="incomplete-theorem" id="ocean-theorem-posterior">
-  <h4>Theorem 9 · 最优数据预测器的平移不变性</h4>
-  <p>设 \(c\in\{1,\ldots,C\}\) 的先验为 \(\pi_j=P(c=j)\)，\(K&gt;0\)，\(\boldsymbol{x}_0=K\boldsymbol{e}_c\)。固定时间 \(t\)，设</p>
-  \[
-    \boldsymbol{x}_t=\alpha_tK\boldsymbol{e}_c+\sigma_t\boldsymbol{\epsilon},
-    \quad \boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C),
-    \quad \boldsymbol{\epsilon}\perp c,\quad \sigma_t&gt;0.
-  \]
-  <p>则类别后验以及平方损失下的最优数据预测器 \(D_t^*(\boldsymbol{x})=\mathbb{E}[\boldsymbol{x}_0\mid\boldsymbol{x}_t=\boldsymbol{x}]\)，均在 \(\boldsymbol{x}\mapsto\boldsymbol{x}+a\boldsymbol{1}\) 下保持不变。具体地，</p>
-  \[
-    P(c=j\mid\boldsymbol{x}_t=\boldsymbol{x})
-    =\frac{\pi_j e^{\lambda_t x_j}}{\sum_{\ell=1}^{C}\pi_\ell e^{\lambda_t x_\ell}},
-    \quad \lambda_t=\frac{\alpha_tK}{\sigma_t^2},
-    \quad D_t^*(\boldsymbol{x})=K\big(P(c=j\mid\boldsymbol{x}_t=\boldsymbol{x})\big)_{j=1}^{C}.
-  \]
-  <p>对完整掩码，允许像素类别 \(\boldsymbol{c}=(c_1,\ldots,c_d)\) 具有任意联合先验 \(\pi(\boldsymbol{c})\)。若堆叠 logits 上的高斯噪声独立，则</p>
-  \[
-    P(\boldsymbol{c}\mid\boldsymbol{x}_t=\boldsymbol{x})
-    \propto\pi(\boldsymbol{c})\exp\left(\lambda_t\sum_{i=1}^{d}x_{i,c_i}\right).
-  \]
-  <p>对每个像素作独立平移 \(x_{i,j}\mapsto x_{i,j}+a_i\) 时，各类别配置共同乘以 \(\exp(\lambda_t\sum_i a_i)\)，归一化后抵消。因此联合后验、逐像素边际后验和堆叠目标的后验均值都不变；不要求掩码像素相互独立。结合 Softmax 因子分解，数据预测器可仅以逐像素 Softmax 概率为输入。输入概率本身不必等于类别后验。</p>
-</div>
-  <p>这两条结果回答了架构上的关键问题：丢弃 logits 的共同平移，不会损失最优数据预测器需要的信息。但完整 score 含有潜变量的线性项，不能直接把它也当作平移不变函数。</p>
-  <div class="incomplete-theorem" id="ocean-theorem-reparameterization">
-  <h4>Theorem 10 · 离散数据匹配与噪声匹配的精确重参数化</h4>
-  <p>设 \(\boldsymbol{x}_0=K\boldsymbol{e}_c\)、\(K&gt;0\)，且 \(\boldsymbol{x}_t=\alpha_t\boldsymbol{x}_0+\sigma_t\boldsymbol{\epsilon}\)，其中独立噪声 \(\boldsymbol{\epsilon}\sim\mathcal{N}(\boldsymbol{0},I_C)\)。以下等式适用于 \(\alpha_t&gt;0\)、\(\sigma_t&gt;0\) 的非退化时间；端点须单独取极限。设时间权重严格为正、期望有限，采用同一时间采样分布。平方损失的总体最优预测器为</p>
-  \[
-    \boldsymbol{\epsilon}_t^*(\boldsymbol{x})
-    =\mathbb{E}[\boldsymbol{\epsilon}\mid\boldsymbol{x}_t=\boldsymbol{x}]
-    =-\sigma_t\nabla_{\boldsymbol x}\log p_t(\boldsymbol x),
-    \qquad
-    D_t^*(\boldsymbol{x})
-    =\frac{\boldsymbol{x}+\sigma_t^2\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)}{\alpha_t}.
-  \]
-  <p>定义类别概率网络及其对应噪声预测器为</p>
-  \[
-    D_{\theta}(t,\boldsymbol{x})=K\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x})),
-    \qquad
-    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})
-    =\frac{\boldsymbol{x}-\alpha_tD_{\theta}(t,\boldsymbol{x})}{\sigma_t}.
-  \]
-  <p>则对每个样本和每组参数，都有</p>
-  \[
-    \boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}
-    =\frac{\alpha_tK}{\sigma_t}
-       \left(\boldsymbol{e}_c-\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))\right),
-  \]
-  \[
-    \begin{aligned}
-    \mathcal{J}_{\mathrm{noise}}(\theta)
-    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\|\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x}_t)-\boldsymbol{\epsilon}\|^2\right]\\
-    &amp;=\mathbb{E}\left[w_{\mathrm{NM}}(t)\frac{\alpha_t^2K^2}{\sigma_t^2}
-    \|\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}_t))-\boldsymbol{e}_c\|^2\right].
-    \end{aligned}
-  \]
-  <p>取数据权重 \(w(t)=w_{\mathrm{NM}}(t)\alpha_t^2K^2/\sigma_t^2\) 时，离散数据匹配损失与该噪声匹配损失精确相等。其他严格正的时间权重在无限制预测器下具有相同的逐时间总体最优解，但有限容量模型下不保证目标相等或最优参数相同。完整掩码的等式对所有像素类别坐标求和即可。</p>
-  \[
-    -\frac{\boldsymbol{\epsilon}_{\theta}(t,\boldsymbol{x})}{\sigma_t}
-    =\frac{\alpha_tK\widehat{\boldsymbol{e}}_{\theta}(t,\operatorname{softmax}(\boldsymbol{x}))-\boldsymbol{x}}{\sigma_t^2}.
-  \]
-  <p>当类别概率预测等于真实后验时，该式等于真实 score。数据预测器平移不变，而完整 score 与噪声预测器分别满足</p>
-  \[
-    \left.\nabla_{\boldsymbol u}\log p_t(\boldsymbol u)\right|_{\boldsymbol u=\boldsymbol x+a\boldsymbol 1}
-    =\nabla_{\boldsymbol x}\log p_t(\boldsymbol x)-\frac{a}{\sigma_t^2}\boldsymbol{1},
-    \qquad
-    \boldsymbol{\epsilon}_t^*(\boldsymbol{x}+a\boldsymbol{1})
-    =\boldsymbol{\epsilon}_t^*(\boldsymbol{x})+\frac{a}{\sigma_t}\boldsymbol{1}.
-  \]
-  <p>因此只有 Softmax 输入的网络通过数据预测器间接表示 score，必须保留显式的线性潜变量项。上述精确重参数化针对所定义的高斯潜变量模型；与原始 Bayesian Flow Network 完全等价还要求潜变量参数化与噪声日程一致。</p>
-</div>
-
-  <h3>固定容量引导下的查询覆盖</h3>
-<div class="incomplete-theorem" id="ocean-theorem-guided">
-  <h4>Theorem 11 · 容量引导分割下的边际查询正性</h4>
-<p><strong>假设：固定交集容量下的覆盖完备性。</strong></p>
-  <p>固定观测掩码 \(\boldsymbol{M}\in\{0,1\}^d\)，以 \(|\boldsymbol{M}|=\sum_iM_i\) 表示有效观测数。令 \(C_k\) 为生成掩码满足的硬约束</p>
-  \[
-    C_k:\quad |\widehat{\boldsymbol{M}}\odot\boldsymbol{M}|=k,
-    \qquad 0&lt;k&lt;|\boldsymbol{M}|.
-  \]
-  <p>记条件生成分布的支撑为</p>
-  \[
-    S_{\mathrm{guided}}=\{\widehat{\boldsymbol{m}}\in\{0,1\}^d:P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)&gt;0\}.
-  \]
-  <p>假设对每个 \(M_i=1\) 的坐标，都存在至少一个 \(\widehat{\boldsymbol{M}}_a\in S_{\mathrm{guided}}\) 使 \((\widehat{\boldsymbol{M}}_a)_i=0\)。也就是说，限制上下文容量之后，没有某个有效坐标被所有支撑内掩码永远保留。</p>
-  <p>固定 \(\boldsymbol{M}\in\{0,1\}^d\)，设 \(\widehat{\boldsymbol{M}}\sim P(\widehat{\boldsymbol{M}}\mid C_k)\) 满足上面的硬交集约束，并定义</p>
-  \[
-    \boldsymbol{M}_{\mathrm{ctx}}=\widehat{\boldsymbol{M}}\odot\boldsymbol{M},
-    \qquad
-    \boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\boldsymbol{M}_{\mathrm{ctx}}).
-  \]
-  <p>若固定交集容量下的覆盖完备性成立，则对每个 \(M_i=1\) 的有效观测坐标，</p>
-  \[
-    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)&gt;0.
-  \]
-  <p>因为 \(\boldsymbol{M}\) 为二值掩码，\(\boldsymbol{M}_{\mathrm{qry}}=\boldsymbol{M}\odot(\boldsymbol{1}-\widehat{\boldsymbol{M}})\)。所以在 \(M_i=1\) 时，</p>
-  \[
-    P\big((\boldsymbol{M}_{\mathrm{qry}})_i=1\mid C_k\big)
-    =P(\widehat M_i=0\mid C_k)
-    =\sum_{\substack{\widehat{\boldsymbol{m}}\in S_{\mathrm{guided}}\\\widehat m_i=0}}
-      P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{m}}\mid C_k)
-    \ge P(\widehat{\boldsymbol{M}}=\widehat{\boldsymbol{M}}_a\mid C_k)&gt;0.
-  \]
-  <p><strong>适用范围：</strong>此处的正性条件以固定观测与容量事件 \(C_k\) 为条件，表示跨采样的边际查询机会；它不等价于给定每个上下文后的条件查询正性。实际采样采用随机锚点与软交叉熵引导，没有精确固定交集大小；因此上述定理给出支撑层面的充分条件，实际采样器的覆盖还需实验检查。</p>
-</div>
 </section>
