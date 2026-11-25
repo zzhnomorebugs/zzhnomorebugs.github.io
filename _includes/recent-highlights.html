@@ -1,5 +1,3 @@
-{% include base_path %}
-
 {% assign highlighted = site.publications | where_exp: "p", "p.highlight == true" | sort: "date" | reverse %}
 {% assign pinned = highlighted | where_exp: "p", "p.highlight_pin == true" %}
 {% assign rest = highlighted | where_exp: "p", "p.highlight_pin != true" %}
@@ -7,63 +5,60 @@
 {% if items.size == 0 %}
   {% assign items = site.publications | where_exp: "p", "p.poster_image" | sort: "date" | reverse %}
 {% endif %}
+{% assign localized_projects = home_projects | where: "lang", home_locale %}
 
 <div class="recent-highlights">
   {% for post in items limit: 4 %}
-    {% assign venue_raw = post.venue | default: "" %}
-    {% assign venue_label = venue_raw | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | strip %}
-    {% assign preview_image = post.poster_thumb | default: post.poster_image | default: post.image %}
-    {% assign full_image = post.poster_image | default: post.image %}
-    {% assign thumb_src = preview_image | prepend: "/images/" | prepend: base_path %}
-    {% assign full_src = full_image | prepend: "/images/" | prepend: base_path %}
-    <article class="recent-highlight-card">
-      <div class="recent-highlight-card__poster">
-        <a href="{{ full_src }}" class="image-popup">
-          <img src="{{ thumb_src }}" alt="{% if page.lang == 'zh-CN' %}论文海报：{% else %}Poster: {% endif %}{{ post.title | escape }}" loading="lazy" decoding="async" width="480" height="360">
-        </a>
-      </div>
-      <div class="recent-highlight-card__body">
-        <div class="recent-highlight-card__badges">
-          <span class="highlight-badge">{{ venue_label }}</span>
-        </div>
-        <h3 class="recent-highlight-card__title">
-          {% if post.paperurl %}
-            <a href="{{ post.paperurl }}"{% include paper-link-target.html %}>{{ post.title }}</a>
-          {% else %}
-            {{ post.title }}
-          {% endif %}
-        </h3>
-        {% if post.authors %}<p class="recent-highlight-card__authors">{{ post.authors }}</p>{% endif %}
-        {% if page.lang == "zh-CN" %}
-          {% assign display_summary = post.highlight_summary_zh | default: post.highlight_summary %}
+    {% assign paper_slug = post.url | split: "/" | last %}
+    {% assign walkthrough = localized_projects | where: "papers", paper_slug | first %}
+    {% assign figure = site.data.home_publication_figures[paper_slug] %}
+    {% assign figure_image = figure.image | default: post.image %}
+    {% assign venue_label = post.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | replace: "  ", " " | strip %}
+    {% assign poster_url = post.posterurl %}
+    {% if poster_url == nil and post.poster_image %}
+      {% assign poster_url = post.poster_image | prepend: "/images/" | prepend: base_path %}
+    {% endif %}
+    {% if home_lang == "zh" %}
+      {% assign display_summary = post.highlight_summary_zh | default: post.highlight_summary %}
+      {% assign display_abstract = post.excerpt_zh | default: post.tldr_zh %}
+    {% else %}
+      {% assign display_summary = post.highlight_summary %}
+      {% assign display_abstract = post.excerpt | default: post.tldr %}
+    {% endif %}
+
+    <article class="recent-highlight-card{% if figure_image %} recent-highlight-card--illustrated{% endif %}">
+      <h3 class="recent-highlight-card__title">
+        {% if post.paperurl %}
+          <a href="{{ post.paperurl }}"{% include paper-link-target.html %}>{{ post.title }}</a>
         {% else %}
-          {% assign display_summary = post.highlight_summary %}
+          {{ post.title }}
         {% endif %}
-        {% if display_summary %}
-          <p class="recent-highlight-card__summary">{{ display_summary }}</p>
-        {% endif %}
-        {% if post.paperurl or post.posterurl or post.githuburl %}
-          <div class="publication-links recent-highlight-card__links">
-            {% if post.arxivurl %}<a class="publication-link-btn" href="{{ post.arxivurl }}"{% include paper-link-target.html %}>arXiv</a>{% endif %}
-            {% if post.paperurl %}<a class="publication-link-btn" href="{{ post.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
-            {% if post.posterurl or post.poster_image %}<a class="publication-link-btn" href="{{ post.posterurl | default: full_src }}"{% include paper-link-target.html %}>Poster</a>{% endif %}
-            {% if post.githuburl %}<a class="publication-link-btn publication-link-btn--code" href="{{ post.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
+      </h3>
+      <div class="recent-highlight-card__body">
+        {% if post.authors %}<p class="recent-highlight-card__authors">{{ post.authors }}</p>{% endif %}
+        {% if venue_label != empty %}<p class="recent-highlight-card__venue">{{ venue_label }}</p>{% endif %}
+        {% if display_summary %}<p class="recent-highlight-card__summary">{{ display_summary }}</p>{% endif %}
+        {% if post.arxivurl or post.paperurl or poster_url or post.githuburl or walkthrough %}
+          <div class="recent-highlight-card__links">
+            {% if post.arxivurl %}<a href="{{ post.arxivurl }}"{% include paper-link-target.html %}>arXiv</a>{% endif %}
+            {% if post.paperurl %}<a href="{{ post.paperurl }}"{% include paper-link-target.html %}>Paper</a>{% endif %}
+            {% if poster_url %}<a href="{{ poster_url }}"{% include paper-link-target.html %}>Poster</a>{% endif %}
+            {% if post.githuburl %}<a href="{{ post.githuburl }}"{% include paper-link-target.html %}>Code</a>{% endif %}
+            {% if walkthrough %}<a href="{{ base_path }}{{ walkthrough.url }}">{% if home_lang == "zh" %}项目讲解{% else %}Project walkthrough{% endif %}</a>{% endif %}
           </div>
         {% endif %}
-      {% if page.lang == "zh-CN" %}
-        {% assign display_abstract = post.excerpt_zh | default: post.tldr_zh %}
-        {% assign abstract_label = "阅读摘要" %}
-      {% else %}
-        {% assign display_abstract = post.excerpt | default: post.tldr %}
-        {% assign abstract_label = "Read abstract" %}
+      </div>
+      {% if figure_image %}
+        <figure class="recent-highlight-card__figure">
+          <img src="{{ base_path }}/images/{{ figure_image }}" alt="{{ figure.alt[home_lang] | escape }}" loading="lazy" decoding="async">
+        </figure>
       {% endif %}
       {% if display_abstract %}
         <details class="recent-highlight-card__abstract">
-          <summary>{{ abstract_label }}</summary>
+          <summary>{% if home_lang == "zh" %}阅读摘要{% else %}Read abstract{% endif %}</summary>
           <div>{{ display_abstract | markdownify }}</div>
         </details>
       {% endif %}
-      </div>
     </article>
   {% endfor %}
 </div>

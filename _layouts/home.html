@@ -4,71 +4,84 @@ layout: default
 {% include base_path %}
 {% assign home_lang = "en" %}
 {% assign home_prefix = "" %}
+{% assign home_locale = "en" %}
 {% if page.lang == "zh-CN" %}
   {% assign home_lang = "zh" %}
   {% assign home_prefix = "/zh" %}
+  {% assign home_locale = "zh-CN" %}
 {% endif %}
+{% assign home_projects = site.research | where: "research_project", true | where_exp: "project", "project.published != false" %}
 
 <main id="main" class="main--home">
   <article class="home page__content">
     <header class="home-hero" aria-labelledby="home-name">
-      <div class="home-hero__intro">
-        <p class="home-eyebrow">AI for Science · Generative Modeling</p>
-        <h1 id="home-name">{% if home_lang == "zh" %}周子涵 <span>Zihan Zhou</span>{% else %}Zihan Zhou <span lang="zh">周子涵</span>{% endif %}</h1>
-        <div class="home-hero__bio">{{ content }}</div>
-        <div class="home-hero__actions">
-          <a class="home-action-btn home-action-btn--primary" href="{{ base_path }}{{ home_prefix }}/cv/">{% if home_lang == "zh" %}查看简历{% else %}View CV{% endif %} <span aria-hidden="true">↗</span></a>
-          <a class="home-action-btn" href="mailto:{{ site.author.email }}">{% if home_lang == "zh" %}邮箱{% else %}Email{% endif %}</a>
-          <a class="home-action-btn" href="{{ site.author.googlescholar | escape }}"{% include paper-link-target.html %}>Google Scholar</a>
-          <a class="home-action-btn" href="https://github.com/{{ site.author.github }}"{% include paper-link-target.html %}>GitHub</a>
-        </div>
+      <div class="home-hero__identity">
+        <h1 id="home-name">{% if home_lang == "zh" %}周子涵 <span lang="en">Zihan Zhou</span>{% else %}Zihan Zhou <span lang="zh">周子涵</span>{% endif %}</h1>
+        <p class="home-hero__affiliation">{{ page.affiliation | markdownify | remove: '<p>' | remove: '</p>' }}</p>
       </div>
       <div class="home-hero__portrait">
         <img src="{{ base_path }}/images/{{ site.author.avatar }}" alt="{% if home_lang == 'zh' %}周子涵的照片{% else %}Portrait of Zihan Zhou{% endif %}" width="175" height="219" fetchpriority="high">
         <p>{% if home_lang == "zh" %}中国 · 深圳{% else %}Shenzhen, China{% endif %}{% if site.author.pronouns %} · {{ site.author.pronouns }}{% endif %}</p>
       </div>
+      <div class="home-hero__intro">
+        <div class="home-hero__bio">{{ content }}</div>
+        <div class="home-hero__actions">
+          <a class="home-action-btn" href="{{ base_path }}{{ home_prefix }}/cv/">{% if home_lang == "zh" %}查看简历{% else %}View CV{% endif %}</a>
+          <div class="home-hero__profiles">
+            <a href="mailto:{{ site.author.email }}">{% if home_lang == "zh" %}邮箱{% else %}Email{% endif %}</a>
+            <a href="{{ site.author.googlescholar | escape }}"{% include paper-link-target.html %}>Google Scholar</a>
+            <a href="https://github.com/{{ site.author.github }}"{% include paper-link-target.html %}>GitHub</a>
+          </div>
+        </div>
+      </div>
     </header>
+
+    <nav class="home-research" aria-labelledby="research-interests">
+      <h2 id="research-interests">{% if home_lang == "zh" %}研究方向{% else %}Research interests{% endif %}</h2>
+      <ul class="home-research__topics">
+        {% for item in site.data.research_interests %}
+          {% assign topic_url = item.path | prepend: home_prefix %}
+          {% assign topic_project = home_projects | where: "url", topic_url | first %}
+          <li>
+            {% if topic_project %}
+              <a href="{{ base_path }}{{ topic_project.url }}">{{ item.title[home_lang] }}</a>
+            {% else %}
+              {{ item.title[home_lang] }}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+      <a class="home-text-link home-research__all" href="{{ base_path }}{{ home_prefix }}/research/">{% if home_lang == "zh" %}全部项目讲解{% else %}All project walkthroughs{% endif %}</a>
+    </nav>
 
     <section class="home-section" aria-labelledby="selected-publications">
       <div class="home-section__heading">
         <h2 id="selected-publications">{% if home_lang == "zh" %}精选论文{% else %}Selected publications{% endif %}</h2>
-        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/publications/">{% if home_lang == "zh" %}全部论文{% else %}All publications{% endif %} <span aria-hidden="true">↗</span></a>
+        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/publications/">{% if home_lang == "zh" %}全部论文{% else %}All publications{% endif %}</a>
       </div>
       {% include recent-highlights.html %}
-    </section>
-
-    <section class="home-section" aria-labelledby="research-interests">
-      <div class="home-section__heading">
-        <h2 id="research-interests">{% if home_lang == "zh" %}研究方向{% else %}Research interests{% endif %}</h2>
-        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/research/">{% if home_lang == "zh" %}项目讲解{% else %}Project walkthroughs{% endif %} <span aria-hidden="true">↗</span></a>
-      </div>
-      {% include research-interest-cards.html %}
     </section>
 
     <section class="home-section" aria-labelledby="recent-experience">
       <div class="home-section__heading">
         <h2 id="recent-experience">{% if home_lang == "zh" %}近期经历{% else %}Recent experience{% endif %}</h2>
-        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/experience/">{% if home_lang == "zh" %}完整经历{% else %}Full experience{% endif %} <span aria-hidden="true">↗</span></a>
+        <a class="home-text-link" href="{{ base_path }}{{ home_prefix }}/experience/">{% if home_lang == "zh" %}完整经历{% else %}Full experience{% endif %}</a>
       </div>
       <ul class="home-experience">
         {% for entry in site.data.experience.entries limit: 3 %}
           <li>
             <span class="home-experience__period">{{ entry.period[home_lang] | replace: " -- ", " – " }}</span>
-            <div class="home-experience__body">
+            <div class="home-experience__logo-wrap">
               {% if entry.logo %}
-                <div class="home-experience__logo-wrap">
-                  <img
-                    src="{{ entry.logo | prepend: '/images/' | prepend: base_path }}"
-                    alt="{{ entry.company.en }} logo"
-                    class="home-experience__logo"
-                    loading="lazy">
-                </div>
+                <img
+                  src="{{ entry.logo | prepend: '/images/' | prepend: base_path }}"
+                  alt=""
+                  class="home-experience__logo"
+                  loading="lazy">
               {% endif %}
-              <div>
-                <h3>{{ entry.company[home_lang] }}</h3>
-                <p>{{ entry.role[home_lang] }}</p>
-              </div>
             </div>
+            <h3>{{ entry.company[home_lang] }}</h3>
+            <p class="home-experience__role">{{ entry.role[home_lang] }}</p>
           </li>
         {% endfor %}
       </ul>
@@ -79,7 +92,7 @@ layout: default
         <h2 id="get-in-touch">{% if home_lang == "zh" %}联系我{% else %}Get in touch{% endif %}</h2>
         <p>{% if home_lang == "zh" %}欢迎交流 AI for Science 与生成建模。{% else %}For conversations about AI for Science and generative modeling.{% endif %}</p>
       </div>
-      <a class="home-text-link" href="mailto:{{ site.author.email }}">{{ site.author.email }} <span aria-hidden="true">↗</span></a>
+      <a class="home-text-link" href="mailto:{{ site.author.email }}">{{ site.author.email }}</a>
     </section>
   </article>
 </main>
