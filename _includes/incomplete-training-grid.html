@@ -1,6 +1,41 @@
-{% assign idcd_cells = include.cells | split: ' ' %}
-<div class="idcd-grid" aria-hidden="true">
-  {% for idcd_cell in idcd_cells %}
-    <span data-cell="{{ idcd_cell }}"{% if include.focus %}{% if forloop.index == 1 or forloop.index == 6 %} data-focus{% endif %}{% endif %}></span>
-  {% endfor %}
-</div>
+{% assign art_width = 2400 %}
+{% assign art_height = 1548 %}
+{% assign art_file = 'context-query.webp' %}
+{% case include.panel %}
+  {% when 'stack' %}{% assign art_crop = '102 196 439 365' %}
+  {% when 'pixel-split' %}{% assign art_crop = '846 203 398 398' %}
+  {% when 'pixel-prediction' %}{% assign art_crop = '1856 203 398 398' %}
+  {% when 'block-split' %}{% assign art_crop = '845 850 398 398' %}
+  {% when 'noisy-context', 'block-alternative', 'pixel-input' %}
+    {% assign art_width = 1200 %}
+    {% assign art_height = 400 %}
+    {% assign art_file = 'context-query-detail.webp' %}
+    {% case include.panel %}
+      {% when 'noisy-context' %}{% assign art_crop = '0 0 400 400' %}
+      {% when 'block-alternative' %}{% assign art_crop = '400 0 400 400' %}
+      {% when 'pixel-input' %}{% assign art_crop = '800 0 400 400' %}
+    {% endcase %}
+  {% else %}{% assign art_crop = '1856 851 397 397' %}
+{% endcase %}
+<svg class="idcd-field{% if include.panel == 'stack' %} idcd-field--stack{% endif %}" data-field="{{ include.panel }}" viewBox="0 0 300 300" aria-hidden="true">
+  <svg width="300" height="300" viewBox="{{ art_crop }}" preserveAspectRatio="{% if include.panel == 'stack' %}xMidYMid meet{% else %}none{% endif %}" overflow="hidden">
+    <image href="{{ base_path }}/images/research/incomplete-learning/{{ art_file }}" width="{{ art_width }}" height="{{ art_height }}"{% if include.panel == 'prediction' %} class="idcd-field__prediction"{% endif %}/>
+  </svg>
+  {% if include.cells %}
+    {% assign art_cells = include.cells | split: ' ' %}
+    {% for art_cell in art_cells %}
+      {% if art_cell != 'field' %}
+        {% assign art_x = forloop.index0 | modulo: 3 | times: 100 %}
+        {% assign art_y = forloop.index0 | divided_by: 3 | times: 100 %}
+        <rect class="idcd-field__{{ art_cell }}" x="{{ art_x }}" y="{{ art_y }}" width="100" height="100"/>
+      {% endif %}
+    {% endfor %}
+    <path class="idcd-field__guides" d="M100 0v300m100-300v300M0 100h300M0 200h300"/>
+  {% endif %}
+  {% if include.panel != 'stack' %}<rect class="idcd-field__frame" x="0.5" y="0.5" width="299" height="299"/>{% endif %}
+  {% if include.focus == 'missing' %}
+    <path class="idcd-field__focus" d="M3 3h94v94H3zM203 103h94v94h-94z"/>
+  {% elsif include.focus == 'query' %}
+    <path class="idcd-field__focus" d="M203 3h94v94h-94zM3 103h94v94H3zM103 203h94v94h-94z"/>
+  {% endif %}
+</svg>
