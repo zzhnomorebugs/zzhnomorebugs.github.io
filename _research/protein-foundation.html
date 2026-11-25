@@ -71,9 +71,9 @@ project_chapters:
   </figure>
   <h3>Model design: Compare the backbone, conditioning, and sampling choices</h3>
   <p>The model adapts an ESM-2 Transformer into a diffusion Transformer (DiT), comparing Bayesian flow networks (BFN) and discrete flow matching (DFM) on a shared 650M architecture. The studies also examine ways to use MSA conditions: additive profile embeddings, Perceiver cross-attention, and profile initialization for DFM.</p>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-1-caption">
     <table class="retro-comparison">
-      <caption>Table 1 · Model design dimensions and comparison objectives</caption>
+      <caption id="project-table-1-caption">Table 1 · Model design dimensions and comparison objectives</caption>
       <thead><tr><th scope="col">Design dimension</th><th scope="col">What is compared</th><th scope="col">Question addressed</th></tr></thead>
       <tbody>
         <tr><th scope="row">Generative framework</th><td>BFN / DFM on a shared 650M architecture</td><td>How do the different generative frameworks model sequences?</td></tr>
@@ -164,9 +164,9 @@ counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
     <div><h3>First: Aggregate over MSA depth</h3><p>Count across \(N\) sequences to aggregate a logical \(N\times L\times K\) array of class indicators into \(L\times K\) counts. When the model uses per-position profiles, the full one-hot expansion need not be stored persistently.</p></div>
     <div><h3>Second: Choose a compact integer representation</h3><p>Counts are inherently integers. For the same \(L\times K\) shape, a compact integer type covering the count range reduces the bytes per element; conversion to floating point happens when loading.</p></div>
   </div>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-2-caption">
     <table class="retro-comparison">
-      <caption>Table 2 · Representations of an MSA, integer counts, and a floating-point profile</caption>
+      <caption id="project-table-2-caption">Table 2 · Representations of an MSA, integer counts, and a floating-point profile</caption>
       <thead><tr><th scope="col">Representation</th><th scope="col">Logical shape</th><th scope="col">Information retained</th><th scope="col">Role in the pipeline</th></tr></thead>
       <tbody>
         <tr><th scope="row">Aligned MSA tokens</th><td>\(N\times L\)</td><td>The class at each position in every sequence</td><td>Input to offline counting</td></tr>
@@ -219,9 +219,9 @@ profile = to_float(C) / N</code></pre>
   <p class="retro-kicker">Engineering contributions</p>
   <h2><span class="retro-chapter__number">06</span> Connect model design to a working large-scale training pipeline</h2>
   <p class="retro-lede">Model design determines how MSA conditions are used; engineering makes it possible to compute, store, and deliver those conditions to training at scale. The project focuses on connecting the two and using early comparisons to support full training.</p>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-3-caption">
     <table class="retro-comparison">
-      <caption>Table 3 · From concrete problems to completed work</caption>
+      <caption id="project-table-3-caption">Table 3 · From concrete problems to completed work</caption>
       <thead><tr><th scope="col">Problem</th><th scope="col">Key change</th><th scope="col">Result</th></tr></thead>
       <tbody>
         <tr><th scope="row">Data processing overhead</th><td>Position indexing, partitioned parallelism, and tokenizer timing comparisons</td><td>Reduced repeated lookup; approximately 40% speedup in the tokenizer stage</td></tr>

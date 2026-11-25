@@ -71,9 +71,9 @@ project_chapters:
   </figure>
   <h3>模型设计：围绕骨干、条件与采样开展对照</h3>
   <p>模型侧将 ESM-2 Transformer 改造为扩散 Transformer（DiT），并在共享的 650M 架构上比较贝叶斯流网络（BFN）与离散流匹配（DFM）。MSA 条件的使用方式也是研究对象，包括加性 profile 嵌入、Perceiver 交叉注意力，以及 DFM 的 profile 初始化策略。</p>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-1-caption">
     <table class="retro-comparison">
-      <caption>表 1 · 模型侧的设计与对照分工</caption>
+      <caption id="project-table-1-caption">表 1 · 模型侧的设计与对照分工</caption>
       <thead><tr><th scope="col">设计维度</th><th scope="col">比较内容</th><th scope="col">要回答的问题</th></tr></thead>
       <tbody>
         <tr><th scope="row">生成框架</th><td>共享 650M 架构上的 BFN / DFM</td><td>不同生成框架如何完成序列建模？</td></tr>
@@ -164,9 +164,9 @@ counts, msa_count = aggregate_by_position(aligned_tokens)</code></pre>
     <div><h3>第一层：聚合 MSA 深度</h3><p>沿 \(N\) 条序列统计，将逻辑上的 \(N\times L\times K\) 类别指示量汇总为 \(L\times K\) 计数。模型使用逐位点 profile 时，无需持久化完整 one-hot 展开。</p></div>
     <div><h3>第二层：选择紧凑整数表示</h3><p>计数天然是整数。在相同 \(L\times K\) 形状下，以能覆盖计数范围的紧凑整数类型存储，减少每个元素所占的字节数；读取时再转成浮点数。</p></div>
   </div>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-2-caption">
     <table class="retro-comparison">
-      <caption>表 2 · MSA、整数计数与浮点 profile 的表示区别</caption>
+      <caption id="project-table-2-caption">表 2 · MSA、整数计数与浮点 profile 的表示区别</caption>
       <thead><tr><th scope="col">表示</th><th scope="col">逻辑形状</th><th scope="col">保留的信息</th><th scope="col">在流程中的用途</th></tr></thead>
       <tbody>
         <tr><th scope="row">对齐后的 MSA token</th><td>\(N\times L\)</td><td>每条序列各个位点的类别</td><td>离线统计的输入</td></tr>
@@ -219,9 +219,9 @@ profile = to_float(C) / N</code></pre>
   <p class="retro-kicker">Engineering contributions</p>
   <h2><span class="retro-chapter__number">06</span> 将模型设计接到可运行的大规模训练链路</h2>
   <p class="retro-lede">模型设计确定如何利用 MSA 条件，工程实现则让这些条件能够被大规模地计算、保存和送入训练。项目重点在于把两者连接起来，并用前期对照支持完整训练。</p>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-3-caption">
     <table class="retro-comparison">
-      <caption>表 3 · 从具体问题到已完成工作</caption>
+      <caption id="project-table-3-caption">表 3 · 从具体问题到已完成工作</caption>
       <thead><tr><th scope="col">问题</th><th scope="col">关键改动</th><th scope="col">对应结果</th></tr></thead>
       <tbody>
         <tr><th scope="row">数据处理开销</th><td>位置索引、分块并行与 tokenizer 计时筛选</td><td>减少重复查找；tokenizer 环节提速约 40%</td></tr>

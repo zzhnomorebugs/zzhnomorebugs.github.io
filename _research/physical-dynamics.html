@@ -276,12 +276,12 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 2 · Main experimental errors for the three-body and five-spring systems</caption>
       <thead><tr><th scope="col">System</th><th scope="col">Metric ↓</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="3">Three-body · energy-related supervision</th><td>Trajectory MSE</td><td>\(2.4132\pm 0.1208\)</td><td>\(1.9880\pm 0.3418\)</td></tr>
-        <tr><td>Velocity MSE</td><td>\(2.5745\pm 0.0790\)</td><td>\(0.8328\pm 0.1042\)</td></tr>
-        <tr><td>Energy error</td><td>\(4.3292\pm 0.7235\)</td><td>\(0.5465\pm 0.0705\)</td></tr>
-        <tr><th scope="row" rowspan="3">Five-spring · momentum constraint</th><td>Dynamic MSE (\(\times 10^{-2}\))</td><td>\(5.1754\pm 0.0286\)</td><td>\(5.0731\pm 0.0406\)</td></tr>
-        <tr><td>Momentum error</td><td>\(5.3699\pm 0.0462\)</td><td>\(0.3898\pm 0.0118\)</td></tr>
-        <tr><td>Energy error</td><td>\(1.0618\pm 0.0243\)</td><td>\(0.7418\pm 0.0129\)</td></tr>
+        <tr><th scope="row" rowspan="3">Three-body · energy-related supervision</th><td>Trajectory MSE</td><td class="retro-comparison__number">2.4132 <span class="retro-comparison__uncertainty">± 0.1208</span></td><td class="retro-comparison__number">1.9880 <span class="retro-comparison__uncertainty">± 0.3418</span></td></tr>
+        <tr><td>Velocity MSE</td><td class="retro-comparison__number">2.5745 <span class="retro-comparison__uncertainty">± 0.0790</span></td><td class="retro-comparison__number">0.8328 <span class="retro-comparison__uncertainty">± 0.1042</span></td></tr>
+        <tr><td>Energy error</td><td class="retro-comparison__number">4.3292 <span class="retro-comparison__uncertainty">± 0.7235</span></td><td class="retro-comparison__number">0.5465 <span class="retro-comparison__uncertainty">± 0.0705</span></td></tr>
+        <tr><th scope="row" rowspan="3">Five-spring · momentum constraint</th><td>Dynamic MSE (\(\times 10^{-2}\))</td><td class="retro-comparison__number">5.1754 <span class="retro-comparison__uncertainty">± 0.0286</span></td><td class="retro-comparison__number">5.0731 <span class="retro-comparison__uncertainty">± 0.0406</span></td></tr>
+        <tr><td>Momentum error</td><td class="retro-comparison__number">5.3699 <span class="retro-comparison__uncertainty">± 0.0462</span></td><td class="retro-comparison__number">0.3898 <span class="retro-comparison__uncertainty">± 0.0118</span></td></tr>
+        <tr><td>Energy error</td><td class="retro-comparison__number">1.0618 <span class="retro-comparison__uncertainty">± 0.0243</span></td><td class="retro-comparison__number">0.7418 <span class="retro-comparison__uncertainty">± 0.0129</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -305,11 +305,11 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 3 · PDE prediction and generation evaluation</caption>
       <thead><tr><th scope="col">Task and metric ↓</th><th scope="col">Dataset</th><th scope="col">Without feasibility terms</th><th scope="col">With feasibility terms</th></tr></thead>
       <tbody>
-        <tr><th scope="row" rowspan="2">Prediction RMSE (\(\times 10^{-2}\))</th><td>Advection</td><td>\(1.7263\pm 0.0491\)</td><td>\(1.6536\pm 0.0677\)</td></tr>
-        <tr><td>Darcy flow</td><td>\(2.0648\pm 0.0600\)</td><td>\(1.9678\pm 0.0651\)</td></tr>
-        <tr><th scope="row" rowspan="3">PDE residual RMSE of generated fields</th><td>Advection</td><td>\(2.398\pm 0.024\)</td><td>\(2.305\pm 0.001\)</td></tr>
-        <tr><td>Burgers</td><td>\(6.862\pm 0.060\)</td><td>\(6.610\pm 0.012\)</td></tr>
-        <tr><td>Shallow water</td><td>\(8.0153\pm 0.0960\)</td><td>\(7.7618\pm 0.0645\)</td></tr>
+        <tr><th scope="row" rowspan="2">Prediction RMSE (\(\times 10^{-2}\))</th><td>Advection</td><td class="retro-comparison__number">1.7263 <span class="retro-comparison__uncertainty">± 0.0491</span></td><td class="retro-comparison__number">1.6536 <span class="retro-comparison__uncertainty">± 0.0677</span></td></tr>
+        <tr><td>Darcy flow</td><td class="retro-comparison__number">2.0648 <span class="retro-comparison__uncertainty">± 0.0600</span></td><td class="retro-comparison__number">1.9678 <span class="retro-comparison__uncertainty">± 0.0651</span></td></tr>
+        <tr><th scope="row" rowspan="3">PDE residual RMSE of generated fields</th><td>Advection</td><td class="retro-comparison__number">2.398 <span class="retro-comparison__uncertainty">± 0.024</span></td><td class="retro-comparison__number">2.305 <span class="retro-comparison__uncertainty">± 0.001</span></td></tr>
+        <tr><td>Burgers</td><td class="retro-comparison__number">6.862 <span class="retro-comparison__uncertainty">± 0.060</span></td><td class="retro-comparison__number">6.610 <span class="retro-comparison__uncertainty">± 0.012</span></td></tr>
+        <tr><td>Shallow water</td><td class="retro-comparison__number">8.0153 <span class="retro-comparison__uncertainty">± 0.0960</span></td><td class="retro-comparison__number">7.7618 <span class="retro-comparison__uncertainty">± 0.0645</span></td></tr>
       </tbody>
     </table>
   </div>
@@ -333,9 +333,9 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 4 · Ablation of nonlinear constraint treatments for the three-body system</caption>
       <thead><tr><th scope="col">Training setting</th><th scope="col">Trajectory error ↓</th><th scope="col">Velocity error ↓</th><th scope="col">Energy error ↓</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Without feasibility terms</th><td>2.5613</td><td>2.6555</td><td>3.8941</td></tr>
-        <tr><th scope="row">Direct penalty on total-energy variation</th><td>2.6048</td><td>2.6437</td><td>4.2219</td></tr>
-        <tr class="retro-highlight"><th scope="row">Decomposed energy-related supervision</th><td>1.6072</td><td>0.7307</td><td>0.5062</td></tr>
+        <tr><th scope="row">Without feasibility terms</th><td class="retro-comparison__number">2.5613</td><td class="retro-comparison__number">2.6555</td><td class="retro-comparison__number">3.8941</td></tr>
+        <tr><th scope="row">Direct penalty on total-energy variation</th><td class="retro-comparison__number">2.6048</td><td class="retro-comparison__number">2.6437</td><td class="retro-comparison__number">4.2219</td></tr>
+        <tr class="retro-highlight"><th scope="row">Decomposed energy-related supervision</th><td class="retro-comparison__number">1.6072</td><td class="retro-comparison__number">0.7307</td><td class="retro-comparison__number">0.5062</td></tr>
       </tbody>
     </table>
   </div>
@@ -346,10 +346,10 @@ project_chapters:
     <table class="retro-comparison physical-metric-table"><caption>Table 5 · Ablation of diffusion matching objectives</caption>
       <thead><tr><th scope="col">Data and evaluation metric ↓</th><th scope="col">Objective used</th><th scope="col">Corresponding error</th><th scope="col">Error with the alternative objective</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Three-body · mean trajectory and velocity error</th><td>Noise matching</td><td>2.6084</td><td>4.7241</td></tr>
-        <tr><th scope="row">Five-spring · dynamic error</th><td>Noise matching</td><td>5.1929</td><td>5.3120</td></tr>
-        <tr><th scope="row">Darcy · prediction RMSE</th><td>Data matching</td><td>2.016</td><td>7.268</td></tr>
-        <tr><th scope="row">Shallow water · PDE residual RMSE</th><td>Data matching</td><td>8.150</td><td>27.40</td></tr>
+        <tr><th scope="row">Three-body · mean trajectory and velocity error</th><td>Noise matching</td><td class="retro-comparison__number">2.6084</td><td class="retro-comparison__number">4.7241</td></tr>
+        <tr><th scope="row">Five-spring · dynamic error</th><td>Noise matching</td><td class="retro-comparison__number">5.1929</td><td class="retro-comparison__number">5.3120</td></tr>
+        <tr><th scope="row">Darcy · prediction RMSE</th><td>Data matching</td><td class="retro-comparison__number">2.016</td><td class="retro-comparison__number">7.268</td></tr>
+        <tr><th scope="row">Shallow water · PDE residual RMSE</th><td>Data matching</td><td class="retro-comparison__number">8.150</td><td class="retro-comparison__number">27.40</td></tr>
       </tbody>
     </table>
   </div>

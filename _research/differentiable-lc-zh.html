@@ -73,13 +73,13 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">图 3 · FNO 的训练和正向预测。每一步复用同一个算子，把各步的出口流体浓度连起来就得到曲线。</figcaption>
   </figure>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-1-caption">
     <table class="retro-comparison lc-comparison">
-      <caption>表 1 · 正向预测对照。统计有限元参考曲线有可辨峰的 1,388 个测试样本。</caption>
+      <caption id="project-table-1-caption">表 1 · 正向预测对照。统计有限元参考曲线有可辨峰的 1,388 个测试样本。</caption>
       <thead><tr><th scope="col">指标</th><th scope="col">PINN</th><th scope="col">FNO</th></tr></thead>
       <tbody>
-        <tr><th scope="row">出口浓度 RMSE 中位数（无量纲）</th><td>0.00278</td><td>0.00318</td></tr>
-        <tr><th scope="row">预测无可辨峰的比例</th><td>1.59%</td><td>19.4%</td></tr>
+        <tr><th scope="row">出口浓度 RMSE 中位数（无量纲）</th><td class="retro-comparison__number">0.00278</td><td class="retro-comparison__number">0.00318</td></tr>
+        <tr><th scope="row">预测无可辨峰的比例</th><td class="retro-comparison__number">1.59%</td><td class="retro-comparison__number">19.4%</td></tr>
       </tbody>
     </table>
   </div>

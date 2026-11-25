@@ -189,10 +189,10 @@ project_chapters:
   <p>The regular setting provides 8 historical positions; the irregular setting retains 6 of those timestamps, with 3 subsequent positions to predict. Each observation contains the 9-dimensional coordinates of three bodies. Table values are MSE (\(\times 10^{-2}\)), where lower is better.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="MSE comparison for three-body trajectory prediction">
     <table class="retro-comparison"><caption>Table 1 · MSE for three-body trajectory prediction</caption><thead><tr><th scope="col">Method</th><th scope="col">Regular sampling</th><th scope="col">Irregular sampling</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>1.8272</td><td>2.4811</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>3.3297</td><td>5.0077</td></tr>
-      <tr><th scope="row">RIM</th><td>2.4510</td><td>—</td></tr>
-      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>1.7573</strong></td><td><strong>2.2164</strong></td></tr>
+      <tr><th scope="row">CT-GRU</th><td class="retro-comparison__number">1.8272</td><td class="retro-comparison__number">2.4811</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td class="retro-comparison__number">3.3297</td><td class="retro-comparison__number">5.0077</td></tr>
+      <tr><th scope="row">RIM</th><td class="retro-comparison__number">2.4510</td><td class="retro-comparison__number">—</td></tr>
+      <tr class="retro-highlight"><th scope="row">DNS</th><td class="retro-comparison__number"><strong>1.7573</strong></td><td class="retro-comparison__number"><strong>2.2164</strong></td></tr>
     </tbody></table>
   </div>
   <p>DNS outperforms the listed baselines under both sampling conditions. NeuralCDE also uses continuous-time modeling, so these results support the value of additionally separating modules and their interactions.</p>
@@ -200,11 +200,11 @@ project_chapters:
   <p>The input contains the positions and velocities of five balls, and the goal is to determine whether a spring connects each pair. Clean denotes data with no added noise; Short 25% retains only the first 25% of each sequence in both training and testing.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Accuracy comparison for spring link prediction">
     <table class="retro-comparison"><caption>Table 2 · Spring link prediction accuracy</caption><thead><tr><th scope="col">Method</th><th scope="col">Clean · Regular</th><th scope="col">Clean · Irregular</th><th scope="col">Short · 25%</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>\(92.89\pm 0.52\)</td><td>\(88.47\pm 0.34\)</td><td>78.00</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>\(92.47\pm 0.06\)</td><td>\(89.74\pm 0.18\)</td><td>87.51</td></tr>
-      <tr><th scope="row">RIM</th><td>\(89.73\pm 0.07\)</td><td>—</td><td>71.26</td></tr>
-      <tr><th scope="row">DNS</th><td><strong>\(94.44\pm 0.69\)</strong></td><td>\(93.60\pm 1.21\)</td><td>92.13</td></tr>
-      <tr><th scope="row">\(\mathrm{DNS}_{\mathrm{G}}\)</th><td>\(94.31\pm 0.48\)</td><td><strong>\(94.25\pm 0.29\)</strong></td><td><strong>92.31</strong></td></tr>
+      <tr><th scope="row">CT-GRU</th><td class="retro-comparison__number">92.89 <span class="retro-comparison__uncertainty">± 0.52</span></td><td class="retro-comparison__number">88.47 <span class="retro-comparison__uncertainty">± 0.34</span></td><td class="retro-comparison__number">78.00</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td class="retro-comparison__number">92.47 <span class="retro-comparison__uncertainty">± 0.06</span></td><td class="retro-comparison__number">89.74 <span class="retro-comparison__uncertainty">± 0.18</span></td><td class="retro-comparison__number">87.51</td></tr>
+      <tr><th scope="row">RIM</th><td class="retro-comparison__number">89.73 <span class="retro-comparison__uncertainty">± 0.07</span></td><td class="retro-comparison__number">—</td><td class="retro-comparison__number">71.26</td></tr>
+      <tr><th scope="row">DNS</th><td class="retro-comparison__number"><strong>94.44 <span class="retro-comparison__uncertainty">± 0.69</span></strong></td><td class="retro-comparison__number">93.60 <span class="retro-comparison__uncertainty">± 1.21</span></td><td class="retro-comparison__number">92.13</td></tr>
+      <tr><th scope="row">\(\mathrm{DNS}_{\mathrm{G}}\)</th><td class="retro-comparison__number">94.31 <span class="retro-comparison__uncertainty">± 0.48</span></td><td class="retro-comparison__number"><strong>94.25 <span class="retro-comparison__uncertainty">± 0.29</span></strong></td><td class="retro-comparison__number"><strong>92.31</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">Link prediction accuracy (%). Short reduces the length of each input sequence, rather than reducing the number of training examples to 25%. Different input conditions are compared separately rather than combined into a single ranking.</p>
@@ -215,10 +215,10 @@ project_chapters:
   <p>The task contains three actions: clapping, waving, and jogging. ResNet18 supplies image features, and the sequence model classifies the action; irregular videos have different numbers of observed frames.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Classification accuracy comparison for human action videos">
     <table class="retro-comparison"><caption>Table 3 · Action video classification accuracy</caption><thead><tr><th scope="col">Method</th><th scope="col">Normalized · Irregular</th><th scope="col">Unnormalized · Regular</th><th scope="col">Unnormalized · Irregular</th></tr></thead><tbody>
-      <tr><th scope="row">CT-GRU</th><td>\(67.30\pm 6.19\)</td><td>60.33</td><td>66.67</td></tr>
-      <tr><th scope="row">NeuralCDE</th><td>\(89.73\pm 3.38\)</td><td>70.33</td><td>59.17</td></tr>
-      <tr><th scope="row">RIM</th><td>—</td><td>55.50</td><td>—</td></tr>
-      <tr class="retro-highlight"><th scope="row">DNS</th><td><strong>\(91.35\pm 3.48\)</strong></td><td><strong>97.00</strong></td><td><strong>95.33</strong></td></tr>
+      <tr><th scope="row">CT-GRU</th><td class="retro-comparison__number">67.30 <span class="retro-comparison__uncertainty">± 6.19</span></td><td class="retro-comparison__number">60.33</td><td class="retro-comparison__number">66.67</td></tr>
+      <tr><th scope="row">NeuralCDE</th><td class="retro-comparison__number">89.73 <span class="retro-comparison__uncertainty">± 3.38</span></td><td class="retro-comparison__number">70.33</td><td class="retro-comparison__number">59.17</td></tr>
+      <tr><th scope="row">RIM</th><td class="retro-comparison__number">—</td><td class="retro-comparison__number">55.50</td><td class="retro-comparison__number">—</td></tr>
+      <tr class="retro-highlight"><th scope="row">DNS</th><td class="retro-comparison__number"><strong>91.35 <span class="retro-comparison__uncertainty">± 3.48</span></strong></td><td class="retro-comparison__number"><strong>97.00</strong></td><td class="retro-comparison__number"><strong>95.33</strong></td></tr>
     </tbody></table>
   </div>
   <p class="retro-caption">Classification accuracy (%). Normalized and unnormalized denote experimental conditions with different input scales; “—” means that the baseline was not used for the irregular setting, not that its accuracy is zero.</p>
@@ -226,10 +226,10 @@ project_chapters:
     <h3>Ablation: is a larger input encoder enough?</h3>
     <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Control encoding and decoupling ablation on spring data">
       <table class="retro-comparison"><caption>Table 4 · Control encoding and decoupling ablation</caption><thead><tr><th scope="col">Setting</th><th scope="col">Link prediction accuracy</th></tr></thead><tbody>
-        <tr><th scope="row">No control encoding</th><td>91.57%</td></tr>
-        <tr><th scope="row">MLP · Output dimension 2 times the input dimension</th><td>91.51%</td></tr>
-        <tr><th scope="row">MLP · Output dimension 16 times the input dimension</th><td>91.17%</td></tr>
-        <tr><th scope="row">DNS · 8 control mappings, each with 2 times the input dimension</th><td><strong>95.38%</strong></td></tr>
+        <tr><th scope="row">No control encoding</th><td class="retro-comparison__number">91.57%</td></tr>
+        <tr><th scope="row">MLP · Output dimension 2 times the input dimension</th><td class="retro-comparison__number">91.51%</td></tr>
+        <tr><th scope="row">MLP · Output dimension 16 times the input dimension</th><td class="retro-comparison__number">91.17%</td></tr>
+        <tr><th scope="row">DNS · 8 control mappings, each with 2 times the input dimension</th><td class="retro-comparison__number"><strong>95.38%</strong></td></tr>
       </tbody></table>
     </div>
     <p>In this separate spring ablation, adding or enlarging an MLP alone does not achieve comparable gains; adding module and interaction structure improves the results substantially. The comparison supports the role of structural design, but does not isolate every design factor individually and is not the same experiment as the main table above.</p>

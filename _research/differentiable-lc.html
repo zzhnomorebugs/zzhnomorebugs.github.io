@@ -73,13 +73,13 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">Figure 3 · FNO training and forward prediction. The same operator advances every time step. The bulk concentration at the outlet across those steps forms the curve.</figcaption>
   </figure>
-  <div class="retro-table-scroll">
+  <div class="retro-table-scroll" tabindex="0" role="region" aria-labelledby="project-table-1-caption">
     <table class="retro-comparison lc-comparison">
-      <caption>Table 1 · Forward prediction on 1,388 test samples with detectable peaks in the finite-element reference curves.</caption>
+      <caption id="project-table-1-caption">Table 1 · Forward prediction on 1,388 test samples with detectable peaks in the finite-element reference curves.</caption>
       <thead><tr><th scope="col">Metric</th><th scope="col">PINN</th><th scope="col">FNO</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Median outlet concentration root-mean-square error (RMSE, dimensionless)</th><td>0.00278</td><td>0.00318</td></tr>
-        <tr><th scope="row">Predictions without a detectable peak</th><td>1.59%</td><td>19.4%</td></tr>
+        <tr><th scope="row">Median outlet concentration root-mean-square error (RMSE, dimensionless)</th><td class="retro-comparison__number">0.00278</td><td class="retro-comparison__number">0.00318</td></tr>
+        <tr><th scope="row">Predictions without a detectable peak</th><td class="retro-comparison__number">1.59%</td><td class="retro-comparison__number">19.4%</td></tr>
       </tbody>
     </table>
   </div>

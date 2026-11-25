@@ -276,17 +276,111 @@
 .retro-pipeline > li::before { counter-increment: retro-step; content: "0" counter(retro-step); display: block; margin-bottom: 0.35rem; color: var(--retro-accent); font-size: 0.65rem; font-variant-numeric: tabular-nums; }
 .retro-pipeline strong { display: block; margin-bottom: 0.45rem; color: var(--retro-ink); font-size: 0.9rem; }
 
-.retro-table-scroll { max-width: 100%; overflow-x: auto; margin: 1.5rem 0; -webkit-overflow-scrolling: touch; }
-.retro-comparison { display: block; width: 100%; max-width: 100%; overflow-x: auto; margin: 1.5rem 0; border: 0; border-collapse: collapse; font-size: 0.78rem; }
-.retro-table-scroll .retro-comparison { display: table; margin: 0; }
-.retro-comparison th,
-.retro-comparison td { padding: 0.8rem 0.9rem; border-bottom: 1px solid var(--retro-line); text-align: left; line-height: 1.7; vertical-align: top; }
-.retro-comparison th { background: var(--retro-accent-soft); color: var(--retro-ink); font-size: 0.72rem; font-weight: 600; white-space: nowrap; }
-.retro-comparison td { min-width: 110px; }
-.retro-comparison td:first-child { min-width: 145px; font-weight: 550; }
-.retro-comparison .retro-highlight,
-.retro-comparison tr.retro-highlight td { color: var(--retro-accent); font-weight: 650; }
-.retro-content table caption { caption-side: top; padding: 0 0 0.7rem; color: var(--retro-muted); font-size: 0.74rem; font-weight: 500; line-height: 1.7; text-align: left; white-space: normal; }
+.retro-project .retro-table-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.retro-project .retro-table-scroll:focus-visible {
+  outline: 2px solid var(--retro-ink);
+  outline-offset: 3px;
+}
+
+/* Paper-style rules shared by all project walkthroughs. */
+.retro-project .retro-comparison {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-block: 2px solid var(--retro-ink);
+  border-collapse: collapse;
+  color: var(--retro-ink);
+  font-family: "Times New Roman", "Noto Serif CJK SC", "Songti SC", SimSun, serif;
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.retro-project .retro-comparison:has(thead th:nth-child(3)) {
+  min-width: 27rem;
+}
+
+.retro-project .retro-comparison :is(th, td) {
+  padding: 0.3rem 0.65rem;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  vertical-align: top;
+}
+
+.retro-project .retro-comparison thead {
+  border-bottom: 1px solid var(--retro-ink);
+  background: transparent;
+}
+
+.retro-project .retro-comparison thead th {
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+.retro-project .retro-comparison thead [scope="colgroup"] {
+  position: relative;
+  text-align: center;
+}
+
+.retro-project .retro-comparison thead [scope="colgroup"]::after {
+  position: absolute;
+  inset-inline: 0.45rem;
+  bottom: 0;
+  border-bottom: 1px solid currentColor;
+  content: "";
+}
+
+.retro-project .retro-comparison thead tr + tr th {
+  text-align: center;
+}
+
+.retro-project .retro-comparison tbody th {
+  font-weight: 400;
+}
+
+.retro-project .retro-comparison tbody th[rowspan] {
+  vertical-align: middle;
+}
+
+.retro-project .retro-comparison tbody + tbody,
+.retro-project .retro-comparison tbody tr + tr:has(> th[rowspan]),
+.retro-project .retro-comparison tbody tr + .retro-highlight {
+  border-top: 1px solid var(--retro-ink);
+}
+
+.retro-project .retro-comparison .retro-highlight > th,
+.retro-project .retro-comparison strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+.retro-project .retro-comparison td.retro-comparison__number {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.retro-comparison__uncertainty {
+  font-size: 0.84em;
+}
+
+.retro-content table caption {
+  caption-side: top;
+  padding: 0 0 0.5rem;
+  color: var(--retro-muted);
+  font-family: system-ui, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: left;
+  white-space: normal;
+}
+
 
 #retro-results { padding-top: 0.55rem; }
 .retro-results__heading { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; margin-bottom: 0.35rem; }
@@ -295,22 +389,15 @@
 #retro-results > .retro-lede { margin-bottom: 0.6rem; font-size: 0.76rem; line-height: 1.5 !important; }
 .retro-benchmarks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
 .retro-benchmarks__panel { min-width: 0; }
-.retro-benchmarks .retro-table-scroll { margin: 0; }
-.retro-table-scroll .retro-benchmark { max-width: 100%; min-width: 420px; font-size: 12px; border-top: 1.5px solid var(--retro-ink); border-bottom: 1.5px solid var(--retro-ink); }
-.retro-benchmark th,
-.retro-benchmark td { padding: 1px 5px; border-right: 0; border-bottom: 0; font-size: inherit; line-height: 1.15; vertical-align: baseline; }
-.retro-benchmark thead { background: none; }
-.retro-benchmark thead th { background: none; border-bottom: 1px solid var(--retro-ink); font-weight: 650; }
-.retro-benchmark thead th:not(:first-child),
-.retro-benchmark td { width: 13.5%; min-width: 0; text-align: right; font-variant-numeric: tabular-nums; }
-.retro-benchmark tbody th[scope="row"] { background: none; font-weight: 500; }
-.retro-benchmark .retro-benchmark__group th { padding-top: 3px; border-top: 1px solid var(--retro-line); background: none; color: var(--retro-muted); font-style: italic; font-weight: 500; }
-.retro-benchmark .retro-highlight th[scope="row"] { color: var(--retro-accent); font-weight: 650; }
-.retro-content .retro-benchmark caption { padding-bottom: 0.3rem; font-size: 12px; line-height: 1.35; }
+.retro-project .retro-benchmarks .retro-table-scroll { margin: 0; }
+.retro-project .retro-benchmarks .retro-benchmark { font-size: 0.87rem; }
+.retro-project .retro-benchmarks .retro-benchmark :is(th, td) { padding: 0.22rem 0.36rem; }
+.retro-project .retro-benchmark thead th:not(:first-child) { text-align: right; }
+.retro-project .retro-benchmark .retro-benchmark__group th { font-style: italic; }
 .retro-benchmarks .retro-benchmarks__notes { margin: 0.6rem 0 0 !important; font-size: 12px; line-height: 1.45 !important; }
 .retro-benchmarks .retro-benchmarks__summary { margin: 0.7rem 0 0; font-size: 13px; line-height: 1.55; }
 
-@media (max-width: 899px) {
+@media (max-width: 959px) {
   #retro-results { padding-top: 1.5rem; }
   .retro-results__heading { display: block; }
   .retro-results__heading .retro-kicker { margin-top: 0.3rem !important; }

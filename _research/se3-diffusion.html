@@ -346,18 +346,18 @@ project_chapters:
   <p>Higher COV and lower MAT are better. R measures how well reference structures are covered; P measures how closely generated structures match the reference set. The coverage thresholds are 0.5 Å for QM9 and 1.25 Å for Drugs.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Mean molecular conformation coverage and matching error">
     <table class="retro-comparison"><caption>Table 2 · Molecular conformation generation, mean metrics; MAT in Å</caption><thead><tr><th scope="col">Dataset</th><th scope="col">Method / steps</th><th scope="col">COV-R ↑ (%)</th><th scope="col">MAT-R ↓</th><th scope="col">COV-P ↑ (%)</th><th scope="col">MAT-P ↓</th></tr></thead><tbody>
-      <tr><th scope="row" rowspan="6">QM9</th><td>LD / 5000</td><td>90.07</td><td>0.2090</td><td>52.79</td><td>0.4448</td></tr>
-      <tr><td>LD / 100</td><td>88.07</td><td>0.2711</td><td>54.80</td><td>0.5090</td></tr>
-      <tr><td>SDE / 1000</td><td>89.25</td><td>0.2215</td><td>55.15</td><td>0.4323</td></tr>
-      <tr><td>SDE / 100</td><td>88.34</td><td>0.2763</td><td>53.48</td><td>0.4870</td></tr>
-      <tr class="retro-highlight"><td>ODE / 1000</td><td>90.24</td><td>0.2052</td><td>53.76</td><td>0.4304</td></tr>
-      <tr><td>ODE / 100</td><td>90.81</td><td>0.2691</td><td>48.73</td><td>0.5190</td></tr>
-      <tr><th scope="row" rowspan="6">Drugs</th><td>LD / 5000</td><td>89.13</td><td>0.8629</td><td>61.47</td><td>1.1712</td></tr>
-      <tr><td>LD / 1000</td><td>82.92</td><td>0.9525</td><td>48.27</td><td>1.3205</td></tr>
-      <tr><td>SDE / 1000</td><td>83.39</td><td>0.9728</td><td>58.43</td><td>1.2393</td></tr>
-      <tr><td>SDE / 100</td><td>86.44</td><td>0.9261</td><td>64.53</td><td>1.1584</td></tr>
-      <tr><td>ODE / 1000</td><td>90.64</td><td>0.8493</td><td>59.67</td><td>1.1915</td></tr>
-      <tr><td>ODE / 100</td><td>87.76</td><td>0.9105</td><td>53.32</td><td>1.8528</td></tr>
+      <tr><th scope="row" rowspan="6">QM9</th><td>LD / 5000</td><td class="retro-comparison__number">90.07</td><td class="retro-comparison__number">0.2090</td><td class="retro-comparison__number">52.79</td><td class="retro-comparison__number">0.4448</td></tr>
+      <tr><td>LD / 100</td><td class="retro-comparison__number">88.07</td><td class="retro-comparison__number">0.2711</td><td class="retro-comparison__number">54.80</td><td class="retro-comparison__number">0.5090</td></tr>
+      <tr><td>SDE / 1000</td><td class="retro-comparison__number">89.25</td><td class="retro-comparison__number">0.2215</td><td class="retro-comparison__number">55.15</td><td class="retro-comparison__number">0.4323</td></tr>
+      <tr><td>SDE / 100</td><td class="retro-comparison__number">88.34</td><td class="retro-comparison__number">0.2763</td><td class="retro-comparison__number">53.48</td><td class="retro-comparison__number">0.4870</td></tr>
+      <tr class="retro-highlight"><td>ODE / 1000</td><td class="retro-comparison__number">90.24</td><td class="retro-comparison__number">0.2052</td><td class="retro-comparison__number">53.76</td><td class="retro-comparison__number">0.4304</td></tr>
+      <tr><td>ODE / 100</td><td class="retro-comparison__number">90.81</td><td class="retro-comparison__number">0.2691</td><td class="retro-comparison__number">48.73</td><td class="retro-comparison__number">0.5190</td></tr>
+      <tr><th scope="row" rowspan="6">Drugs</th><td>LD / 5000</td><td class="retro-comparison__number">89.13</td><td class="retro-comparison__number">0.8629</td><td class="retro-comparison__number">61.47</td><td class="retro-comparison__number">1.1712</td></tr>
+      <tr><td>LD / 1000</td><td class="retro-comparison__number">82.92</td><td class="retro-comparison__number">0.9525</td><td class="retro-comparison__number">48.27</td><td class="retro-comparison__number">1.3205</td></tr>
+      <tr><td>SDE / 1000</td><td class="retro-comparison__number">83.39</td><td class="retro-comparison__number">0.9728</td><td class="retro-comparison__number">58.43</td><td class="retro-comparison__number">1.2393</td></tr>
+      <tr><td>SDE / 100</td><td class="retro-comparison__number">86.44</td><td class="retro-comparison__number">0.9261</td><td class="retro-comparison__number">64.53</td><td class="retro-comparison__number">1.1584</td></tr>
+      <tr><td>ODE / 1000</td><td class="retro-comparison__number">90.64</td><td class="retro-comparison__number">0.8493</td><td class="retro-comparison__number">59.67</td><td class="retro-comparison__number">1.1915</td></tr>
+      <tr><td>ODE / 100</td><td class="retro-comparison__number">87.76</td><td class="retro-comparison__number">0.9105</td><td class="retro-comparison__number">53.32</td><td class="retro-comparison__number">1.8528</td></tr>
     </tbody></table>
   </div>
   <p>On QM9, ODE with 1000 steps improves all four mean metrics over LD with 5000 steps, using one fifth as many updates. At 100 steps, COV-R remains high, but MAT and precision involve trade-offs. On Drugs, ODE with 1000 steps improves recall metrics, while SDE with 100 steps performs well on precision metrics. A single coverage value therefore cannot establish improvement across all metrics.</p>
@@ -390,10 +390,10 @@ project_chapters:
   <p>\(\operatorname{Align}\) minimizes structural differences over rotations and translations; lower AD is better. This is a one-way nearest-neighbor match from generated samples to references, so it alone cannot establish diversity or complete coverage of the pose distribution.</p>
   <div class="retro-table-scroll" tabindex="0" role="region" aria-label="Mean AD results for human poses">
     <table class="retro-comparison"><caption>Table 3 · Mean AD for eating poses; lower is better</caption><thead><tr><th scope="col">Sampling steps</th><th scope="col">LD</th><th scope="col">SDE</th><th scope="col">ODE</th></tr></thead><tbody>
-      <tr><th scope="row">100</th><td>5.1739</td><td><strong>2.3737</strong></td><td>2.8978</td></tr>
-      <tr><th scope="row">250</th><td>4.3071</td><td><strong>2.3452</strong></td><td>2.5739</td></tr>
-      <tr><th scope="row">500</th><td>4.0020</td><td>2.3463</td><td><strong>2.2811</strong></td></tr>
-      <tr><th scope="row">1000</th><td>3.7369</td><td>2.3315</td><td><strong>2.1620</strong></td></tr>
+      <tr><th scope="row">100</th><td class="retro-comparison__number">5.1739</td><td class="retro-comparison__number"><strong>2.3737</strong></td><td class="retro-comparison__number">2.8978</td></tr>
+      <tr><th scope="row">250</th><td class="retro-comparison__number">4.3071</td><td class="retro-comparison__number"><strong>2.3452</strong></td><td class="retro-comparison__number">2.5739</td></tr>
+      <tr><th scope="row">500</th><td class="retro-comparison__number">4.0020</td><td class="retro-comparison__number">2.3463</td><td class="retro-comparison__number"><strong>2.2811</strong></td></tr>
+      <tr><th scope="row">1000</th><td class="retro-comparison__number">3.7369</td><td class="retro-comparison__number">2.3315</td><td class="retro-comparison__number"><strong>2.1620</strong></td></tr>
     </tbody></table>
   </div>
   <p>In this comparison, SDE and ODE outperform LD at every listed step count. SDE with 100 steps also has lower AD than LD with 1000 steps. This supports the sampling improvements on this task, without establishing a uniform advantage across all structures, categories, and metrics.</p>
