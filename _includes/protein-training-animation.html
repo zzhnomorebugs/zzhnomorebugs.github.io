@@ -22,57 +22,73 @@
 
     <div class="protein-training__scene">
       <div class="protein-training__flow">
-        <div class="protein-training__node protein-training__input" data-training-beat="0">
+        <div class="protein-training__dataset" data-training-beat="0">
           <strong data-training-show="pretrain">UniRef</strong>
           <strong data-training-show="adapt combined" hidden>{% if training_zh %}带标签的任务数据{% else %}Labeled task data{% endif %}</strong>
-          <math><msub><mi>s</mi><mi>t</mi></msub><mo>,</mo><mi>t</mi></math>
-          <small>{% if training_zh %}由干净序列 <var>x</var> 构造带噪状态{% else %}Noisy state constructed from clean sequence <var>x</var>{% endif %}</small>
-          <div class="protein-training__condition" data-training-show="adapt combined" hidden>
-            <math><msub><mi>x</mi><mi>ref</mi></msub><mo>,</mo><mi>y</mi></math>
-            <small>{% if training_zh %}条件只送入 <var>g</var>{% else %}Conditioning for <var>g</var>{% endif %}</small>
+        </div>
+        <div class="protein-training__frame" data-training-show="adapt combined" hidden>
+          <div class="protein-training__frame-title">
+            {% if training_zh %}组合去噪网络{% else %}Combined denoising network{% endif %}
+            <math data-training-show="combined" hidden><mi>D</mi><mo>=</mo><mi>f</mi><mo>+</mo><mi>g</mi></math>
           </div>
         </div>
-        <span class="protein-training__arrow" data-training-beat="1" aria-hidden="true"></span>
-        <div class="protein-training__model" data-training-beat="1">
-          <div class="protein-training__model-head" data-training-show="combined" hidden>
-            <strong>{% if training_zh %}条件去噪器{% else %}Conditional denoiser{% endif %}</strong>
-            <math><mi>D</mi><mo>=</mo><mi>softmax</mi><mo>(</mo><mi>f</mi><mo>+</mo><mi>g</mi><mo>)</mo></math>
-          </div>
-          <div class="protein-training__branch protein-training__branch--prior">
-            <div><strong><var>f</var></strong> {% if training_zh %}通用先验{% else %}Sequence prior{% endif %}</div>
-            <span class="protein-training__state protein-training__state--updated" data-training-show="pretrain">{% if training_zh %}更新参数{% else %}Trainable{% endif %}</span>
-            <span class="protein-training__state" data-training-show="adapt combined" hidden>{% if training_zh %}已冻结{% else %}Frozen{% endif %}</span>
-          </div>
-          <span class="protein-training__plus" data-training-show="adapt" aria-hidden="true" hidden>+</span>
-          <div class="protein-training__branch protein-training__branch--residual" data-training-show="adapt combined" hidden>
-            <div><strong><var>g</var></strong> {% if training_zh %}条件残差{% else %}Conditional residual{% endif %}</div>
-            <span class="protein-training__state protein-training__state--updated">{% if training_zh %}更新参数{% else %}Trainable{% endif %}</span>
-          </div>
+
+        {% include protein-training-wires.html %}
+
+        <div class="protein-training__node protein-training__noisy" data-training-beat="0">
+          <strong>{% if training_zh %}带噪状态{% else %}Noisy state{% endif %}</strong>
+          <math><msub><mi>s</mi><mi>t</mi></msub></math>
         </div>
-        <span class="protein-training__arrow" data-training-beat="2" aria-hidden="true"></span>
-        <div class="protein-training__node" data-training-beat="2">
-          <strong>{% if training_zh %}干净 token 预测{% else %}Clean-token prediction{% endif %}</strong>
-          <math data-training-show="pretrain"><mi>q</mi><mo>=</mo><mi>softmax</mi><mo>(</mo><mi>f</mi><mo>)</mo></math>
-          <math data-training-show="adapt" hidden><mi>q</mi><mo>=</mo><mi>softmax</mi><mo>(</mo><mi>f</mi><mo>+</mo><mi>g</mi><mo>)</mo></math>
-          <math data-training-show="combined" hidden><mi>q</mi><mo>=</mo><mi>D</mi><mo>(</mo><msub><mi>s</mi><mi>t</mi></msub><mo>,</mo><mi>t</mi><mo>,</mo><msub><mi>x</mi><mi>ref</mi></msub><mo>,</mo><mi>y</mi><mo>)</mo></math>
+        <div class="protein-training__node protein-training__time" data-training-beat="0">
+          <strong>{% if training_zh %}时间{% else %}Time{% endif %}</strong>
+          <math><mi>t</mi></math>
         </div>
-        <span class="protein-training__arrow" data-training-beat="3" aria-hidden="true"></span>
+        <div class="protein-training__node protein-training__label" data-training-beat="0" data-training-show="adapt combined" hidden>
+          <strong>{% if training_zh %}目标标签{% else %}Target label{% endif %}</strong>
+          <math><mi>y</mi></math>
+        </div>
+        <div class="protein-training__node protein-training__reference" data-training-beat="0" data-training-show="adapt combined" hidden>
+          <strong>{% if training_zh %}参考上下文{% else %}Reference context{% endif %}</strong>
+          <math><msub><mi>x</mi><mi>ref</mi></msub></math>
+        </div>
+
+        <div class="protein-training__node protein-training__branch protein-training__branch--prior" data-training-beat="1">
+          <strong>{% if training_zh %}大型先验{% else %}Large prior{% endif %} <var>f</var></strong>
+          <svg aria-hidden="true" viewBox="360 113 300 124"><use href="#protein-training-prior-network"/></svg>
+          <span class="protein-training__state protein-training__state--updated" data-training-show="pretrain">{% if training_zh %}更新参数{% else %}Trainable{% endif %}</span>
+          <span class="protein-training__state" data-training-show="adapt combined" hidden>{% if training_zh %}已冻结{% else %}Frozen{% endif %}</span>
+        </div>
+        <div class="protein-training__node protein-training__branch protein-training__branch--residual" data-training-beat="1" data-training-show="adapt combined" hidden>
+          <strong>{% if training_zh %}小型残差{% else %}Small residual{% endif %} <var>g</var></strong>
+          <svg aria-hidden="true" viewBox="416 365 188 50"><use href="#protein-training-residual-network"/></svg>
+          <span class="protein-training__state protein-training__state--updated">{% if training_zh %}更新参数{% else %}Trainable{% endif %}</span>
+        </div>
+
+        <div class="protein-training__node protein-training__sum" data-training-beat="2" data-training-show="adapt combined" hidden
+             role="img" aria-label="{% if training_zh %}基础 logits 与残差 logits 相加{% else %}Add prior and residual logits{% endif %}">+</div>
+        <div class="protein-training__node protein-training__prediction" data-training-beat="2">
+          <strong>softmax</strong>
+          <math><mi>q</mi></math>
+          <small>{% if training_zh %}干净 token 预测{% else %}Clean-token prediction{% endif %}</small>
+        </div>
         <div class="protein-training__node protein-training__loss" data-training-beat="3">
           <strong>{% if training_zh %}去噪训练目标{% else %}Denoising objective{% endif %}</strong>
           <math><mi>ℒ</mi><mo>(</mo><mi>q</mi><mo>,</mo><mi>x</mi><mo>,</mo><mi>t</mi><mo>)</mo></math>
-          <small>{% if training_zh %}干净序列 <var>x</var> 提供监督{% else %}Clean sequence <var>x</var> provides supervision{% endif %}</small>
+          <small>BFN / DFM</small>
+        </div>
+        <div class="protein-training__node protein-training__target" data-training-beat="3">
+          <strong>{% if training_zh %}干净序列{% else %}Clean sequence{% endif %}</strong>
+          <math><mi>x</mi></math>
         </div>
       </div>
-      <div class="protein-training__update" data-training-beat="4">
-        <span data-training-show="pretrain">{% if training_zh %}更新 <var>f</var> 的参数{% else %}Update <var>f</var>'s weights{% endif %}</span>
-        <span data-training-show="adapt combined" hidden>{% if training_zh %}只更新 <var>g</var> 的参数{% else %}Update only <var>g</var>'s weights{% endif %}</span>
-        <span class="protein-training__arrow protein-training__arrow--return" aria-hidden="true"></span>
-        <span>{% if training_zh %}损失反向传播{% else %}Backpropagate the loss{% endif %}</span>
-      </div>
+      <p class="protein-training__update" data-training-beat="4">
+        <span data-training-show="pretrain">{% if training_zh %}损失反向传播 · 更新 <var>f</var>{% else %}Backpropagate the loss · Update <var>f</var>{% endif %}</span>
+        <span data-training-show="adapt combined" hidden>{% if training_zh %}损失反向传播 · 只更新 <var>g</var>{% else %}Backpropagate the loss · Update only <var>g</var>{% endif %}</span>
+      </p>
     </div>
 
-    <p class="protein-training__description" data-training-show="pretrain">{% if training_zh %}先在 UniRef 上用无条件去噪目标训练 <var>f</var>，得到通用序列先验。{% else %}First train <var>f</var> with an unconditional denoising objective on UniRef to learn a general sequence prior.{% endif %}</p>
-    <p class="protein-training__description" data-training-show="adapt" hidden>{% if training_zh %}下游训练时，冻结的 <var>f</var> 仍提供基础 logits。两路 logits 相加后计算损失，梯度只用于更新 <var>g</var>。{% else %}During downstream training, frozen <var>f</var> still supplies the base logits. The loss uses the sum of both logit outputs and updates only <var>g</var>.{% endif %}</p>
+    <p class="protein-training__description" data-training-show="pretrain">{% if training_zh %}在 UniRef 上对干净序列 <var>x</var> 构造带噪状态，再用无条件去噪目标训练 <var>f</var>。{% else %}Construct a noisy state from a clean UniRef sequence <var>x</var> and train <var>f</var> with an unconditional denoising objective.{% endif %}</p>
+    <p class="protein-training__description" data-training-show="adapt" hidden>{% if training_zh %}带噪状态和时间送入两路，目标标签和参考上下文只送入 <var>g</var>。两路 logits 相加后经 softmax 得到预测，损失只更新 <var>g</var>。{% else %}The noisy state and time enter both branches. The target label and reference context go to <var>g</var> alone. The summed logits pass through softmax, and the loss updates only <var>g</var>.{% endif %}</p>
     <p class="protein-training__description" data-training-show="combined" hidden>{% if training_zh %}从外部看，这是标准的条件扩散去噪训练。带噪状态和条件进入一个去噪器，由干净序列提供监督。框内仍只更新 <var>g</var>。{% else %}The combined model follows the standard conditional diffusion training pattern. One denoiser takes the noisy state and conditions, and the clean sequence provides supervision. Within the denoiser, only <var>g</var> updates.{% endif %}</p>
 
   </div>

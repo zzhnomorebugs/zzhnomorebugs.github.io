@@ -1,0 +1,78 @@
+{% include protein-training-network-symbols.html %}
+
+<svg class="protein-training__wires protein-training__wires--wide" viewBox="0 0 1000 480"
+     preserveAspectRatio="xMinYMin slice" aria-hidden="true">
+  <g data-training-beat="1">
+    <path pathLength="100" class="training-state-wire" d="M166 100 H318"/>
+    <path pathLength="100" class="training-time-wire" data-training-show="pretrain" d="M126 188 H318"/>
+    <g data-training-show="adapt combined" hidden>
+      <path pathLength="100" class="training-state-wire" d="M207 100 V179 M207 196 V318 H368"/>
+      <path pathLength="100" class="training-time-wire" d="M126 188 H198 Q207 172 216 188 H318"/>
+      <path pathLength="100" class="training-time-wire" d="M252 188 V296 H368"/>
+      <path pathLength="100" class="training-condition-wire" d="M166 329 H326 V351 H368"/>
+      <path pathLength="100" class="training-condition-wire" d="M166 405 H368"/>
+      <circle class="training-state-wire" cx="207" cy="100" r="3"/>
+      <circle class="training-time-wire" cx="252" cy="188" r="3"/>
+    </g>
+  </g>
+  <g data-training-beat="2">
+    <path pathLength="100" class="training-prior-wire training-main-wire" data-training-show="pretrain" d="M631 149 H809 V114 H850"/>
+    <g data-training-show="adapt combined" hidden>
+      <path pathLength="100" class="training-prior-wire training-main-wire" d="M631 149 H713"/>
+      <path pathLength="100" class="training-residual-wire" d="M593 350 H735 V171"/>
+      <path pathLength="100" class="training-main-wire" d="M757 149 H809 V114 H850"/>
+      <text class="training-prior-wire" x="649" y="136">ℓ<tspan baseline-shift="sub">prior</tspan></text>
+      <text class="training-residual-wire" x="654" y="335">r<tspan baseline-shift="sub">φ</tspan></text>
+      <text x="791" y="100">ℓ<tspan baseline-shift="sub">cond</tspan></text>
+    </g>
+  </g>
+  <g data-training-beat="3">
+    <path pathLength="100" d="M917.5 152 V220"/>
+    <path pathLength="100" d="M917.5 361 V310"/>
+  </g>
+  <g class="training-gradient-wire" data-training-beat="4">
+    <path data-training-show="pretrain" d="M850 290 H800 V251 H475 V233"/>
+    <path data-training-show="adapt combined" hidden d="M850 290 H833 V461 H482 V420"/>
+  </g>
+</svg>
+
+<svg class="protein-training__wires protein-training__wires--narrow" viewBox="0 0 380 700"
+     preserveAspectRatio="xMinYMin slice" aria-hidden="true">
+  <g data-training-beat="1">
+    <path pathLength="100" class="training-state-wire" d="M49 96 V160"/>
+    <path pathLength="100" class="training-time-wire" d="M133 92 V160"/>
+    <g data-training-show="adapt combined" hidden>
+      <path pathLength="100" class="training-state-wire" d="M49 110 H12 V121 M12 136 V354 H49"/>
+      <path pathLength="100" class="training-time-wire" d="M133 128 H19 Q12 114 5 128 V376 H49"/>
+      <path pathLength="100" class="training-condition-wire" d="M216 96 V118 H277 V216 M277 232 V307 H110 V335"/>
+      <path pathLength="100" class="training-condition-wire" d="M322 96 V132 H290 V216 M290 232 V323 H164 V335"/>
+      <circle class="training-state-wire" cx="49" cy="110" r="2.7"/>
+      <circle class="training-time-wire" cx="133" cy="128" r="2.7"/>
+    </g>
+  </g>
+  <g data-training-beat="2">
+    <path pathLength="100" class="training-prior-wire training-main-wire" data-training-show="pretrain" d="M267 224 H314 V302 H97.5 V320"/>
+    <g data-training-show="adapt combined" hidden>
+      <path pathLength="100" class="training-prior-wire training-main-wire" d="M267 224 H295"/>
+      <path pathLength="100" class="training-residual-wire" d="M206 395 H314 V243"/>
+      <path pathLength="100" class="training-main-wire" d="M333 224 H350 V477 H97.5 V503"/>
+      <text class="training-prior-wire" x="297" y="194">ℓ<tspan baseline-shift="sub">prior</tspan></text>
+      <text class="training-residual-wire" x="248" y="381">r<tspan baseline-shift="sub">φ</tspan></text>
+      <text x="286" y="464">ℓ<tspan baseline-shift="sub">cond</tspan></text>
+    </g>
+  </g>
+  <g data-training-beat="3">
+    <g data-training-show="pretrain">
+      <path pathLength="100" d="M97.5 385 V400 H146 V416"/>
+      <path pathLength="100" d="M287.5 385 V400 H235 V416"/>
+    </g>
+    <g data-training-show="adapt combined" hidden>
+      <path pathLength="100" d="M97.5 568 V585 H146 V603"/>
+      <path pathLength="100" d="M287.5 568 V585 H235 V603"/>
+    </g>
+  </g>
+  <g class="training-gradient-wire" data-training-beat="4">
+    <path data-training-show="pretrain" d="M97 456 H8 V264 H18"/>
+    <path data-training-show="adapt combined" hidden d="M97 645 H12 V431 H49"/>
+  </g>
+</svg>

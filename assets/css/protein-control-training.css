@@ -1,4 +1,13 @@
+---
+layout: none
+---
+
 .retro-figure.protein-training {
+  --training-prior: #006da5;
+  --training-residual: #8d5700;
+  --training-state: #4b729b;
+  --training-time: #3c756a;
+  --training-condition: #72588b;
   --training-updated: #9a451a;
   --training-updated-bg: rgba(176, 83, 37, 0.1);
   display: block;
@@ -6,8 +15,16 @@
   text-align: left;
 }
 
+{% if site.site_theme == 'dark' %}
+.retro-figure.protein-training,
+{% endif %}
 [data-theme="dark"] .protein-training,
 .dark .protein-training {
+  --training-prior: #75c9ff;
+  --training-residual: #ffc773;
+  --training-state: #9abded;
+  --training-time: #8acbb7;
+  --training-condition: #c8b0e7;
   --training-updated: #ffc298;
   --training-updated-bg: rgba(255, 170, 114, 0.12);
 }
@@ -83,192 +100,286 @@
   background: var(--retro-accent-soft);
 }
 
+/* Node bounds share the coordinate system of the wide or narrow wire SVG. */
 .protein-training__flow {
+  --chart-width: 1000;
+  --chart-height: 480;
+  position: relative;
+  aspect-ratio: var(--chart-width) / var(--chart-height);
+  font-size: clamp(0.64rem, 1.5cqw, 0.86rem);
+}
+
+.protein-training[data-training-stage="pretrain"] .protein-training__flow {
+  --chart-height: 436;
+}
+
+.protein-training__flow > :is(.protein-training__node, .protein-training__frame, .protein-training__dataset) {
+  position: absolute;
+  left: calc(100% * var(--x) / var(--chart-width));
+  top: calc(100% * var(--y) / var(--chart-height));
+  width: calc(100% * var(--w) / var(--chart-width));
+  height: calc(100% * var(--h) / var(--chart-height));
+}
+
+.protein-training__dataset {
+  --x: 18; --y: 22; --w: 148; --h: 32;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 1.25rem minmax(0, 1.28fr) 1.25rem minmax(0, 1.12fr) 1.25rem minmax(0, 0.94fr);
   align-items: center;
-  min-height: 10.2rem;
-}
-
-.protein-training__node,
-.protein-training__branch {
-  min-width: 0;
-  padding: 0.58rem 0.55rem;
-  border: 1px solid var(--retro-line);
-  border-radius: 5px;
-  background: var(--retro-paper);
-}
-
-.protein-training__node,
-.protein-training__model-head,
-.protein-training__condition {
-  display: grid;
-  justify-items: center;
-  gap: 0.2rem;
-  text-align: center;
-}
-
-.protein-training__node > strong,
-.protein-training__model-head > strong {
-  font-size: 0.79rem;
-  line-height: 1.4;
-}
-
-.protein-training math {
-  font-size: 0.85rem;
-}
-
-.protein-training__node small,
-.protein-training__condition small {
   color: var(--retro-muted);
-  font-size: 0.7rem;
-  line-height: 1.4;
+  text-align: center;
+  line-height: 1.15;
 }
 
-.protein-training__condition {
-  width: 100%;
-  margin-top: 0.3rem;
-  padding-top: 0.3rem;
-  border-top: 1px solid var(--retro-line);
+.protein-training__dataset[data-training-beat-active] {
+  color: var(--retro-ink);
 }
 
-.protein-training__model {
-  display: grid;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  transition: border-color 300ms, background-color 300ms;
+.protein-training__frame {
+  --x: 294; --y: 14; --w: 526; --h: 434;
+  padding: 0.36em 0.85em;
+  border: 1px solid var(--retro-line);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--retro-paper) 88%, var(--training-state));
+  color: var(--retro-ink);
+  font-weight: 650;
 }
 
-.protein-training[data-training-stage="combined"] .protein-training__model {
-  gap: 0.26rem;
-  padding: 0.34rem;
-  border-color: var(--retro-accent);
-  background: var(--retro-accent-soft);
+.protein-training__frame-title {
+  display: flex;
+  align-items: baseline;
+  gap: 0.65em;
+  line-height: 1.18;
 }
 
-.protein-training__model-head {
-  padding: 0.15rem 0 0.27rem;
+.protein-training[data-training-stage="combined"] .protein-training__frame {
+  border-color: var(--training-prior);
+  background: color-mix(in srgb, var(--retro-paper) 88%, var(--training-prior));
 }
+
+.protein-training__node {
+  --node-color: var(--retro-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.12em;
+  min-width: 0;
+  padding: 0.22em;
+  border: 1px solid var(--node-color);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--retro-paper) 94%, var(--node-color));
+  color: var(--retro-ink);
+  text-align: center;
+  line-height: 1.18;
+}
+
+.protein-training__node[data-training-beat-active] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, transparent 66%, var(--node-color));
+}
+
+.protein-training__node strong {
+  font-weight: 650;
+}
+
+.protein-training__node math {
+  font-size: 1.15em;
+}
+
+.protein-training__node small {
+  color: var(--retro-muted);
+  font-size: 0.79em;
+  line-height: 1.2;
+}
+
+.protein-training__noisy {
+  --node-color: var(--training-state);
+  --x: 18; --y: 66; --w: 148; --h: 68;
+}
+
+.protein-training__time {
+  --node-color: var(--training-time);
+  --x: 62; --y: 156; --w: 64; --h: 64;
+  border-radius: 50%;
+}
+
+.protein-training__label,
+.protein-training__reference {
+  --node-color: var(--training-condition);
+  --x: 18; --w: 148; --h: 58;
+}
+
+.protein-training__label { --y: 300; }
+.protein-training__reference { --y: 376; }
 
 .protein-training__branch {
-  display: grid;
-  justify-items: center;
-  gap: 0.16rem;
-  text-align: center;
-  font-size: 0.73rem;
-  line-height: 1.4;
+  gap: 0.28em;
+  background: color-mix(in srgb, var(--retro-paper) 85%, var(--node-color));
 }
 
-.protein-training__branch--prior strong {
-  color: var(--retro-accent);
+.protein-training__branch--prior {
+  --node-color: var(--training-prior);
+  --x: 318; --y: 58; --w: 313; --h: 175;
 }
 
-.protein-training__branch--residual strong {
-  color: var(--training-updated);
+.protein-training__branch--residual {
+  --node-color: var(--training-residual);
+  --x: 368; --y: 280; --w: 225; --h: 140;
+}
+
+.protein-training__branch > svg {
+  display: block;
+  flex: none;
+  width: 92%;
+  height: 50%;
+  color: var(--node-color);
 }
 
 .protein-training__state {
-  display: inline-block;
-  padding: 0.1rem 0.31rem;
-  color: var(--retro-muted);
-  background: var(--retro-paper);
-  border: 1px solid var(--retro-line);
+  color: var(--node-color);
+  font-size: 0.82em;
+  font-weight: 650;
+}
+
+.protein-training[data-training-beat="4"] .protein-training__state--updated {
   border-radius: 3px;
-  font-size: 0.66rem;
-  font-weight: 600;
-}
-
-.protein-training__state--updated {
-  color: var(--training-updated);
-  border-color: transparent;
+  padding-inline: 0.25em;
   background: var(--training-updated-bg);
+  color: var(--training-updated);
+  outline: 1px solid currentColor;
 }
 
-.protein-training__plus {
-  text-align: center;
-  color: var(--retro-accent);
-  font-size: 0.95rem;
-  line-height: 1;
+.protein-training__sum {
+  --node-color: var(--retro-ink);
+  --x: 713; --y: 127; --w: 44; --h: 44;
+  border-radius: 50%;
+  background: var(--retro-paper);
+  font-size: 1.38em;
 }
 
-.protein-training__arrow {
-  position: relative;
-  height: 2px;
-  margin-inline: 0.16rem 0.27rem;
-  background: currentColor;
-  color: var(--retro-muted);
+.protein-training__prediction,
+.protein-training__loss,
+.protein-training__target {
+  --x: 850; --w: 135;
 }
 
-.protein-training__arrow::after {
+.protein-training__prediction {
+  --y: 76; --h: 76;
+  background: var(--retro-paper);
+}
+
+.protein-training__loss {
+  --node-color: var(--training-updated);
+  --y: 220; --h: 90;
+}
+
+.protein-training__target {
+  --y: 361; --h: 61;
+  border-style: dashed;
+}
+
+.protein-training__wires,
+.protein-training__symbols {
   position: absolute;
-  right: 0;
-  top: 50%;
-  width: 0.28rem;
-  height: 0.28rem;
-  border-right: 2px solid currentColor;
-  border-top: 2px solid currentColor;
-  content: "";
-  transform: translateY(-50%) rotate(45deg);
+  inset: 0;
+  pointer-events: none;
 }
 
-.protein-training__update {
-  display: grid;
-  grid-template-columns: auto minmax(1rem, 1fr) auto;
-  align-items: center;
-  gap: 0.3rem;
-  max-width: 26rem;
-  margin: 0.6rem auto 0;
-  padding: 0.35rem 0.42rem;
+.protein-training__wires {
+  width: 100%;
+  height: 100%;
+  color: var(--retro-ink);
+}
+
+.protein-training__wires--narrow {
+  display: none;
+}
+
+.protein-training__wires path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  marker-end: url(#protein-training-arrowhead);
+}
+
+.protein-training__wires circle,
+.protein-training__wires text {
+  fill: currentColor;
+}
+
+.protein-training__wires text {
+  font: italic 17px Georgia, serif;
+}
+
+.protein-training__wires tspan {
+  font-size: 75%;
+}
+
+.training-state-wire { color: var(--training-state); }
+.training-time-wire { color: var(--training-time); }
+.training-condition-wire { color: var(--training-condition); }
+.training-prior-wire { color: var(--training-prior); }
+.training-residual-wire { color: var(--training-residual); }
+
+.protein-training__wires .training-main-wire {
+  stroke-width: 3.5;
+}
+
+.training-gradient-wire {
+  color: var(--training-updated);
+  opacity: 0.74;
+}
+
+.training-gradient-wire path {
+  stroke-dasharray: 6 5;
+}
+
+.protein-training__wires [data-training-beat-active] path {
+  stroke-width: 3.5;
+}
+
+.protein-training__wires [data-training-beat-active] .training-main-wire {
+  stroke-width: 5;
+}
+
+.protein-training[data-training-playing] .protein-training__wires [data-training-beat-active] path[pathLength] {
+  stroke-dasharray: 100;
+  animation: protein-training-forward 720ms ease-out both;
+}
+
+@keyframes protein-training-forward {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+.training-gradient-wire[data-training-beat-active] {
+  opacity: 1;
+}
+
+.protein-training[data-training-playing] .training-gradient-wire[data-training-beat-active] path {
+  animation: protein-training-gradient 700ms linear infinite;
+}
+
+@keyframes protein-training-gradient {
+  to { stroke-dashoffset: -22; }
+}
+
+.protein-training .protein-training__update {
+  width: fit-content;
+  margin: 0 auto !important;
+  padding: 0.22rem 0.44rem;
   border: 1px dashed transparent;
   border-radius: 4px;
   color: var(--training-updated);
   font-size: 0.73rem;
-  font-weight: 600;
-  line-height: 1.4;
+  font-weight: 650;
+  line-height: 1.4 !important;
+  text-align: center;
 }
 
-.protein-training__arrow--return {
-  color: inherit;
-  transform: rotate(180deg);
-}
-
-.protein-training [data-training-beat] {
-  transition: border-color 250ms, background-color 250ms, color 250ms;
-}
-
-.protein-training [data-training-beat-active].protein-training__node,
-.protein-training [data-training-beat-active] .protein-training__branch {
-  border-color: var(--retro-accent);
-}
-
-.protein-training [data-training-beat-active].protein-training__arrow {
-  color: var(--retro-accent);
-}
-
-.protein-training[data-training-playing] .protein-training__arrow[data-training-beat-active]::before,
-.protein-training[data-training-playing] [data-training-beat-active] .protein-training__arrow::before {
-  position: absolute;
-  top: 50%;
-  width: 0.32rem;
-  height: 0.32rem;
-  border-radius: 50%;
-  background: currentColor;
-  content: "";
-  animation: protein-training-trace 720ms ease-in-out both;
-}
-
-@keyframes protein-training-trace {
-  from { left: 0; transform: translateY(-50%); }
-  to { left: 100%; transform: translate(-100%, -50%); }
-}
-
-.protein-training [data-training-beat-active].protein-training__update {
+.protein-training__update[data-training-beat-active] {
   border-color: currentColor;
   background: var(--training-updated-bg);
-}
-
-.protein-training[data-training-beat="4"] .protein-training__state--updated {
-  border-color: currentColor;
 }
 
 .protein-training .protein-training__description {
@@ -307,23 +418,39 @@
   cursor: pointer;
 }
 
-@container (max-width: 39rem) {
+@container (max-width: 40rem) {
   .protein-training__flow {
-    grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
-    min-height: 0;
+    --chart-width: 380;
+    --chart-height: 700;
+    max-width: 26rem;
+    margin-inline: auto;
+    font-size: clamp(0.57rem, 3.4cqw, 0.83rem);
   }
 
-  .protein-training__node,
-  .protein-training__model {
-    width: min(100%, 22rem);
-  }
+  .protein-training__wires--wide { display: none; }
+  .protein-training__wires--narrow { display: block; }
 
-  .protein-training__flow > .protein-training__arrow {
-    width: 0.72rem;
-    margin: 0.33rem 0;
-    transform: rotate(90deg);
+  .protein-training__dataset { --x: 12; --y: 7; --w: 356; --h: 22; }
+  .protein-training__frame { --x: 12; --y: 138; --w: 327; --h: 330; }
+  .protein-training__frame-title {
+    position: absolute;
+    top: 46%;
+    left: 0.7em;
   }
+  .protein-training__noisy { --x: 7; --y: 38; --w: 84; --h: 58; }
+  .protein-training__time { --x: 109; --y: 44; --w: 48; --h: 48; }
+  .protein-training__label { --x: 178; --y: 38; --w: 76; --h: 58; }
+  .protein-training__reference { --x: 272; --y: 38; --w: 100; --h: 58; }
+  .protein-training__branch--prior { --x: 18; --y: 160; --w: 249; --h: 126; }
+  .protein-training__branch--residual { --x: 49; --y: 335; --w: 157; --h: 120; }
+  .protein-training__sum { --x: 295; --y: 205; --w: 38; --h: 38; }
+  .protein-training__prediction { --x: 18; --y: 503; --w: 159; --h: 65; }
+  .protein-training__target { --x: 211; --y: 503; --w: 153; --h: 65; }
+  .protein-training__loss { --x: 97; --y: 603; --w: 185; --h: 74; }
+
+  .protein-training[data-training-stage="pretrain"] .protein-training__flow { --chart-height: 510; }
+  .protein-training[data-training-stage="pretrain"] :is(.protein-training__prediction, .protein-training__target) { --y: 320; }
+  .protein-training[data-training-stage="pretrain"] .protein-training__loss { --y: 416; }
 }
 
 @media (max-width: 500px) {
@@ -336,12 +463,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .protein-training [data-training-beat] {
-    transition: none;
-  }
-
-  .protein-training .protein-training__arrow::before {
-    animation: none !important;
-    content: none !important;
+  .protein-training[data-training-playing] .training-gradient-wire[data-training-beat-active] path,
+  .protein-training[data-training-playing] .protein-training__wires [data-training-beat-active] path[pathLength] {
+    animation: none;
   }
 }
