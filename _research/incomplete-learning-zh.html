@@ -199,6 +199,7 @@ project_chapters:
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/context-query.webp"><img src="{{ base_path }}/images/research/incomplete-learning/context-query.webp" width="2400" height="1548" loading="lazy" alt="块状缺失示例：像素上下文可能唯一暴露原始观测掩码，而整块上下文允许多个原始掩码解释相同输入"></a>
     <figcaption class="retro-figure__caption">图 3 · 九块网格中有两块缺失。上排的像素划分可能在每个已观测块留下痕迹，使上下文唯一指向原始掩码，原本缺失的块便成为零查询区域。下排按完整块取上下文，同一上下文可来自多种原始观测掩码，其他样本仍能为当前空白位置提供监督。蓝色为上下文，橙色为查询；结论依赖可行掩码的支撑与覆盖。</figcaption>
   </figure>
+  {% include incomplete-training-animation.html %}
   <ol class="retro-pipeline" aria-label="IDCD 的训练和采样框架">
     <li><strong>训练：从已有观测构造监督</strong><span>上下文作为输入，查询位置的真实测量作为答案。</span></li>
     <li><strong>重建：集成子上下文预测</strong><span>在近零噪声时刻重复取上下文，平均预测并恢复给定观测。</span></li>

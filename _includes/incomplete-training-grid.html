@@ -1,0 +1,6 @@
+{% assign idcd_cells = include.cells | split: ' ' %}
+<div class="idcd-grid" aria-hidden="true">
+  {% for idcd_cell in idcd_cells %}
+    <span data-cell="{{ idcd_cell }}"{% if include.focus %}{% if forloop.index == 1 or forloop.index == 6 %} data-focus{% endif %}{% endif %}></span>
+  {% endfor %}
+</div>
