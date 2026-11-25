@@ -11,8 +11,8 @@
   {% for post in items limit: 4 %}
     {% assign paper_slug = post.url | split: "/" | last %}
     {% assign walkthrough = localized_projects | where: "papers", paper_slug | first %}
-    {% assign figure = site.data.home_publication_figures[paper_slug] %}
-    {% assign figure_image = figure.image | default: post.image %}
+    {% assign figure_image = post.poster_thumb | default: post.poster_image | default: post.image %}
+    {% assign full_image = post.poster_image | default: post.image | default: figure_image %}
     {% assign venue_label = post.venue | replace: "ICML", "ICML " | replace: "ICLR", "ICLR " | replace: "arxiv", "arXiv" | replace: "  ", " " | strip %}
     {% assign poster_url = post.posterurl %}
     {% if poster_url == nil and post.poster_image %}
@@ -49,8 +49,10 @@
         {% endif %}
       </div>
       {% if figure_image %}
-        <figure class="recent-highlight-card__figure">
-          <img src="{{ base_path }}/images/{{ figure_image }}" alt="{{ figure.alt[home_lang] | escape }}" loading="lazy" decoding="async">
+        <figure class="recent-highlight-card__poster">
+          <a class="image-popup" href="{{ base_path }}/images/{{ full_image }}" aria-label="{% if home_lang == 'zh' %}放大配图：{% else %}Enlarge image: {% endif %}{{ post.title | escape }}">
+            <img src="{{ base_path }}/images/{{ figure_image }}" alt="{% if home_lang == 'zh' %}论文配图：{% else %}Publication image: {% endif %}{{ post.title | escape }}" loading="lazy" decoding="async" width="480" height="360">
+          </a>
         </figure>
       {% endif %}
       {% if display_abstract %}
