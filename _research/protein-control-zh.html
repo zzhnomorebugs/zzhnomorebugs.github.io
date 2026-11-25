@@ -8,6 +8,7 @@ lang_switch_url: /research/protein-control/
 research_project: true
 mathjax: true
 project_class: protein-project
+project_stylesheet: protein-control-training.css
 project_title: "蛋白质序列可控生成"
 project_area: "蛋白质设计 · 条件生成"
 project_area_en: "Protein design · Conditional generation"
@@ -108,7 +109,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/prior-guidance.svg" width="1080" height="500" alt="紧凑的组合去噪框架：四个输入在左侧同列，状态和时间各自分叉进入大型先验 f 与较小的残差 g，目标标签和参考上下文只进入残差。先验输出沿粗主干水平进入加号，残差沿细支路从下方注入条件修正；合成输出经过两次直角转弯，进入右侧纵向排列的 softmax、状态更新和下一状态。" loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">图 2 · 先验主干与残差校正。状态 \(s_t\) 和时间 \(t\) 分别输入两路网络，目标标签 \(y\) 与参考上下文 \(x_{\mathrm{ref}}\) 只输入 \(g\)。大型先验 \(f\) 沿粗主干提供基础 token logits；较小的残差 \(g\) 从下方注入条件修正，得到 \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\)，随后通过 softmax 与 BFN / DFM 状态更新推进生成。下游训练冻结先验、训练残差；生成时两路权重均固定。节点数量、框图面积与线宽均为示意。</figcaption>
+    <figcaption class="retro-figure__caption">图 2(a) · 先验主干与残差校正。状态 \(s_t\) 和时间 \(t\) 分别输入两路网络，目标标签 \(y\) 与参考上下文 \(x_{\mathrm{ref}}\) 只输入 \(g\)。大型先验 \(f\) 沿粗主干提供基础 token logits；较小的残差 \(g\) 从下方注入条件修正，得到 \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\)，随后通过 softmax 与 BFN / DFM 状态更新推进生成。下游训练冻结先验、训练残差；生成时两路权重均固定。节点数量、框图面积与线宽均为示意。</figcaption>
   </figure>
 
   <h3>3.2 在 logits 上相加，再变成干净 token 概率</h3>
@@ -122,10 +123,11 @@ project_chapters:
   <div class="retro-callout"><strong>残差具体“修正”了什么？</strong><p>用抽象类别 \(\alpha,\beta\) 举例：先验可能更偏好 \(\alpha\)，而当前条件需要提高 \(\beta\) 的相对倾向，残差便可以提高 \(\beta\) 相对于其他类别的分数。softmax 将修正后的分数重新归一化。残差为零时，预测退回通用先验；残差本身既不是概率，也不是一条已经选定的突变指令。</p></div>
 
   <h3>3.3 用组合预测训练，只让残差模型学习</h3>
-  <p>先验完成预训练后，下游只训练条件残差。这里使用的是较小的任务数据集：真实序列配有参考上下文与性质标签，学习信号集中在目标条件所需的修正上。一次训练可以按以下顺序理解：</p>
+  <p>先在 UniRef 上训练通用先验 \(f\)，再冻结它，用带参考上下文和性质标签的任务数据训练条件残差 \(g\)。将两路合成一个去噪器后，下游的输入、预测和监督都遵循标准条件扩散的训练流程。</p>
+  {% include protein-training-animation.html %}
   <ol>
     <li><strong>构造训练输入。</strong>以真实序列 \(x\) 为干净目标，采样时间 \(t\)，按所用框架构造对应的带噪状态 \(s_t\)；同时提供参考序列与该训练样本对应的性质条件。</li>
-    <li><strong>计算两路输出。</strong>冻结的先验提供基础 logits，残差模型结合状态与条件给出修正，两者按图 2 合成预测 \(q\)。</li>
+    <li><strong>计算两路输出。</strong>冻结的先验提供基础 logits，残差模型结合状态与条件给出修正，两者按图 2(a) 合成预测 \(q\)。</li>
     <li><strong>用真实序列监督组合结果。</strong>沿用对应 BFN / DFM 框架的生成训练目标，让组合预测学习恢复干净序列。两种框架的具体损失不同，但条件适配都作用于组合预测。</li>
     <li><strong>只更新残差参数 \(\phi\)。</strong>\(\operatorname{stopgrad}\) 表示下游损失不通过先验分支更新其权重。残差通过“加上修正后，整体预测是否更好”得到学习信号。</li>
   </ol>
@@ -138,7 +140,7 @@ project_chapters:
     <li><strong>预测、修正、更新。</strong>在当前 \(s_t,t\) 上重新计算两路 logits，合成 \(q\)。<a href="#reference-bfn">BFN</a> 用它构造消息并更新概率信念；<a href="#reference-dfm">DFM</a> 用它构造跃迁速率并更新离散 token。</li>
     <li><strong>进入下一步，直至得到候选。</strong>新的状态再次送入两路模型，条件在整个过程中持续参与预测。最终序列再交给独立评估，检查性质响应、编辑行为与结构合理性。</li>
   </ol>
-  <div class="retro-callout"><strong>固定的是模型权重，变化的是每一步预测</strong><p>先验与残差都会随当前状态和时间重新输出预测；残差不是只在生成开始时加一次。下一章进一步展开图 2 中的“状态更新”：同一个干净 token 预测，如何分别驱动 BFN 的概率信念与 DFM 的离散跃迁。</p></div>
+  <div class="retro-callout"><strong>固定的是模型权重，变化的是每一步预测</strong><p>先验与残差都会随当前状态和时间重新输出预测；残差不是只在生成开始时加一次。下一章进一步展开图 2(a) 中的“状态更新”：同一个干净 token 预测，如何分别驱动 BFN 的概率信念与 DFM 的离散跃迁。</p></div>
 </section>
 
 <section class="retro-chapter protein-dynamics" id="protein-dynamics">

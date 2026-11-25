@@ -8,6 +8,7 @@ lang_switch_url: /zh/research/protein-control/
 research_project: true
 mathjax: true
 project_class: protein-project
+project_stylesheet: protein-control-training.css
 project_title: "Controllable Protein Sequence Generation"
 project_area: "Protein design · Conditional generation"
 project_area_en: "Protein design · Conditional generation"
@@ -107,7 +108,7 @@ project_chapters:
         <img src="{{ base_path }}/images/research/protein-control/prior-guidance-en.svg" width="1080" height="500" alt="A compact integrated denoiser: four left-aligned inputs feed a large prior f and a smaller residual g. State and time each branch into both networks; target and reference enter only the residual. A thick prior prediction path leads directly into addition, while a thin residual branch adds a conditional correction from below. The combined output connects through two right-angle bends to the right column of softmax, state update and next state." loading="lazy">
       </picture>
     </a>
-    <figcaption class="retro-figure__caption">Figure 2 · A prior backbone with a learned residual correction. State \(s_t\) and time \(t\) each feed both networks; target label \(y\) and reference context \(x_{\mathrm{ref}}\) feed only \(g\). The larger prior \(f\) supplies base token logits along the thick main path. The smaller residual \(g\) adds a conditional correction from below, giving \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\). Softmax and a BFN / DFM state update then advance generation. Downstream training freezes the prior and trains the residual; generation fixes both networks. Node counts, box areas and line widths are schematic.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 2(a) · A prior backbone with a learned residual correction. State \(s_t\) and time \(t\) each feed both networks; target label \(y\) and reference context \(x_{\mathrm{ref}}\) feed only \(g\). The larger prior \(f\) supplies base token logits along the thick main path. The smaller residual \(g\) adds a conditional correction from below, giving \(\ell_{\mathrm{cond}}=\ell_{\mathrm{prior}}+r_\phi\). Softmax and a BFN / DFM state update then advance generation. Downstream training freezes the prior and trains the residual; generation fixes both networks. Node counts, box areas and line widths are schematic.</figcaption>
   </figure>
 
   <h3>3.2 Add the logits, then obtain clean-token probabilities</h3>
@@ -121,10 +122,11 @@ project_chapters:
   <div class="retro-callout"><strong>What does the residual actually correct?</strong><p>Consider abstract classes \(\alpha,\beta\). The prior may favor \(\alpha\), while the current condition calls for a greater relative preference for \(\beta\). The residual can increase the score of \(\beta\) relative to the other classes, and softmax renormalizes the corrected scores. A zero residual recovers the general prior's prediction. The residual itself is neither a probability nor an instruction for an already selected mutation.</p></div>
 
   <h3>3.3 Train the combined prediction, updating only the residual</h3>
-  <p>Once the prior has been pretrained, downstream training updates only the conditional residual. It uses a smaller task dataset of real sequences with reference context and property labels, focusing the learning signal on the correction needed for the target condition. One training step can be understood as follows:</p>
+  <p>First, train the general prior \(f\) on UniRef. Then freeze it and train the conditional residual \(g\) on task data with reference context and property labels. When the two branches are viewed as one denoiser, the inputs, prediction, and supervision follow the standard conditional diffusion training pattern.</p>
+  {% include protein-training-animation.html %}
   <ol>
     <li><strong>Construct the training input.</strong> Use the real sequence \(x\) as the clean target, sample a time \(t\), and construct its noisy state \(s_t\) according to the chosen framework. Supply the reference sequence and the property condition associated with that training example.</li>
-    <li><strong>Compute both outputs.</strong> The frozen prior supplies base logits, and the residual model supplies a correction based on the state and conditions. Combine them into the prediction \(q\), as shown in Figure 2.</li>
+    <li><strong>Compute both outputs.</strong> The frozen prior supplies base logits, and the residual model supplies a correction based on the state and conditions. Combine them into the prediction \(q\), as shown in Figure 2(a).</li>
     <li><strong>Supervise the combined result with the real sequence.</strong> Use the generative training objective of the corresponding BFN / DFM framework to learn to recover clean sequences. The specific losses differ between frameworks, but in both cases conditional adaptation acts through the combined prediction.</li>
     <li><strong>Update only the residual parameters \(\phi\).</strong> The operation \(\operatorname{stopgrad}\) prevents the downstream loss from updating weights through the prior branch. The residual learns from whether adding its correction improves the overall prediction.</li>
   </ol>
@@ -137,7 +139,7 @@ project_chapters:
     <li><strong>Predict, correct, and update.</strong> Recompute both logit outputs from the current \(s_t,t\) and combine them into \(q\). <a href="#reference-bfn">BFN</a> uses it to construct messages and update probability beliefs; <a href="#reference-dfm">DFM</a> uses it to construct transition rates and update discrete tokens.</li>
     <li><strong>Continue until a candidate is obtained.</strong> Feed the new state back to both models so that the conditions continue to influence predictions throughout generation. Evaluate the resulting sequences independently for property response, editing behavior, and structural plausibility.</li>
   </ol>
-  <div class="retro-callout"><strong>The weights stay fixed; the predictions change at every step</strong><p>Both the prior and residual recompute their predictions as the state and time change; the residual is not added only once at the start. The next section expands the state-update part of Figure 2: how the same clean-token prediction drives BFN's probability beliefs and DFM's discrete transitions.</p></div>
+  <div class="retro-callout"><strong>The weights stay fixed; the predictions change at every step</strong><p>Both the prior and residual recompute their predictions as the state and time change; the residual is not added only once at the start. The next section shows how the state update in Figure 2(a) uses the same clean-token prediction to drive BFN's probability beliefs and DFM's discrete transitions.</p></div>
 </section>
 
 <section class="retro-chapter protein-dynamics" id="protein-dynamics">
