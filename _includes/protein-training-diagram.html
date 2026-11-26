@@ -7,6 +7,14 @@
     <filter id="{{ diagram_id }}-noise" filterUnits="userSpaceOnUse" x="-15" y="-22" width="116" height="44">
       <feGaussianBlur data-noise-blur stdDeviation="3"/>
     </filter>
+    {% if stage.id == 'adapt' %}
+    <linearGradient id="{{ diagram_id }}-ice" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#f1fcff" stop-opacity=".58"/>
+      <stop offset=".35" stop-color="#8cd8f5" stop-opacity=".24"/>
+      <stop offset=".72" stop-color="#b7edff" stop-opacity=".1"/>
+      <stop offset="1" stop-color="#48a4d2" stop-opacity=".42"/>
+    </linearGradient>
+    {% endif %}
     {% assign wire_styles = 'state prior residual condition neutral target gradient' | split: ' ' %}
     {% for style in wire_styles %}
     <marker id="{{ diagram_id }}-arrow-{{ style }}" viewBox="0 0 9 8" refX="8.5" refY="4"
@@ -23,7 +31,7 @@
     class="pt-wire pt-color--{{ edge[2] }}" d="{{ edge[3] }}" marker-end="url(#{{ diagram_id }}-arrow-{{ edge[2] }})"/>
   {% endfor %}
   {% for label in geometry.labels %}
-  <text class="pt-edge-label pt-label--{{ label[0] }}" x="{{ label[1] }}" y="{{ label[2] }}">{{ training[label[0]] }}{% if label[0] == 'noise' %} · <tspan class="pt-math">t</tspan>{% endif %}</text>
+  <text class="pt-edge-label pt-label--{{ label[0] }}" x="{{ label[1] }}" y="{{ label[2] }}">{{ training[label[0]] }}{% if label[0] == 'target' %} <tspan class="pt-math">x</tspan>{% endif %}</text>
   {% endfor %}
   {% for node in geometry.nodes %}
   {% assign kind = node[0] %}
@@ -49,7 +57,7 @@
     {% case kind %}
     {% when 'clean', 'noisy' %}
       <text class="pt-node-title" x="{{ mid }}" y="20">{% if kind == 'clean' %}{{ stage.source }}{% else %}{{ training.noisy }}{% endif %}</text>
-      <text class="pt-node-detail" x="{{ mid }}" y="38">{% if kind == 'clean' %}{{ training.clean }} <tspan class="pt-math">x</tspan>{% else %}<tspan class="pt-math">s<tspan class="pt-sub">t</tspan>, t</tspan>{% endif %}</text>
+      <text class="pt-node-detail" x="{{ mid }}" y="38">{% if kind == 'clean' %}{{ training.clean }} <tspan class="pt-math">x</tspan>{% else %}<tspan class="pt-math">s<tspan class="pt-sub">t</tspan></tspan>{% endif %}</text>
       {% if stage.id == 'pretrain' %}{% assign tokens = 'β α γ γ α' | split: ' ' %}{% else %}{% assign tokens = 'β β γ γ α' | split: ' ' %}{% endif %}
       <g class="pt-token" transform="translate({{ mid | minus: 42 }} {{ h | minus: 17 }})">
         {% for token in tokens %}
@@ -60,21 +68,39 @@
         </g>
       </g>
     {% when 'prior', 'residual' %}
-      <text class="pt-node-title" x="{{ mid }}" y="20">{{ training[kind] }} <tspan class="pt-math">{% if kind == 'prior' %}f{% else %}g{% endif %}</tspan></text>
+      {% if kind == 'prior' and stage.id == 'adapt' %}
+      <svg data-frozen-overlay aria-hidden="true" x="2" y="2" width="{{ w | minus: 4 }}" height="{{ h | minus: 4 }}"
+           viewBox="0 0 320 116" preserveAspectRatio="none" pointer-events="none">
+        <rect x="0" y="0" width="320" height="116" rx="4" fill="url(#{{ diagram_id }}-ice)"/>
+        <path d="M2 2 H91 L59 11 H11 L4 47Z M318 3 V66 L308 39 V12 L284 6Z" fill="#fff" opacity=".46"/>
+        <path d="M1 113 L18 87 12 106 50 114Z M318 114 H234 L273 105 307 105 316 73Z" fill="#56b6df" opacity=".34"/>
+        <path d="M9 71 V13 H48 M271 109 H310 L314 89" fill="none" stroke="#e9fbff" stroke-width="1.7" stroke-linecap="round"/>
+        <g transform="translate(299 19)" fill="none" stroke="currentColor" stroke-width="1.35" opacity=".75" stroke-linecap="round">
+          <path d="M0 -9 V9 M-7.8 -4.5 L7.8 4.5 M-7.8 4.5 L7.8 -4.5 M-2.5 -6 L0 -4 2.5 -6 M-2.5 6 L0 4 2.5 6"/>
+          <path d="M-5.8 -5.5 L-4 -2.3 -7 -2.4 M5.8 5.5 L4 2.3 7 2.4 M5.8 -5.5 L4 -2.3 7 -2.4 M-5.8 5.5 L-4 2.3 -7 2.4"/>
+        </g>
+      </svg>
+      {% endif %}
+      <g {% if kind == 'prior' %}data-prior-title {% endif %}transform="translate({{ mid }} 20)">
+        <text class="pt-node-title" x="0" y="0">{{ training[kind] }} <tspan class="pt-math">{% if kind == 'prior' %}f{% else %}g{% endif %}</tspan></text>
+      </g>
       <svg x="8" y="27" width="{{ w | minus: 16 }}" height="{{ h | minus: 49 }}"
         viewBox="{% if kind == 'prior' %}360 113 300 124{% else %}416 365 188 50{% endif %}" aria-hidden="true">
         {% include protein-training-network-symbols.html %}
       </svg>
       <text class="pt-status" x="{{ mid }}" y="{{ h | minus: 8 }}">{% if kind == 'prior' and stage.id == 'adapt' %}{{ training.frozen }}{% else %}{{ training.trainable }}{% endif %}</text>
-    {% when 'conditions' %}
-      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | minus: 3 }}">{{ training.conditions }} <tspan class="pt-math">x<tspan class="pt-sub">ref</tspan></tspan></text>
-      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 16 }}">{{ training.property }} <tspan class="pt-math">y</tspan></text>
+    {% when 'time' %}
+      <text class="pt-node-detail{% if w < 118 %} pt-node-detail--compact{% endif %}" x="{{ mid }}" y="{{ cy | plus: 4 }}">{{ training.time }} <tspan class="pt-math">t</tspan></text>
+    {% when 'reference' %}
+      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 4 }}">{{ training.reference }} <tspan class="pt-math">x<tspan class="pt-sub pt-roman">ref</tspan></tspan></text>
+    {% when 'property' %}
+      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 4 }}">{{ training.property }} <tspan class="pt-math">y</tspan></text>
     {% when 'prediction' %}
       <text class="pt-node-title" x="{{ mid }}" y="{{ cy | minus: 3 }}">softmax</text>
       <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 17 }}">{{ training.prediction }} <tspan class="pt-math">q</tspan></text>
     {% when 'loss' %}
       <text class="pt-node-title" x="{{ mid }}" y="{{ cy | minus: 3 }}">{{ training.loss }}</text>
-      <text class="pt-math" x="{{ mid }}" y="{{ cy | plus: 17 }}">ℒ(q, x, t)</text>
+      <text class="pt-node-detail pt-roman" x="{{ mid }}" y="{{ cy | plus: 17 }}"><tspan class="pt-calligraphic">L</tspan>(<tspan class="pt-math">q</tspan>, <tspan class="pt-math">x</tspan>, <tspan class="pt-math">t</tspan>)</text>
     {% endcase %}
   </g>
   {% endfor %}

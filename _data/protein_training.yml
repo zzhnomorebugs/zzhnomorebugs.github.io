@@ -10,16 +10,17 @@ zh-CN:
   residual: 条件引导
   frozen: 已冻结
   trainable: 训练中
-  conditions: 参考序列
+  time: 扩散时间
+  reference: 参考序列
   property: 目标性质
   prediction: 干净 token 概率
   loss: 去噪损失
   noise: 加噪
   base: 基础 logits
   correction: 残差 logits
-  target: 监督目标 x
+  target: 监督目标
   update: 反向更新
-  caption: 图 2(b) · 模糊度示意加噪强度。彩色节点参与训练，白色节点冻结，虚线指向本阶段更新的网络。生成时固定两路权重。
+  caption: 图 2(b) · 模糊度表示加噪强度。彩色节点参与训练，冰层和白色节点表示冻结。虚线指向正在更新的网络。生成时固定两路权重。
   stages:
     - id: pretrain
       name: 阶段一 · 预训练
@@ -43,16 +44,17 @@ en:
   residual: Guidance residual
   frozen: Frozen
   trainable: Trainable
-  conditions: Reference
+  time: Diffusion time
+  reference: Reference
   property: Target property
   prediction: Clean-token probs.
   loss: Denoising loss
   noise: Noise
   base: Base logits
   correction: Residual logits
-  target: Target x
+  target: Target
   update: Backprop.
-  caption: Figure 2(b) · Blur illustrates the noise level. Colored nodes train, white nodes stay frozen, and the dashed arrow returns to the network being updated. Both networks are fixed during generation.
+  caption: Figure 2(b) · Blur shows the noise level. Colored nodes train. Ice and white nodes mark the frozen prior. The dashed arrow shows which network updates. Both networks are fixed during generation.
   stages:
     - id: pretrain
       name: Stage 1 · Pretraining
@@ -62,5 +64,5 @@ en:
     - id: adapt
       name: Stage 2 · Conditional training
       title: <var>g</var> learns to guide generation
-      source: Labeled task data
+      source: Labeled data
       description: Frozen f and trainable g read the noisy state and time. Only g reads the reference and target property. Their logits are added before softmax. The clean sequence supervises the combined prediction and only g updates.

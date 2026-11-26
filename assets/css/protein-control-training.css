@@ -1,6 +1,8 @@
 ---
 layout: none
 ---
+{% include protein-training-math-fonts.css %}
+
 .retro-figure.protein-training {
   --pt-ink: #243442;
   --pt-muted: #536575;
@@ -17,11 +19,15 @@ layout: none
   --pt-condition-fill: #f3eef7;
   --pt-loss-fill: #eef3f2;
   --pt-gradient: #287669;
+  display: block;
+  width: 100%;
+  margin-inline: auto;
   container-type: inline-size;
   position: relative;
   scroll-margin-top: 7.5rem;
   text-align: left;
 }
+.protein-training .retro-figure__caption { text-align: center; text-wrap: balance; }
 {% if site.site_theme == 'dark' %}
 .retro-figure.protein-training,
 {% endif %}
@@ -76,20 +82,18 @@ layout: none
 }
 .protein-training__steps span { font-size: .76rem; }
 .protein-training__steps strong { font-size: .94rem; }
-.protein-training__steps var { font-family: Georgia, serif; }
 .protein-training__steps button:focus-visible { outline-offset: -3px; }
 .protein-training__static-title { margin: .6em 1em; }
 .protein-training[data-training-ready] .protein-training__static-title { display: none; }
 .protein-training__view { padding: .45rem .4rem .25rem; }
 .protein-training[data-training-ready] .protein-training__views { display: grid; }
 .protein-training[data-training-ready] .protein-training__view { grid-area: 1 / 1; align-self: center; min-width: 0; }
+.protein-training__shared-labels { pointer-events: none; }
 .protein-training__view[aria-hidden="true"] { visibility: hidden; }
 .protein-training__diagram { display: block; width: 100%; height: auto; overflow: visible; }
 .protein-training__diagram--mobile { display: none; }
 .protein-training__diagram text { text-anchor: middle; fill: var(--pt-ink); }
 .protein-training__diagram { font-family: Georgia, "Noto Serif CJK SC", SimSun, serif; }
-.pt-math, .pt-token text { font: italic 16px Georgia, "Times New Roman", serif; }
-.pt-sub { font-size: .72em; baseline-shift: sub; }
 .pt-network-frame { fill: var(--pt-frame); stroke: var(--pt-line); stroke-width: 1.4; }
 .pt-color--state { color: var(--pt-state); }
 .pt-color--prior { color: var(--pt-prior); }
@@ -105,10 +109,10 @@ layout: none
 .pt-wire[data-flow-active] { stroke-width: 3; }
 .pt-wire.pt-color--prior[data-flow-active] { stroke-width: 4.5; }
 .pt-node { color: var(--pt-line); --pt-fill: var(--pt-canvas); }
-.pt-node--noisy { color: var(--pt-state); --pt-fill: var(--pt-state-fill); }
+.pt-node--noisy, .pt-node--time { color: var(--pt-state); --pt-fill: var(--pt-state-fill); }
 .pt-node--prior { color: var(--pt-prior); --pt-fill: var(--pt-prior-fill); }
 .pt-node--residual { color: var(--pt-residual); --pt-fill: var(--pt-residual-fill); }
-.pt-node--conditions { color: var(--pt-condition); --pt-fill: var(--pt-condition-fill); }
+.pt-node--reference, .pt-node--property { color: var(--pt-condition); --pt-fill: var(--pt-condition-fill); }
 .pt-node--loss { color: var(--pt-gradient); --pt-fill: var(--pt-loss-fill); }
 .pt-node--sum { color: var(--pt-ink); }
 .pt-neurons circle { fill: #fff; }
@@ -123,8 +127,8 @@ layout: none
 [data-training-stage="pretrain"][data-training-part="update"] .pt-node--prior .pt-box,
 [data-training-stage="adapt"][data-training-part="update"] .pt-node--residual .pt-box { stroke-width: 3.5; }
 .pt-node-title { font-size: 17px; font-weight: 700; }
-.pt-node-title .pt-math { font-weight: 700; }
 .pt-node-detail, .pt-status { font-size: 15px; }
+.protein-training__diagram .pt-node-detail--compact { font-size: 13px; }
 .protein-training__diagram .pt-status { fill: currentColor; font-weight: 600; }
 .pt-plus { fill: none; stroke: currentColor; stroke-width: 2.3; stroke-linecap: round; }
 .protein-training__diagram .pt-edge-label {

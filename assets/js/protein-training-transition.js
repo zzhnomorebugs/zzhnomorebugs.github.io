@@ -15,7 +15,7 @@
     }));
   }
 
-  // Layouts specify absolute, rectilinear SVG paths. Keep their exact corners
+  // Layouts specify absolute SVG line segments. Keep their exact corners
   // by matching travel distances along each route before interpolating them.
   function routeOf(path) {
     const points = [];
@@ -52,9 +52,34 @@
       from: attachedNode(nodes, route[0]), to: attachedNode(nodes, route[route.length - 1]) };
   }
 
-  function layoutPair(first, second) {
+  function sharedPriorTitle(diagrams, nodes, overlay) {
+    const titles = diagrams.map(svg => svg.querySelector("[data-prior-title]"));
+    if (!titles.every(Boolean)) return;
+
+    // Only the network state changes. Move the original label at full opacity
+    // and natural type size while both network drawings crossfade beneath it.
+    const anchors = titles.map((title, i) => {
+      const node = nodes[i].get("prior");
+      const local = title.transform.baseVal.getItem(0).matrix;
+      return { x: node.x + local.e, y: node.y + local.f };
+    });
+    const svg = document.createElementNS(diagrams[0].namespaceURI, "svg");
+    for (const name of ["class", "viewBox"]) svg.setAttribute(name, diagrams[0].getAttribute(name));
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    svg.appendChild(titles[0]);
+    titles[1].remove();
+    overlay.appendChild(svg);
+    return p => {
+      const point = movePoint(anchors[0], anchors[1], p);
+      titles[0].setAttribute("transform", `translate(${point.x} ${point.y})`);
+    };
+  }
+
+  function layoutPair(first, second, overlay) {
     const diagrams = [first, second];
     const nodes = diagrams.map(nodesOf);
+    const moveTitle = sharedPriorTitle(diagrams, nodes, overlay);
     const updates = [];
     const resets = [];
     for (const [key, a] of nodes[0]) {
@@ -134,19 +159,24 @@
         }
       });
     }
-    return { draw: p => updates.forEach(update => update(p)), reset: () => resets.forEach(reset => reset()) };
+    return { draw: p => updates.forEach(update => update(p)), reset: () => resets.forEach(reset => reset()), moveTitle };
   }
 
   window.proteinTrainingTransition = function (first, second) {
     const views = [first, second];
+    const overlay = document.createElement("div");
+    overlay.className = "protein-training__view protein-training__shared-labels";
+    overlay.inert = true;
     const layouts = Array.from(first.querySelectorAll("[data-training-diagram]"), svg =>
-      layoutPair(svg, second.querySelector(`[data-training-diagram="${svg.dataset.trainingDiagram}"]`)));
+      layoutPair(svg, second.querySelector(`[data-training-diagram="${svg.dataset.trainingDiagram}"]`), overlay));
+    if (overlay.childElementCount) second.after(overlay);
     let previous = -1;
     return p => {
       if (p === previous) return;
       const between = p > 0 && p < 1;
       if (between) layouts.forEach(layout => layout.draw(p));
       else if (previous > 0 && previous < 1) layouts.forEach(layout => layout.reset());
+      for (const layout of layouts) if (layout.moveTitle) layout.moveTitle(p);
       views.forEach((view, index) => {
         view.style.visibility = between ? "visible" : "";
         view.style.opacity = between ? String(index ? p : 1 - p) : "";

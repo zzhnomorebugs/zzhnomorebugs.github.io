@@ -1,0 +1,120 @@
+/*!
+MathJax TeX font subsets for the protein training diagram.
+Copyright (c) 2009-2010, Design Science, Inc. (www.mathjax.org).
+Original Reserved Font Names: MathJax_Math, MathJax_Main, MathJax_Script.
+The embedded subsets are renamed Training TeX Variables, Roman and Script.
+
+SIL OPEN FONT LICENSE Version 1.1 - 26 February 2007
+-----------------------------------------------------------
+
+PREAMBLE
+The goals of the Open Font License (OFL) are to stimulate worldwide
+development of collaborative font projects, to support the font creation
+efforts of academic and linguistic communities, and to provide a free and
+open framework in which fonts may be shared and improved in partnership
+with others.
+
+The OFL allows the licensed fonts to be used, studied, modified and
+redistributed freely as long as they are not sold by themselves. The
+fonts, including any derivative works, can be bundled, embedded,
+redistributed and/or sold with any software provided that any reserved
+names are not used by derivative works. The fonts and derivatives,
+however, cannot be released under any other type of license. The
+requirement for fonts to remain under this license does not apply
+to any document created using the fonts or their derivatives.
+
+DEFINITIONS
+"Font Software" refers to the set of files released by the Copyright
+Holder(s) under this license and clearly marked as such. This may
+include source files, build scripts and documentation.
+
+"Reserved Font Name" refers to any names specified as such after the
+copyright statement(s).
+
+"Original Version" refers to the collection of Font Software components as
+distributed by the Copyright Holder(s).
+
+"Modified Version" refers to any derivative made by adding to, deleting,
+or substituting -- in part or in whole -- any of the components of the
+Original Version, by changing formats or by porting the Font Software to a
+new environment.
+
+"Author" refers to any designer, engineer, programmer, technical
+writer or other person who contributed to the Font Software.
+
+PERMISSION & CONDITIONS
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Font Software, to use, study, copy, merge, embed, modify,
+redistribute, and sell modified and unmodified copies of the Font
+Software, subject to the following conditions:
+
+1) Neither the Font Software nor any of its individual components,
+in Original or Modified Versions, may be sold by itself.
+
+2) Original or Modified Versions of the Font Software may be bundled,
+redistributed and/or sold with any software, provided that each copy
+contains the above copyright notice and this license. These can be
+included either as stand-alone text files, human-readable headers or
+in the appropriate machine-readable metadata fields within text or
+binary files as long as those fields can be easily viewed by the user.
+
+3) No Modified Version of the Font Software may use the Reserved Font
+Name(s) unless explicit written permission is granted by the corresponding
+Copyright Holder. This restriction only applies to the primary font name as
+presented to the users.
+
+4) The name(s) of the Copyright Holder(s) or the Author(s) of the Font
+Software shall not be used to promote, endorse or advertise any
+Modified Version, except to acknowledge the contribution(s) of the
+Copyright Holder(s) and the Author(s) or with their explicit written
+permission.
+
+5) The Font Software, modified or unmodified, in part or in whole,
+must be distributed entirely under this license, and must not be
+distributed under any other license. The requirement for fonts to
+remain under this license does not apply to any document created
+using the Font Software.
+
+TERMINATION
+This license becomes null and void if any of the above conditions are
+not met.
+
+DISCLAIMER
+THE FONT SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF COPYRIGHT, PATENT, TRADEMARK, OR OTHER RIGHT. IN NO EVENT SHALL THE
+COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+INCLUDING ANY GENERAL, SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL
+DAMAGES, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
+OTHER DEALINGS IN THE FONT SOFTWARE.
+*/
+@font-face {
+  font-family: "Training TeX Variables";
+  src: url("data:font/woff;base64,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") format("woff");
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Training TeX Roman";
+  src: url("data:font/woff;base64,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") format("woff");
+  font-style: normal;
+  font-weight: 400;
+}
+@font-face {
+  font-family: "Training TeX Script";
+  src: url("data:font/woff;base64,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") format("woff");
+  font-style: normal;
+  font-weight: 400;
+}
+.protein-training :is(.pt-math, .pt-token text, .protein-training__steps var, .protein-training__static-title var) {
+  font-family: "Training TeX Variables", "Cambria Math", serif;
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis: none;
+}
+.protein-training .pt-token text { font-size: 16px; }
+.protein-training .pt-sub { font-size: .7em; baseline-shift: -.23em; }
+.protein-training .pt-roman { font-family: "Training TeX Roman", "Cambria Math", serif; }
+.protein-training .pt-calligraphic { font-family: "Training TeX Script", "Cambria Math", serif; }
