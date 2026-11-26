@@ -36,7 +36,7 @@ class Element {
   click() { this.listeners.click(); }
 }
 
-function setup({ reduced = false, legacy = false, viewportHeight = 600, top = 900, stageHeight = 600 } = {}) {
+function setup({ reduced = false, mediaQueries = true, viewportHeight = 600, top = 900, stageHeight = 600 } = {}) {
   const figure = new Element();
   figure.dataset.language = 'en';
   figure.groups.set('[data-rt-scene]', Array.from({ length: 5 }, () => new Element()));
@@ -53,10 +53,9 @@ function setup({ reduced = false, legacy = false, viewportHeight = 600, top = 90
   document.children.set('[data-retro-training]', figure);
   const motion = { matches: reduced };
   let motionListener;
-  if (legacy) motion.addListener = listener => { motionListener = listener; };
-  else motion.addEventListener = (_, listener) => { motionListener = listener; };
+  motion.addEventListener = (_, listener) => { motionListener = listener; };
   const window = new Element();
-  window.matchMedia = () => motion;
+  if (mediaQueries) window.matchMedia = () => motion;
   let nextFrame = 0, clock = 1;
   const frames = new Map();
   const context = vm.createContext({
@@ -76,11 +75,10 @@ function setup({ reduced = false, legacy = false, viewportHeight = 600, top = 90
   return {
     figure, probability, sample, document,
     play: figure.querySelector('[data-rt-play]'),
-    note: figure.querySelector('[data-rt-motion-note]'),
     slider: figure.querySelector('#rt-progress'),
     advance,
     scroll(nextTop) { screenTop = nextTop; window.listeners.scroll(); advance(); },
-    motion(value) { motion.matches = value; motionListener(); },
+    motion(value) { motion.matches = value; motionListener?.(); },
     hidden(value) { document.hidden = value; document.listeners.visibilitychange(); }
   };
 }
@@ -96,20 +94,17 @@ test('autoplay starts between old ratio thresholds, even in a short viewport', (
   assert.ok(page.slider.value > 0);
 });
 
-test('reduced motion stays static until explicit play, then animates interpolation and arrows', () => {
+test('autoplay animates interpolation and arrows with reduced motion enabled', () => {
   const page = setup({ reduced: true, top: 0 });
-  assert.equal(playing(page), false);
-  assert.equal(page.note.hidden, false);
-  page.play.click(); page.advance(); page.advance(14900);
-  assert.equal(page.note.hidden, true);
-  assert.ok(page.figure.classes.has('has-user-motion'));
+  assert.equal(playing(page), true);
+  page.advance(); page.advance(14900);
   assert.ok(Number(page.probability.dataset.time) > 0);
   assert.ok(Number(page.probability.dataset.time) < 0.45);
   page.advance(7000);
   const progress = Number(page.sample.querySelector('[data-rt-denoise-links]').dataset.progress);
   assert.ok(progress > 0 && progress < 1);
   page.advance(5000);
-  assert.equal(playing(page), false); // One full pass, without an unsolicited loop.
+  assert.equal(playing(page), true);
   assert.equal(page.slider.value, 1000);
 });
 
@@ -129,22 +124,22 @@ test('visibility pauses and resumes playback, but preserves a manual pause', () 
   assert.equal(playing(page), false);
 });
 
-test('normal playback loops and preference changes revoke the manual override', () => {
+test('changing the system preference preserves playback and manual pause', () => {
   const page = setup({ top: 0 });
   page.advance(); page.advance(30000); page.advance(1300);
   assert.equal(playing(page), true);
   assert.equal(page.slider.value, 0);
   page.motion(true);
-  assert.equal(playing(page), false);
-  page.play.click(); assert.equal(playing(page), true);
+  assert.equal(playing(page), true);
+  page.advance(500);
+  assert.ok(page.slider.value > 0);
+  page.play.click();
   page.motion(false); page.motion(true);
   assert.equal(playing(page), false);
-  assert.equal(page.figure.classes.has('has-user-motion'), false);
 });
 
-test('legacy media-query listeners still initialize and handle preference changes', () => {
-  const page = setup({ legacy: true, reduced: true, top: 0 });
+test('viewport autoplay works without a media query API', () => {
+  const page = setup({ mediaQueries: false, top: 0 });
   assert.ok(page.figure.classes.has('is-ready'));
-  page.motion(false);
   assert.equal(playing(page), true);
 });

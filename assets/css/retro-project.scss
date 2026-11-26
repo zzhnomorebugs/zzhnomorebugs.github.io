@@ -453,10 +453,6 @@
   .retro-figure__caption { font-size: 0.7rem; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .retro-project * { scroll-behavior: auto !important; transition: none !important; }
-}
-
 @media print {
   .masthead,
   .page__footer,

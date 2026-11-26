@@ -339,11 +339,15 @@ b, i, strong, em, blockquote, p, q, span, figure, img, h1, h2, header, input, a,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation: none !important;
-    transition: none !important;
+  // Research walkthroughs provide their own playback controls.
+  :not(:where([data-project-animation], [data-project-animation] *)) {
+    &, &::before, &::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  *, *::before, *::after {
     scroll-behavior: auto !important;
   }
 

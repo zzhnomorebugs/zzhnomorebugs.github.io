@@ -29,26 +29,12 @@ zh-CN:
     - step: 逐像素取样
       phase: 划分策略一 · 逐像素
       title: 七块都留下像素，空白块的位置就暴露了
-      left_role: 样本 A → 模型可见
-      left: 从每个实测块保留一些像素
-      right_role: 由 context 形状推断
-      right: 哪七块原本有测量？
-      right_after: 左上角一定是原始缺口
-      action: 数有痕迹的块
-      result: i 的查询概率为零
-      cue: 只看留给模型的蓝紫色像素。九宫格中，恰好七块各有至少一个像素，已经用完了这个例子的七个实测块。
+      cue: 上下两行从同一批观测取样。沿上排角标数，蓝紫色像素出现在七个块，已经用完所有实测块。下排只有四块留在 context。
       outcome: 任何能留下这种 context 形状的样本都没测到 i。模型可以在 i 输出一个数，但对于这种输入，损失函数永远收不到该处的实测答案。
     - step: 按整块取样
       phase: 划分策略二 · 按整块
       title: 四块 context 的位置相同，i 却可能有答案
-      left_role: 模型可见
-      left: 只保留四个完整块
-      right_role: 相容的原始观测
-      right: 样本 A · 左上缺测
-      right_after: 样本 B · 左上实测
-      action: 固定四块的位置
-      result: i 可作 query
-      cue: 固定左图四个蓝紫块的位置。只看这四块的形状，无法分辨其余五块中哪两块原本缺失。
+      cue: 上排的像素足迹仍排除左上块。沿下排看样本 A 和 B 的切换，四个蓝紫块的位置固定，其余五块中原本缺失的两块可以不同。
       outcome: 换成样本 B。蓝紫块的位置相同，里面的场值可以不同。B 在左上角测到了 i；只要这种样本和划分会出现，i 就能作为 query 参与训练。
     - step: 构造输入
       phase: 一次训练 · 输入
@@ -127,26 +113,12 @@ en:
     - step: Pixel split
       phase: Partition strategy one · pixels
       title: A trace in every measured block gives away the gaps
-      left_role: Sample A → visible to the model
-      left: Keep pixels in each measured block
-      right_role: Deduced from the context footprint
-      right: Which seven blocks were measured?
-      right_after: The top-left block must be missing
-      action: Count the traces
-      result: Zero query probability
-      cue: Look only at the indigo context pixels. They touch seven blocks, accounting for every measured block in this example.
+      cue: Both rows partition the same set of observations. Follow the upper brackets and count seven blocks with indigo pixels, accounting for all measured blocks. The lower context retains just four blocks.
       outcome: Every sample compatible with this footprint lacks a measurement at i. The model can output a value there, but this context gives the loss no target to score at i.
     - step: Block split
       phase: Partition strategy two · whole blocks
       title: The same four context locations can leave a target at i
-      left_role: Visible to the model
-      left: Keep four whole blocks
-      right_role: Compatible observations
-      right: Sample A · top left missing
-      right_after: Sample B · top left measured
-      action: Fix the footprint
-      result: i can be queried
-      cue: Hold the four indigo block locations fixed. Their footprint leaves open which two of the other five blocks were originally missing.
+      cue: The upper pixel footprint still rules out the top left. In the lower row, samples A and B can leave the same four indigo blocks while measuring different locations outside them.
       outcome: Switch to B. Its four indigo blocks have the same locations, though their field values can differ. B measured i. When this pattern and partition occur, i can serve as a training query.
     - step: Prepare input
       phase: One training step · input

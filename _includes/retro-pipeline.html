@@ -1,5 +1,5 @@
 {% assign rt_zh = false %}{% if page.lang == 'zh-CN' %}{% assign rt_zh = true %}{% endif %}
-<figure class="retro-train" id="retro-pipeline-animation" data-retro-training data-language="{% if rt_zh %}zh{% else %}en{% endif %}" aria-labelledby="rt-title">
+<figure class="retro-train" id="retro-pipeline-animation" data-project-animation data-retro-training data-language="{% if rt_zh %}zh{% else %}en{% endif %}" aria-labelledby="rt-title">
 <header class="rt-header"><h3 id="rt-title">{% if rt_zh %}一次训练，怎样构造模型的输入？{% else %}How is one training example constructed?{% endif %}</h3><p>{% if rt_zh %}从同一产物的不同路线，到离散抽样、模型预测与反应物恢复。{% else %}From alternative routes for one product to discrete sampling, model predictions and reactant recovery.{% endif %}</p></header>
 <div class="rt-screen">
 <section class="rt-scene is-active" data-rt-scene="0" aria-labelledby="rt-title-0">
@@ -77,7 +77,6 @@
 
 </div>
 <div class="rt-controls" hidden>
-  <p class="rt-motion-note" data-rt-motion-note hidden>{% if rt_zh %}系统已减少动态效果。点击“播放讲解”可观看完整动画。{% else %}Your system reduces motion. Select “Play walkthrough” to watch the full animation.{% endif %}</p>
   <button type="button" data-rt-play>{% if rt_zh %}播放讲解{% else %}Play walkthrough{% endif %}</button>
   <button type="button" data-rt-prev aria-label="{% if rt_zh %}上一幕{% else %}Previous scene{% endif %}">←</button><button type="button" data-rt-next aria-label="{% if rt_zh %}下一幕{% else %}Next scene{% endif %}">→</button>
   <button type="button" data-rt-redraw>{% if rt_zh %}重新抽样{% else %}Draw again{% endif %}</button><label class="rt-progress-label" for="rt-progress">{% if rt_zh %}讲解进度{% else %}Progress{% endif %}</label>

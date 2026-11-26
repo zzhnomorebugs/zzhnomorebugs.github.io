@@ -4,8 +4,6 @@
   var figures = Array.prototype.slice.call(document.querySelectorAll("[data-physical-rollout]"));
   if (!figures.length) return;
 
-  var motionPreference = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
-  var reducedMotion = !!(motionPreference && motionPreference.matches);
   var players = [];
 
   figures.forEach(function (figure) {
@@ -35,7 +33,7 @@
     }
 
     function canPlay() {
-      return player.visible && !document.hidden && !reducedMotion && !player.failed;
+      return player.visible && !document.hidden && !player.failed;
     }
 
     function cancelFrame() {
@@ -51,8 +49,7 @@
 
     function showFallback() {
       figure.classList.remove("is-video");
-      if (reducedMotion) showFrame(frameCount * frameMs / 1000);
-      else counter.hidden = true;
+      counter.hidden = true;
     }
 
     function stop() {
@@ -184,14 +181,4 @@
   document.addEventListener("visibilitychange", function () {
     players.forEach(function (player) { player.update(); });
   });
-
-  function updateMotionPreference(event) {
-    reducedMotion = event.matches;
-    players.forEach(function (player) { player.update(); });
-  }
-
-  if (motionPreference) {
-    if (motionPreference.addEventListener) motionPreference.addEventListener("change", updateMotionPreference);
-    else if (motionPreference.addListener) motionPreference.addListener(updateMotionPreference);
-  }
 })();

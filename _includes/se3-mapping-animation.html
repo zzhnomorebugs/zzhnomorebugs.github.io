@@ -1,5 +1,5 @@
 {% if page.lang == 'zh-CN' %}{% assign mapping_language = 'zh' %}{% else %}{% assign mapping_language = 'en' %}{% endif %}
-<div class="se3-mapping" data-se3-mapping data-language="{{ mapping_language }}" data-mapping-view="overview" id="se3-mapping-animation">
+<div class="se3-mapping" data-project-animation data-se3-mapping data-language="{{ mapping_language }}" data-mapping-view="overview" id="se3-mapping-animation">
   <header class="se3-mapping__header">
     <p class="se3-mapping__panel-label">{% if mapping_language == 'zh' %}(b) 去噪轨迹与单步映射{% else %}(b) Denoising trajectories and one-step mappings{% endif %}</p>
     <h3>{% if mapping_language == 'zh' %}一条去噪轨迹，三个空间中的同步变化{% else %}One denoising trajectory across three spaces{% endif %}</h3>

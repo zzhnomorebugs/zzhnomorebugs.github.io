@@ -489,7 +489,7 @@
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 0.5rem;
+  gap: clamp(0.65rem, 1.6vw, 1.15rem);
   text-align: center;
 }
 .idcd-framework__source strong, .idcd-framework__columns strong {
@@ -498,6 +498,10 @@
 }
 .idcd-framework__source small { color: var(--retro-muted); font-size: 0.71rem; line-height: 1.25; }
 .idcd-framework__source svg { width: 100%; max-width: 7.2rem; max-height: 14rem; }
+.idcd-framework [data-fw-stack], .idcd-framework__cell {
+  transform: scale(var(--fw-zoom, 1));
+  transform-origin: center;
+}
 .idcd-framework [data-fw-stack="compact"] { display: none; }
 .idcd-framework__fork {
   align-self: stretch;
@@ -529,6 +533,11 @@
   --fw-route: #ad632d;
   --fw-tint: rgba(206, 140, 89, 0.06);
 }
+.idcd-framework[data-strategy-focus="pixel"] [data-strategy="pixel"],
+.idcd-framework[data-strategy-focus="block"] [data-strategy="block"] {
+  box-shadow: inset 0 0 0 1px var(--fw-route);
+  background: color-mix(in srgb, var(--fw-route) 9%, var(--retro-paper));
+}
 .idcd-framework__rowhead {
   display: flex;
   align-items: baseline;
@@ -538,10 +547,16 @@
   font-size: clamp(0.72rem, 1.35vw, 0.87rem);
   line-height: 1.25;
 }
-.idcd-framework__rowhead > strong { color: var(--retro-ink); }
+.idcd-framework__rowhead > strong { padding: 0.14em 0.42em; border-radius: 3px; color: var(--retro-ink); }
+.idcd-framework[data-strategy-focus="pixel"] [data-strategy="pixel"] .idcd-framework__rowhead > strong,
+.idcd-framework[data-strategy-focus="block"] [data-strategy="block"] .idcd-framework__rowhead > strong {
+  color: white;
+  background: var(--fw-route);
+}
 .idcd-framework [data-fw-probability] { color: var(--retro-muted); font-size: 0.72rem; text-align: end; }
 .idcd-framework [data-fw-probability] > span { color: var(--retro-ink); font-family: Georgia, serif; white-space: nowrap; }
-.idcd-framework__cell { position: relative; width: 100%; max-width: 9rem; }
+.idcd-framework__flow { padding-block: clamp(5px, 1.1vw, 12px); }
+.idcd-framework__cell { position: relative; width: 92%; max-width: 9rem; }
 .idcd-framework__cell > svg { display: block; width: 100%; aspect-ratio: 1; }
 .idcd-framework__sample {
   position: absolute;

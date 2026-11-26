@@ -3,14 +3,14 @@
 
   // The five beats share a clock, including when the reader scrubs backwards.
   const beats = [
-    { id: "noise", duration: 3.2 },
-    { id: "model", duration: 3.2 },
-    { id: "predict", duration: 3.4 },
-    { id: "loss", duration: 2.8 },
-    { id: "update", duration: 3.6 }
+    { id: "noise", duration: 2.2 },
+    { id: "model", duration: 1.9 },
+    { id: "predict", duration: 2.4 },
+    { id: "loss", duration: 1.5 },
+    { id: "update", duration: 2.0 }
   ];
   const segment = 0.11;
-  const transitionDuration = 1.4;
+  const transitionDuration = 1.2;
 
   function collectStage(view, button) {
     const diagrams = window.d3.select(view).selectAll("[data-training-diagram]");
@@ -77,8 +77,6 @@
     const clock = { beat: 0, mix: 0 };
     const timeline = window.gsap.timeline({ paused: true, defaults: { ease: "none" } });
     const frames = [];
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let reduceMotion = motion.matches;
     const morph = window.proteinTrainingTransition(stages[0].view, stages[1].view);
 
     stages.forEach((stage, index) => {
@@ -103,12 +101,11 @@
     let lastTenth = -1;
     let playback;
     let jumpTween;
-    let jumpDestination;
 
     function render() {
       const time = timeline.time();
       const between = time > handoff && time < adapted;
-      const amount = reduceMotion ? Math.round(clock.mix) : clock.mix;
+      const amount = clock.mix;
       const index = time <= handoff ? Math.min(Math.floor(clock.beat), beats.length - 1) :
         Math.min(Math.floor(clock.beat), frames.length - 1);
       const frame = frames[index];
@@ -180,13 +177,12 @@
       const destination = timeline.labels[stage.id];
       const target = stage === stages[0] ? handoff : adapted;
       const from = Math.min(adapted, Math.max(handoff, timeline.time()));
-      if (reduceMotion || Math.abs(from - target) < .001) {
+      if (Math.abs(from - target) < .001) {
         seek(destination);
         if (resume) playback.play();
         return;
       }
       seek(from);
-      jumpDestination = destination;
       jumpTween = window.gsap.to(timeline, {
         time: target, duration: Math.abs(target - from), ease: "none", paused: true,
         onComplete: () => {
@@ -204,13 +200,6 @@
     timeline.eventCallback("onUpdate", render);
     timeline.eventCallback("onComplete", () => playback.pause());
     playback = window.projectAnimationPlayback(root.querySelector(".protein-training__views"), setPlaying);
-    function refreshMotion(event) {
-      reduceMotion = event.matches;
-      if (reduceMotion && jumpTween) seek(jumpDestination);
-      else render();
-    }
-    if (motion.addEventListener) motion.addEventListener("change", refreshMotion);
-    else motion.addListener(refreshMotion);
     play.addEventListener("click", () => {
       if (playback.playing) playback.pause();
       else if (timeline.time() >= end) selectStage(stages[0], true);

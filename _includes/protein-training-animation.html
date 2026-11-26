@@ -1,7 +1,7 @@
 {% include base_path %}
 {% assign training = site.data.protein_training[page.lang] %}
 <figure class="retro-figure protein-training" id="protein-training-animation" aria-labelledby="protein-training-caption"
-  data-protein-training data-play-label="{{ training.play }}" data-pause-label="{{ training.pause }}" data-replay-label="{{ training.replay }}">
+  data-project-animation data-protein-training data-play-label="{{ training.play }}" data-pause-label="{{ training.pause }}" data-replay-label="{{ training.replay }}">
   <div class="protein-training__panel">
     <div class="protein-training__steps" role="group" aria-label="{{ training.stages_label }}" data-training-controls hidden>
       {% for stage in training.stages %}

@@ -101,7 +101,6 @@
     var slider=root.querySelector('[data-mapping-progress]'),counter=root.querySelector('[data-mapping-counter]'),status=root.querySelector('[data-mapping-status]');
     if(!scene||!play||!slow||!slider)return;
     var id='se3-map-'+instance+'-',refs={},layout,displayStates=states;
-    var reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
     var index=0,phase=0,playing=false,raf=0,last=0,announced='';
     var view='overview',walkPosition=0,viewTime=0,inspectAt=8,inspected=false;
     var autoplayStarted=false;
@@ -274,10 +273,8 @@
       var zoom=view==='detail'?1:view==='zoom-in'?ease(viewTime/zoomInDuration):view==='zoom-out'?1-ease(viewTime/zoomOutDuration):0;
       var localView=view==='detail'||view==='zoom-in'||view==='zoom-out';
       var detail=Math.min(3,Math.floor(phase*4)),local=phase*4-detail;
-      if(reduced.matches)local=1;
       var amount=view==='overview'?walkPosition-index:view==='done'||view==='zoom-out'?1:detail===3&&view==='detail'?stageProgress(local,3,2):0;
-      if(reduced.matches&&view==='overview')amount=0;
-      orientTrails(reduced.matches?(localView?1:0):zoom);
+      orientTrails(zoom);
       var lp=showTrail(refs.l,'l',amount),np=showTrail(refs.n,'n',amount),mp=showTrail(refs.m,'m',amount);
       var a=displayStates[index],b=displayStates[index+1];
       var mv=planeGeometry(refs.mPlane,a.m,b.m,layout.m,detail<1?0:detail===1?stageProgress(local,1,0):1);
@@ -329,8 +326,7 @@
       opacity(refs.recompute,detail===3&&recomputeAmount>0?0.85:0);bead(refs.recomputeArrow,refs.recomputeBead,recomputeAmount);opacity(refs.recomputeBead,detail===3&&recomputeAmount>0&&recomputeAmount<1?1:0);
       // A single camera and the same three state points carry the transition.
       // Only the local mapping layers fade in; the trajectory never restarts.
-      var cameraZoom=reduced.matches?(localView?1:0):zoom;
-      var scale=lerp(layout.c?0.88:0.79,1,cameraZoom);
+      var scale=lerp(layout.c?0.88:0.79,1,zoom);
       refs.world.setAttribute('transform','translate('+((1-scale)*layout.width/2)+' '+((1-scale)*layout.height*0.46)+') scale('+scale+')');
       // Keep the page's MathJax formula aligned with the SVG camera on resize.
       if(formula){
@@ -430,11 +426,8 @@
       // The dwell shares the playhead, so leaving the viewport pauses it too.
       playhead=Math.min(end+frames(loopPauseDuration),playhead+delta*fps/1000);
       applyFrame(Math.floor(playhead+1e-7));
-      if(view==='done'){
-        if(reduced.matches){playback.pause();return;}
-        if(playhead>=end+frames(loopPauseDuration)){
-          inspectAt=8;playhead=0;applyFrame(0);
-        }
+      if(view==='done'&&playhead>=end+frames(loopPauseDuration)){
+        inspectAt=8;playhead=0;applyFrame(0);
       }
       raf=requestAnimationFrame(tick);
     }
@@ -456,10 +449,8 @@
       if(view==='overview'||view==='done')inspectAt=Math.min(STEPS-1,Math.ceil(walkPosition));
       var step=Number(button.dataset.mappingJump),offset=stageDurations.slice(0,step).reduce(function(sum,ms){return sum+frames(ms);},0)+0.98*frames(stageDurations[step]);
       seekFrame(timelineBounds().detail+offset);
-      scene.scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});
+      scene.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
     });});
-    if(reduced.addEventListener)reduced.addEventListener('change',render);
-    else reduced.addListener(render);
     var width=scene.clientWidth;build();
     if('ResizeObserver'in window)new ResizeObserver(function(){if(Math.abs(scene.clientWidth-width)>1){width=scene.clientWidth;build();}}).observe(scene);
     root.dataset.mappingReady='true';controls.hidden=false;buttons();

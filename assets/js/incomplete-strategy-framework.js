@@ -8,6 +8,15 @@
   const xy = i => [i % 3 * tile, Math.floor(i / 3) * tile];
   let instance = 0;
 
+  const phase = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const ease = x => x * x * (3 - 2 * x);
+
+  function tourScale(p, start, end) {
+    const time = phase(p, start, end);
+    const lift = Math.min(phase(time, 0, 0.32), 1 - phase(time, 0.68, 1));
+    return 1 + 0.14 * ease(lift);
+  }
+
   function rect(parent, x, y, width, height, fill) {
     return parent.append("rect").attr("x", x).attr("y", y).attr("width", width)
       .attr("height", height).attr("fill", fill);
@@ -79,7 +88,31 @@
     }
     const swap = [];
     const focus = [];
+    const evidence = [];
     let arbitrary, predictionB;
+
+    // These annotations belong to the reader. The context boards trace only
+    // visible evidence; original-mask gaps and held-out labels stay on the split.
+    function addEvidence(board, role, indices, path, color) {
+      const marks = board.append("g").attr("data-fw-evidence", role)
+        .attr("fill", "none").attr("stroke", color).attr("stroke-width", 2.4)
+        .attr("stroke-linecap", "round").attr("stroke-linejoin", "round")
+        .selectAll("path").data(indices).join("path")
+        .attr("data-fw-tile", i => i)
+        .attr("transform", i => "translate(" + xy(i).join(" ") + ")")
+        .attr("d", path).attr("pathLength", 1).attr("stroke-dasharray", 1);
+      let previous;
+      evidence.push({ role, draw: amount => {
+        if (amount === previous) return;
+        previous = amount;
+        marks.each(function (_, order) {
+          const offset = indices.length === 1 ? 0 : 0.70 * order / (indices.length - 1);
+          const revealed = phase(amount, offset, offset + (indices.length === 1 ? 1 : 0.30));
+          this.setAttribute("stroke-dashoffset", 1 - revealed);
+          this.setAttribute("opacity", revealed === 0 ? 0 : 1);
+        });
+      } });
+    }
     function paintSample(group, route, kind, sample) {
       const isPixel = route === "pixel";
       const clip = kind === "split" ? "mask" + sample : isPixel ? "pixels" : "blocks";
@@ -145,6 +178,14 @@
         board.append("path").attr("d", "M40 0v120M80 0v120M0 40h120M0 80h120")
           .attr("fill", "none").attr("stroke", "#5c6870").attr("stroke-opacity", 0.48).attr("stroke-width", 0.65);
         rect(board, 0.5, 0.5, 119, 119, "none").attr("stroke", "#829098").attr("stroke-width", 1);
+        if (kind === "context") {
+          const footprint = route === "pixel" ? observed.A : retained;
+          addEvidence(board, "footprint", footprint, "M4 13V4h9M36 27v9h-9", "#4c418e");
+        } else if (kind === "split" && route === "pixel") {
+          addEvidence(board, "excluded", [0, 5], "M14 14l12 12m-12 0 12-12", "#76453c");
+        } else if (kind === "split" && route === "block") {
+          addEvidence(board, "query", [0], "M3 13V3h10M37 27v10H27", "#995415");
+        }
         if (kind === "output") target(board, route === "pixel" ? "#284c88" : "#9a4d19");
       });
     });
@@ -153,24 +194,71 @@
       select: frame.selectAll('[data-fw-trace="select"]'),
       predict: frame.selectAll('[data-fw-trace="predict"]')
     };
-    const phase = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+    const tour = [
+      { column: "source", nodes: frame.selectAll("[data-fw-stack]"), start: 0, end: 0.18 },
+      ...[["split", 0.19, 0.38], ["context", 0.39, 0.58], ["output", 0.59, 0.84]].map(([column, start, end]) => ({
+        column, start, end,
+        nodes: frame.selectAll('[data-fw-field="' + column + '"]').select(function () { return this.parentNode; })
+      }))
+    ];
     const sample = frame.select('[data-strategy="block"] [data-fw-sample]');
-    let previousSample, previousFocus;
-    return function draw(p) {
-      const b = phase(p, 0.33, 0.47);
+    let previousChapter, previousSample, previousFocus;
+    return function draw(chapter, p) {
+      const overview = chapter === 0;
+      const pixels = chapter === 1;
+      if (chapter !== previousChapter) {
+        frame.attr("data-strategy-focus", ["both", "pixel", "block"][chapter]);
+        previousChapter = chapter;
+      }
+      for (const stop of tour) {
+        const scale = overview ? tourScale(p, stop.start, stop.end) : 1;
+        if (scale !== stop.scale) {
+          stop.nodes.style("--fw-zoom", scale);
+          stop.scale = scale;
+        }
+      }
+
+      // Begin each strategy close-up with the previous frame's evidence.
+      // In the block close-up, remove and restore sample B while the four
+      // highlighted context locations remain fixed through both transitions.
+      let b, predicted, arbitraryMix, footprint, excluded, query;
+      if (overview) {
+        b = phase(p, 0.33, 0.47);
+        predicted = phase(p, 0.53, 0.65);
+        arbitraryMix = phase(p, 0.65, 0.74);
+        footprint = excluded = query = 0;
+      } else if (pixels) {
+        b = predicted = 1;
+        footprint = phase(p, 0.06, 0.46);
+        excluded = phase(p, 0.45, 0.65);
+        query = phase(p, 0.47, 0.65);
+        arbitraryMix = 1 - phase(p, 0.60, 0.77);
+      } else {
+        b = 1 - ease(phase(p, 0.04, 0.18)) + ease(phase(p, 0.39, 0.54));
+        predicted = 1 - ease(phase(p, 0.12, 0.25)) + ease(phase(p, 0.55, 0.69));
+        footprint = 1;
+        excluded = 1 - ease(phase(p, 0.04, 0.18)) + ease(phase(p, 0.40, 0.59));
+        query = b;
+        arbitraryMix = phase(p, 0.57, 0.73);
+      }
+      const amounts = { footprint, excluded, query };
+      evidence.forEach(mark => mark.draw(amounts[mark.role]));
       swap.forEach(layer => layer.attr("opacity", b));
       const label = b < 0.5 ? "A" : "B";
       if (label !== previousSample) {
         sample.text(label);
         previousSample = label;
       }
-      flow.fork.attr("stroke-dashoffset", 1 - phase(p, 0.04, 0.18));
-      flow.select.attr("stroke-dashoffset", 1 - phase(p, 0.20, 0.36));
-      flow.predict.attr("stroke-dashoffset", 1 - phase(p, 0.48, 0.65));
-      predictionB.attr("opacity", phase(p, 0.53, 0.65));
-      arbitrary.attr("opacity", phase(p, 0.65, 0.74));
-      focus.forEach(site => site.attr("opacity", 0.55 + 0.45 * phase(p, 0.60, 0.78)));
-      const column = p < 0.19 ? "source" : p < 0.36 ? "split" : p < 0.55 ? "context" : "output";
+      flow.fork.attr("stroke-dashoffset", overview ? 1 - phase(p, 0.04, 0.18) : 0);
+      flow.select.attr("stroke-dashoffset", overview ? 1 - phase(p, 0.20, 0.36) : 0);
+      flow.predict.attr("stroke-dashoffset", overview ? 1 - phase(p, 0.48, 0.65) : 0);
+      predictionB.attr("opacity", predicted);
+      arbitrary.attr("opacity", arbitraryMix);
+      focus.forEach(site => site.attr("opacity", overview ? 0.55 + 0.45 * phase(p, 0.60, 0.78) : 1));
+      let column;
+      if (overview) column = (tour.find(stop => p < stop.end) || tour[tour.length - 1]).column;
+      else if (pixels) column = p < 0.45 ? "context" : p < 0.63 ? "split" : "output";
+      else column = p < 0.22 ? "split" : p < 0.55 ? "context" : "output";
       if (column !== previousFocus) {
         frame.attr("data-focus", column);
         previousFocus = column;

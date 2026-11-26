@@ -4,8 +4,7 @@
   // Keep the reader's intent separate from temporary pauses while the diagram
   // is off screen or its tab is hidden.
   window.projectAnimationPlayback = function (stage, onChange) {
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    let intent = "auto";
+    let userPaused = false;
     let playing;
 
     function inViewport() {
@@ -17,8 +16,7 @@
     let visible = inViewport();
 
     function sync() {
-      const enabled = intent === "play" || (intent === "auto" && !motion.matches);
-      const next = enabled && visible && !document.hidden;
+      const next = !userPaused && visible && !document.hidden;
       if (next === playing) return;
       playing = next;
       onChange(playing);
@@ -36,18 +34,12 @@
     }
 
     document.addEventListener("visibilitychange", sync);
-    function onMotionChange() {
-      if (motion.matches && intent === "play") intent = "auto";
-      sync();
-    }
-    if (motion.addEventListener) motion.addEventListener("change", onMotionChange);
-    else motion.addListener(onMotionChange);
 
     sync();
     return {
       get playing() { return playing; },
-      play() { intent = "play"; sync(); },
-      pause() { intent = "pause"; sync(); }
+      play() { userPaused = false; sync(); },
+      pause() { userPaused = true; sync(); }
     };
   };
 }());

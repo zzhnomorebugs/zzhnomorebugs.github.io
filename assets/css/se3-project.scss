@@ -280,11 +280,6 @@
   .se3-mapping__steps button { min-height: 44px; margin-bottom: 0; }
   .se3-project .se3-mapping__status { min-height: 5.4em; }
 }
-@media (prefers-reduced-motion: reduce) {
-  .se3-project .se3-mapping__story > li,
-  .se3-mapping__view-header,
-  .se3-mapping__dynamics-panel { transition: none; }
-}
 .se3-project .se3-experiment-figure { margin: 1.8rem 0 2.5rem; }
 .se3-gallery {
   display: grid;

@@ -2,11 +2,10 @@
   "use strict";
 
   const model = "<var>f</var><sub>θ</sub>";
-  const probability = "<var>p</var><sub>i</sub>";
   const chapters = [
     { id: "framework", duration: 12, keys: ["context", "query"] },
-    { id: "pixels", duration: 11, keys: ["measured", "context", "missing"], symbols: ["<var>C</var>", probability + " = 0"] },
-    { id: "blocks", duration: 12, keys: ["measured", "context", "query", "missing"], symbols: ["<var>C</var>", probability + " &gt; 0"] },
+    { id: "pixels", duration: 11, keys: ["context", "query"] },
+    { id: "blocks", duration: 12, keys: ["context", "query"] },
     { id: "holdout", duration: 9, keys: ["context", "query", "missing"], symbols: ["<var>C, Q</var>", "+ <var>ε</var>"] },
     { id: "predict", duration: 8, keys: ["context", "prediction", "missing"], symbols: [model, model] },
     { id: "score", duration: 11, keys: ["query", "prediction", "missing"], symbols: ["<var>Q</var>", "ℒ<sub>qry</sub>"] },
@@ -24,7 +23,7 @@
 
     const drawFields = window.createIncompleteTrainingFields(root);
     const drawFramework = window.createIncompleteStrategyFramework(root);
-    const overview = root.querySelector("[data-idcd-framework]");
+    const framework = root.querySelector("[data-idcd-framework]");
     const detail = root.querySelector(".idcd-stage");
     const legend = root.querySelectorAll("[data-idcd-key]");
     const play = root.querySelector("[data-idcd-play]");
@@ -60,23 +59,23 @@
     let lastBeat = -1;
     let lastSecond = -1;
 
-    function render(showOverviewPoster = false) {
+    function render() {
       const index = Math.min(Math.floor(cursor.chapter), chapters.length - 1);
-      const fraction = showOverviewPoster && index === 0 ? 0.85 : cursor.chapter - index;
+      const fraction = cursor.chapter - index;
       const beat = fraction < 0.46 ? 0 : 1;
       const scene = copy[index];
       const chapter = chapters[index];
-      const isOverview = index === 0;
+      const showFramework = index < 3;
       if (current !== index) {
         root.dataset.scene = index;
-        overview.hidden = !isOverview;
-        detail.hidden = isOverview;
+        framework.hidden = !showFramework;
+        detail.hidden = showFramework;
         legend.forEach(key => { key.hidden = !chapter.keys.includes(key.dataset.idcdKey); });
         buttons[current]?.removeAttribute("aria-current");
         buttons[index].setAttribute("aria-current", "step");
         phase.textContent = scene.phase;
         heading.textContent = scene.title;
-        if (!isOverview) {
+        if (!showFramework) {
           leftRole.textContent = scene.left_role;
           rightRole.textContent = scene.right_role;
           leftTitle.textContent = scene.left;
@@ -86,15 +85,15 @@
       }
       if (current !== index || lastBeat !== beat) {
         description.textContent = beat ? scene.outcome : scene.cue;
-        if (!isOverview) {
+        if (!showFramework) {
           rightTitle.textContent = (beat && scene.right_after) || scene.right;
           symbol.innerHTML = chapter.symbols[beat];
           action.textContent = beat ? scene.result : scene.action;
           update.hidden = !(chapter.id === "score" && beat);
         }
       }
-      if (isOverview) drawFramework(fraction);
-      else drawFields(index, fraction);
+      if (showFramework) drawFramework(index, fraction);
+      else drawFields(chapter.id, fraction);
       const time = timeline.time();
       const second = Math.floor(time);
       if (second !== lastSecond || current !== index) {
@@ -114,9 +113,7 @@
       play.setAttribute("aria-pressed", String(playing));
     }
 
-    // A still overview can show the compatible sample B immediately. Explicit
-    // playback and scrubbing always use the actual position on the timeline.
-    render(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    render();
     root.querySelector(".idcd-animation__interactive").hidden = false;
     root.classList.add("is-ready");
     timeline.eventCallback("onUpdate", render);
@@ -135,8 +132,7 @@
 
     function jump(index) {
       const chapter = chapters[index];
-      // In paused and reduced-motion reading, a jump should show the result
-      // immediately. During playback, let the selected transformation unfold.
+      // Show the outcome when paused. During playback, start at the chapter boundary.
       const start = timeline.labels[chapter.id];
       if (playback.playing) {
         timeline.time(start, true);

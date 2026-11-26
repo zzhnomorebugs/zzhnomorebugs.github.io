@@ -4,8 +4,6 @@
   var data = window.RETRO_TRAINING_DATA;
   if (!figure || !data) return;
   var zh = figure.dataset.language === "zh";
-  var motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  var manualMotion = false;
   var scenes = Array.from(figure.querySelectorAll("[data-rt-scene]"));
   var steps = Array.from(figure.querySelectorAll("[data-rt-step]"));
   var sampleButtons = Array.from(figure.querySelectorAll("[data-rt-sample]"));
@@ -187,14 +185,12 @@
   function updateControls() {
     play.textContent = running ? (zh ? "暂停" : "Pause") : value >= 1000 ? (zh ? "重新播放" : "Replay") : (zh ? "播放讲解" : "Play walkthrough");
     play.setAttribute("aria-pressed", String(running));
-    figure.querySelector("[data-rt-motion-note]").hidden = !motion.matches || manualMotion;
     prev.disabled = stage === 0;
     next.disabled = stage === sceneCount - 1;
     slider.value = Math.round(value);
     slider.setAttribute("aria-valuetext", (stage+1) + "/" + sceneCount + " " + scenes[stage].querySelector("h4").textContent);
   }
   function render(nextValue) {
-    var reduced = motion.matches && !manualMotion;
     value = Math.max(0, Math.min(1000, nextValue));
     var newStage = 0;
     for (var i=1; i<sceneCount; i++) if (value >= starts[i]) newStage = i;
@@ -215,20 +211,20 @@
     }
     var p = clamp((value-starts[stage])/(starts[stage+1]-starts[stage]));
     figure.dataset.stage = stage;
-    if (stage === 0) markSample(running && !reduced && p < 0.5 ? Math.floor(p*18)%3 : selectedCase);
-    if (stage === 1) markRoot(running && !reduced && p < 0.5 ? data.cases[selectedCase].roots[Math.floor(p*10)%2] : root);
-    if (stage === 2) alignRows(reduced ? 1 : ease(clamp((p-0.08)/0.6)));
+    if (stage === 0) markSample(running && p < 0.5 ? Math.floor(p*18)%3 : selectedCase);
+    if (stage === 1) markRoot(running && p < 0.5 ? data.cases[selectedCase].roots[Math.floor(p*10)%2] : root);
+    if (stage === 2) alignRows(ease(clamp((p-0.08)/0.6)));
     if (stage === 3) {
-      var interpolation = reduced ? time : time*ease(clamp(p/0.96));
+      var interpolation = time*ease(clamp(p/0.96));
       renderField("probability", interpolation, 0);
       figure.querySelector("[data-rt-live-time]").textContent = interpolation.toFixed(2);
     }
     if (stage === 4) {
-      var collapse = reduced ? 1 : ease(clamp(p/0.22));
-      var prediction = reduced ? 1 : ease(clamp((p-0.28)/0.18));
-      var denoise = reduced ? 1 : ease(clamp((p-0.58)/0.24));
-      var clean = reduced ? 1 : ease(clamp((p-0.82)/0.10));
-      var signal = reduced ? 0 : ease(clamp((p-0.47)/0.09));
+      var collapse = ease(clamp(p/0.22));
+      var prediction = ease(clamp((p-0.28)/0.18));
+      var denoise = ease(clamp((p-0.58)/0.24));
+      var clean = ease(clamp((p-0.82)/0.10));
+      var signal = ease(clamp((p-0.47)/0.09));
       renderField("sample", time, collapse);
       renderDenoising(denoise, clean, signal);
       figure.querySelector("[data-rt-time-value]").textContent = mix(time, 1, denoise).toFixed(2);
@@ -264,14 +260,10 @@
       render(value+delta*1000/duration);
       if (value >= 1000) loopElapsed = 0;
     }
-    if (value >= 1000 && motion.matches) { pause(false); return; }
     frame = requestAnimationFrame(tick);
   }
-  function start(resume, manual) {
+  function start(resume) {
     if (running) return;
-    // An explicit play request opts into the full walkthrough for this page.
-    // Reduced-motion users still get no autoplay and only one pass per request.
-    if (manual) { manualMotion = true; figure.classList.add("has-user-motion"); }
     userPaused = false; autoplayStarted = true;
     if (!visible || document.hidden) { resumeOnVisible = true; updateControls(); return; }
     resumeOnVisible = false;
@@ -283,7 +275,7 @@
     pause(true); loopElapsed = 0; index = Math.max(0, Math.min(sceneCount-1,index));
     render(index === sceneCount-1 ? 1000 : starts[index]+(starts[index+1]-starts[index])*0.99);
   }
-  play.addEventListener("click", function () { if (running) pause(true); else start(false, true); });
+  play.addEventListener("click", function () { if (running) pause(true); else start(false); });
   prev.addEventListener("click", function () { jump(stage-1); });
   next.addEventListener("click", function () { jump(stage+1); });
   slider.addEventListener("input", function () { var requested = Number(slider.value); pause(true); loopElapsed = 0; render(requested); });
@@ -300,21 +292,13 @@
     time = 0.45;
     nodeDraws = data.nodes.map(function () { return Math.random(); });
     edgeDraws = data.edges.map(function () { return Math.random(); });
-    syncCase(); markRoot(root); alignRows(1); render(0); start(false, true);
+    syncCase(); markRoot(root); alignRows(1); render(0); start(false);
   });
   steps.forEach(function (button, index) { button.disabled = false; button.addEventListener("click", function () { jump(index); }); });
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) { resumeOnVisible = resumeOnVisible || running; pause(false); }
-    else if (visible && !userPaused && (resumeOnVisible || (!autoplayStarted && !motion.matches))) start(true);
+    else if (visible && !userPaused && (resumeOnVisible || !autoplayStarted)) start(true);
   });
-  function motionChanged() {
-    manualMotion = false; figure.classList.remove("has-user-motion");
-    if (motion.matches) { resumeOnVisible = false; pause(false); }
-    else if (!userPaused) { resumeOnVisible = true; start(true); }
-    render(value);
-  }
-  if (motion.addEventListener) motion.addEventListener("change", motionChanged);
-  else motion.addListener(motionChanged);
   syncCase(); markRoot(root); alignRows(1);
   renderField("probability", time, 0); renderField("sample", time, 1);
   figure.classList.add("is-ready"); figure.querySelector(".rt-controls").hidden = false; render(0);
@@ -329,7 +313,7 @@
     visible = visibleHeight > 0 && rect.width > 0 && rect.right > 0 && rect.left < width;
     if (!visible) { if (running) { resumeOnVisible = true; pause(false); } return; }
     if (resumeOnVisible && !userPaused) start(true);
-    else if (!autoplayStarted && !userPaused && !motion.matches && visibleHeight >= Math.min(240, rect.height*0.35, height*0.35)) start(true);
+    else if (!autoplayStarted && !userPaused && visibleHeight >= Math.min(240, rect.height*0.35, height*0.35)) start(true);
   }
   function scheduleVisibility() {
     if (!visibilityFrame) visibilityFrame = requestAnimationFrame(updateVisibility);

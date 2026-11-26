@@ -26,12 +26,8 @@
   const views = {
     blank: arrange(),
     observed: arrange([observedA, "measuredA"]),
-    pixels: arrange([observedA, "pixels"]),
-    footprint: arrange([observedA, "present"]),
-    excluded: arrange([observedA, "present"], [gapsA, "excluded"]),
     contextA: arrange([context, "contextA"]),
     secondContextA: arrange([[2, 3, 4, 7], "contextA"]),
-    splitA: arrange([observedA, "measuredA"], [context, "contextA"]),
     splitB: arrange([context, "contextB"], [queryB, "queryB"]),
     contextB: arrange([context, "contextB"]),
     noisyB: arrange([context, "noisyB"]),
@@ -41,37 +37,35 @@
     imputation: arrange([observedA, "measuredA"], [gapsA, "predictionA"])
   };
 
-  // A track starts from an arrangement. Later entries give the start/end of
-  // an on-object change, its new arrangement, and whether tiles resolve in turn.
-  const scenes = [
-    null, // The first chapter has its own two-row framework.
-    [["observed", [.08, .40, "pixels", true]],
-      ["pixels", [.18, .43, "footprint", true], [.44, .66, "excluded"]]],
-    [["observed", [.07, .37, "contextA", true]],
-      ["splitA", [.39, .57, "splitB"]]],
-    [["splitB"], ["contextB", [.40, .66, "noisyB", true]]],
-    [["noisyB"], ["blank", [.16, .65, "prediction", true]]],
-    [["prediction", [.08, .35, "predictedQueries"]],
-      ["blank", [.29, .48, "answers", true]]],
-    [["observed", [.02, .09, "contextA"], [.18, .25, "secondContextA"], [.34, .40, "observed"]],
-      ["observed", [.40, .73, "imputation", true]]]
-  ];
-
   // A pair of corner marks follows the evidence on each board. Each mark
   // draws once, then stays still. Matched query blocks use the same timing.
   function cue(sites, color, start, end) {
     return { sites, color, start, end };
   }
   const matched = cue(queryB, colors.query, .39, .70);
-  const cues = [
-    null,
-    [cue(observedA, colors.context, .10, .43), cue(gapsA, "#8a5348", .45, .68)],
-    [cue(context, colors.context, .12, .37), cue([0], colors.query, .48, .65)],
-    [cue(queryB, colors.query, .03, .25), cue(context, colors.context, .40, .68)],
-    [cue(context, colors.context, .02, .18), cue([0], colors.prediction, .52, .70)],
-    [matched, matched],
-    [cue(gapsA, "#536b72", .38, .57), cue(gapsA, colors.prediction, .46, .76)]
-  ];
+  // A track starts from an arrangement. Later entries give the start/end of
+  // an on-object change, its new arrangement, and whether tiles resolve in turn.
+  const chapters = {
+    holdout: {
+      tracks: [["splitB"], ["contextB", [.40, .66, "noisyB", true]]],
+      cues: [cue(queryB, colors.query, .03, .25), cue(context, colors.context, .40, .68)]
+    },
+    predict: {
+      tracks: [["noisyB"], ["blank", [.16, .65, "prediction", true]]],
+      cues: [cue(context, colors.context, .02, .18), cue([0], colors.prediction, .52, .70)]
+    },
+    score: {
+      tracks: [["prediction", [.08, .35, "predictedQueries"]], ["blank", [.29, .48, "answers", true]]],
+      cues: [matched, matched]
+    },
+    impute: {
+      tracks: [
+        ["observed", [.02, .09, "contextA"], [.18, .25, "secondContextA"], [.34, .40, "observed"]],
+        ["observed", [.40, .73, "imputation", true]]
+      ],
+      cues: [cue(gapsA, "#536b72", .38, .57), cue(gapsA, colors.prediction, .46, .76)]
+    }
+  };
 
   function rectangle(parent, width = size, height = size) {
     return parent.append("rect").attr("width", width).attr("height", height);
@@ -148,35 +142,6 @@
     tint(noisy, colors.context, .22);
     outlines(noisy, colors.context, false);
 
-    const points = tiles.flatMap(tile => {
-      // Select a few actual pixel locations in each retained block.
-      const candidates = Array.from({ length: 64 }, (_, i) => ({ i, key: random() }));
-      return candidates.sort((a, b) => a.key - b.key).slice(0, 11)
-        .map(({ i }) => ({ x: tile.x + (i % 8) * 10 + 2, y: tile.y + Math.floor(i / 8) * 10 + 2 }));
-    });
-    function drawPoints(parent) {
-      return parent.selectAll("rect.pixel").data(points).join("rect").attr("class", "pixel")
-        .attr("x", p => p.x).attr("y", p => p.y).attr("width", 6).attr("height", 6);
-    }
-    const pixelClip = defs.append("clipPath").attr("id", prefix + "pixelsOnly");
-    drawPoints(pixelClip);
-    const pixels = group("pixels");
-    use(pixels, "blank");
-    use(pixels, "measuredA").attr("clip-path", "url(" + local("pixelsOnly") + ")");
-    drawPoints(pixels).attr("fill", colors.context).attr("fill-opacity", .49)
-      .attr("stroke", colors.context).attr("stroke-width", 1.15);
-
-    const present = group("present");
-    rectangle(present).attr("fill", "#e3e5f0");
-    present.selectAll("path").data(tiles).join("path")
-      .attr("d", t => "M" + (t.x + 31) + " " + (t.y + 40) + "l6 6 13 -14")
-      .attr("fill", "none").attr("stroke", "#63678c").attr("stroke-width", 2.3)
-      .attr("stroke-linejoin", "round").attr("stroke-linecap", "round");
-    const excluded = group("excluded");
-    use(excluded, "blank");
-    excluded.selectAll("path").data(tiles).join("path")
-      .attr("d", t => "M" + (t.x + 31) + " " + (t.y + 31) + "l18 18m0 -18l-18 18")
-      .attr("fill", "none").attr("stroke", "#8a5348").attr("stroke-width", 2.8);
     return local;
   }
 
@@ -284,9 +249,9 @@
   window.createIncompleteTrainingFields = function (root) {
     const boards = ["left", "right"].map(side =>
       makeBoard(root.querySelector('[data-idcd-field="' + side + '"]'), root.dataset.fieldArt));
-    return function render(sceneIndex, progress) {
-      if (sceneIndex === 0) return;
-      boards.forEach((draw, side) => draw(scenes[sceneIndex][side], cues[sceneIndex][side], progress));
+    return function render(chapterId, progress) {
+      const chapter = chapters[chapterId];
+      boards.forEach((draw, side) => draw(chapter.tracks[side], chapter.cues[side], progress));
     };
   };
 }());
