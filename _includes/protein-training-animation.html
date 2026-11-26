@@ -2,7 +2,6 @@
 {% assign training = site.data.protein_training[page.lang] %}
 <figure class="retro-figure protein-training" id="protein-training-animation" aria-labelledby="protein-training-caption"
   data-protein-training data-play-label="{{ training.play }}" data-pause-label="{{ training.pause }}" data-replay-label="{{ training.replay }}">
-  {% include protein-training-network-symbols.html %}
   <div class="protein-training__panel">
     <div class="protein-training__steps" role="group" aria-label="{{ training.stages_label }}" data-training-controls hidden>
       {% for stage in training.stages %}
@@ -33,4 +32,6 @@
 </figure>
 <script src="{{ base_path }}/assets/js/lib/d3-selection-3.0.0.min.js" defer></script>
 <script src="{{ base_path }}/assets/js/lib/gsap-3.13.0.min.js" defer></script>
+<script src="{{ base_path }}/assets/js/protein-training-effects.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="{{ base_path }}/assets/js/protein-training-transition.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="{{ base_path }}/assets/js/protein-control-training.js?v={{ site.time | date: '%s' }}" defer></script>

@@ -1,0 +1,51 @@
+{% assign fw = story.framework %}
+<div class="idcd-framework" data-idcd-framework>
+  <svg class="idcd-framework__defs" aria-hidden="true"><defs></defs></svg>
+  <div class="idcd-framework__source">
+    <strong>{{ fw.source }}</strong>
+    <svg data-fw-stack="full" viewBox="106 200 446 1067" aria-hidden="true"></svg>
+    <svg data-fw-stack="compact" viewBox="104 200 436 352" aria-hidden="true"></svg>
+    <small>{{ fw.measured }}</small>
+  </div>
+  <svg class="idcd-framework__fork" viewBox="0 0 30 100" preserveAspectRatio="none" aria-hidden="true">
+    <path class="idcd-framework__wire" d="M0 50H10V24H29M10 50V76H29"/>
+    <path class="idcd-framework__trace" data-fw-trace="fork" pathLength="1" d="M0 50H10V24H29"/>
+    <path class="idcd-framework__trace" data-fw-trace="fork" pathLength="1" d="M0 50H10V76H29"/>
+  </svg>
+  <div class="idcd-framework__paths">
+    <div class="idcd-framework__columns">
+      <strong>{{ fw.split }}</strong><strong>{{ fw.context }}</strong><strong>{{ fw.output }}</strong>
+    </div>
+    {% assign fw_routes = 'pixel block' | split: ' ' %}
+    {% for route in fw_routes %}
+    <div class="idcd-framework__lane" data-strategy="{{ route }}">
+      <div class="idcd-framework__rowhead">
+        <strong>{{ fw[route] }}</strong>
+        <span data-fw-probability>
+          <span><var>p</var><sub>i</sub> {% if route == 'pixel' %}= 0{% else %}&gt; 0{% endif %}</span>
+          {% if route == 'pixel' %}{{ fw.excluded }}{% else %}{{ fw.supported }}{% endif %}
+        </span>
+      </div>
+      <div class="idcd-framework__flow">
+        <div class="idcd-framework__cell">
+          <svg data-fw-field="split" viewBox="0 0 120 120" aria-hidden="true"></svg>
+          <span class="idcd-framework__sample" data-fw-sample>A</span>
+        </div>
+        <svg class="idcd-framework__arrow" viewBox="0 0 34 14" aria-hidden="true">
+          <path class="idcd-framework__wire" d="M2 7H29m-5-4 5 4-5 4"/>
+          <path class="idcd-framework__trace" data-fw-trace="select" pathLength="1" d="M2 7H29m-5-4 5 4-5 4"/>
+        </svg>
+        <div class="idcd-framework__cell"><svg data-fw-field="context" viewBox="0 0 120 120" aria-hidden="true"></svg></div>
+        <div class="idcd-framework__model">
+          <span><var>f</var><sub>θ</sub></span>
+          <svg class="idcd-framework__arrow" viewBox="0 0 34 14" aria-hidden="true">
+            <path class="idcd-framework__wire" d="M2 7H29m-5-4 5 4-5 4"/>
+            <path class="idcd-framework__trace" data-fw-trace="predict" pathLength="1" d="M2 7H29m-5-4 5 4-5 4"/>
+          </svg>
+        </div>
+        <div class="idcd-framework__cell"><svg data-fw-field="output" viewBox="0 0 120 120" aria-hidden="true"></svg></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

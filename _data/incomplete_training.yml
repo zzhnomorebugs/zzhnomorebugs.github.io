@@ -1,6 +1,15 @@
 zh-CN:
+  framework:
+    source: 不完整训练样本
+    measured: 每份实测 7 / 9 块
+    split: 划分 context / query
+    context: 模型只见 context
+    output: 训练后预测（示意）
+    pixel: 逐像素
+    block: 按整块
+    excluded: 无查询监督
+    supported: 可获查询监督
   title: 左上角没测到，模型从哪里学会补它？
-  intro: 标记 i 帮你在两幅图中找到同一位置，模型看不到这个标记。先比较两种 context 划分，再跟着一次预测，看哪些实测值能教模型补全。
   navigation: 选择讲解阶段
   play: 播放
   pause: 暂停
@@ -12,17 +21,11 @@ zh-CN:
   legend: 图中标记
   keys: [实测场值, 'Context · 输入', 'Query · 留出实测', '预测（示意）', 数值未显示]
   scenes:
-    - step: 原始观测
-      phase: 不完整的训练数据
-      title: 每个样本测到七块，缺的两块可以不同
-      left_role: 训练样本 A
-      left: 七块实测的场
-      right_role: 同一份样本 A
-      right: 左上角的位置 i
-      action: 跟踪位置
-      result: 没有测量
-      cue: 红白蓝纹理表示场值。斜纹处没有显示数值；样本 A 的两块斜纹区在采集时就没测到。
-      outcome: 看左上角的 i。这份记录不能给出 i 的训练答案。什么样的 context 能让模型从其他记录学到这里？
+    - step: 策略对照
+      phase: 方法框架
+      title: 九块中只测七块，哪些划分能让左上角获得监督？
+      cue: 同一批带噪观测从左侧分流。上排逐像素取样，下排按整块取样。每排依次展示划分、模型可见的 context 和训练后的预测。标记 i 供读者对照同一位置。
+      outcome: 上排的 context 在七个实测块里都留下像素，所以左上角 i 永远没有查询标签。下排只保留四整块，同样的 context 形状也能来自测到了 i 的样本 B，因而 i 可获得监督。
     - step: 逐像素取样
       phase: 划分策略一 · 逐像素
       title: 七块都留下像素，空白块的位置就暴露了
@@ -94,8 +97,17 @@ zh-CN:
       cue: 看左图两次留下的蓝紫块，位置发生了变化。推理时，在接近零噪声的同一份观测上多次抽取 context，用训练好的模型分别预测。
       outcome: 把多次预测的均值填进两个缺口，写回原来的七块实测。左上角 i 现在有了估计值；样本 A 自身仍没有该点的真值可供核对。
 en:
+  framework:
+    source: Incomplete samples
+    measured: 7 of 9 blocks measured
+    split: Context / query split
+    context: Context-only input
+    output: Prediction (illustrative)
+    pixel: Pixel split
+    block: Block split
+    excluded: No query supervision
+    supported: Query supervision possible
   title: Where does the model get a target for a missing location?
-  intro: The marker i tracks the same location in both views. It is hidden from the model. Compare two ways to choose context, then follow a prediction back to the measurements that teach the model to impute.
   navigation: Choose a stage
   play: Play
   pause: Pause
@@ -107,17 +119,11 @@ en:
   legend: Field markings
   keys: [Measured field, 'Context · input', 'Query · held out', 'Prediction (illustrative)', No value shown]
   scenes:
-    - step: Observation
-      phase: Incomplete training data
-      title: Each sample measures seven blocks. The two gaps can move.
-      left_role: Training sample A
-      left: Seven measured blocks
-      right_role: The same sample A
-      right: Location i at the top left
-      action: Track the site
-      result: Unmeasured
-      cue: The red–white–blue texture shows field values. Hatching hides values. In sample A, the two hatched blocks were never measured.
-      outcome: Look at i in the top-left block. This record has no target value there. Which context would let the model learn about i from another record?
+    - step: Compare splits
+      phase: Method overview
+      title: Seven of nine blocks are measured. Which split can supervise the top left?
+      cue: The same noisy observations branch into a pixelwise split above and a whole-block split below. Read across each row from partition to visible context to trained prediction. The marker i tracks one location for the reader.
+      outcome: The pixel context touches all seven measured blocks, so location i can never be queried with this footprint. The same four-block context footprint can also come from sample B, which measured i. This gives the block strategy a training target there.
     - step: Pixel split
       phase: Partition strategy one · pixels
       title: A trace in every measured block gives away the gaps

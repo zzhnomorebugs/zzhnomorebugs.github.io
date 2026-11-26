@@ -10,6 +10,7 @@
     { id: "update", duration: 3.6 }
   ];
   const segment = 0.11;
+  const transitionDuration = 1.4;
 
   function collectStage(view, button) {
     const diagrams = window.d3.select(view).selectAll("[data-training-diagram]");
@@ -40,8 +41,7 @@
       view,
       button,
       label: view.getAttribute("aria-label") || button.textContent.trim(),
-      before: diagrams.selectAll("[data-token-before]"),
-      after: diagrams.selectAll("[data-token-after]"),
+      effects: window.proteinTrainingEffects(view),
       beats: beats.map(beat => {
         const packets = pulses.filter(d => d.beat === beat.id);
         const orders = [...new Set(packets.data().map(d => d.order))].sort((a, b) => a - b);
@@ -74,11 +74,17 @@
     const stages = Array.from(root.querySelectorAll("[data-training-view]"), view =>
       collectStage(view, root.querySelector('[data-training-jump="' + view.dataset.trainingView + '"]'))
     );
-    const clock = { beat: 0 };
+    const clock = { beat: 0, mix: 0 };
     const timeline = window.gsap.timeline({ paused: true, defaults: { ease: "none" } });
     const frames = [];
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let reduceMotion = motion.matches;
+    const morph = window.proteinTrainingTransition(stages[0].view, stages[1].view);
 
-    stages.forEach(stage => {
+    stages.forEach((stage, index) => {
+      if (index === 1) {
+        timeline.addLabel("handoff").to(clock, { mix: 1, duration: transitionDuration, ease: "sine.inOut" });
+      }
       timeline.addLabel(stage.id);
       stage.beats.forEach(beat => {
         const label = stage.id + "-" + beat.id;
@@ -88,18 +94,29 @@
     });
 
     const end = timeline.duration();
+    const handoff = timeline.labels.handoff;
+    const adapted = timeline.labels[stages[1].id];
     slider.max = end;
     let activeFrame;
+    let activeStage;
+    let inTransition = false;
     let lastTenth = -1;
     let playback;
+    let jumpTween;
+    let jumpDestination;
 
     function render() {
-      const index = Math.min(Math.floor(clock.beat), frames.length - 1);
+      const time = timeline.time();
+      const between = time > handoff && time < adapted;
+      const amount = reduceMotion ? Math.round(clock.mix) : clock.mix;
+      const index = time <= handoff ? Math.min(Math.floor(clock.beat), beats.length - 1) :
+        Math.min(Math.floor(clock.beat), frames.length - 1);
       const frame = frames[index];
-      const { stage, beat } = frame;
+      const stage = between ? stages[amount < .5 ? 0 : 1] : frame.stage;
       const progress = clock.beat - index;
 
-      if (!activeFrame || activeFrame.stage !== stage) {
+      if (activeStage !== stage) {
+        activeStage = stage;
         root.dataset.trainingStage = stage.id;
         stages.forEach(item => {
           const active = item === stage;
@@ -110,28 +127,28 @@
         });
         lastTenth = -1;
       }
-      if (activeFrame !== frame) {
+      const next = between ? null : frame;
+      if (activeFrame !== next) {
         if (activeFrame) {
           activeFrame.beat.marks.attr("data-flow-active", null);
           activeFrame.beat.packets.style("opacity", 0);
         }
-        root.dataset.trainingPart = beat.id;
-        beat.marks.attr("data-flow-active", "");
-        activeFrame = frame;
+        root.dataset.trainingPart = next ? next.beat.id : "transition";
+        if (next) next.beat.marks.attr("data-flow-active", "");
+        activeFrame = next;
       }
-
-      // At rest the diagram shows the completed corruption. During playback a
-      // copy of the residue arrives, then the mask replaces it in the noisy row.
-      let mask = 1;
-      if (beat.id === "noise" && progress > 0 && progress < 0.82) {
-        const expose = Math.min(progress / 0.18, 1, (0.82 - progress) / 0.34);
-        mask = 1 - expose;
+      morph(amount);
+      root.dataset.stageMix = String(amount);
+      if (between) {
+        if (!inTransition) {
+          stages[0].effects.render("update", 1, handoff);
+          stages[1].effects.render("noise", 0, 0);
+        }
+      } else {
+        stage.effects.render(frame.beat.id, progress, time - timeline.labels[stage.id]);
+        drawPackets(frame.beat, progress);
       }
-      stage.before.style("opacity", 1 - mask);
-      stage.after.style("opacity", mask);
-      drawPackets(beat, progress);
-
-      const time = timeline.time();
+      inTransition = between;
       const tenth = Math.round(time * 10);
       if (lastTenth !== tenth) {
         lastTenth = tenth;
@@ -141,7 +158,8 @@
     }
 
     function setPlaying(playing) {
-      timeline.paused(!playing);
+      if (jumpTween) jumpTween.paused(!playing);
+      else timeline.paused(!playing);
       root.toggleAttribute("data-training-playing", playing);
       play.textContent = playing ? root.dataset.pauseLabel :
         timeline.time() >= end ? root.dataset.replayLabel : root.dataset.playLabel;
@@ -149,9 +167,35 @@
 
     function seek(time) {
       playback.pause();
+      if (jumpTween) jumpTween.kill();
+      jumpTween = null;
       timeline.time(time, false);
       render();
       setPlaying(false);
+    }
+
+    // A tab jump plays just the handoff section, forwards or backwards, then
+    // rests on the selected stage. Further input starts from the current pose.
+    function selectStage(stage, resume = false) {
+      const destination = timeline.labels[stage.id];
+      const target = stage === stages[0] ? handoff : adapted;
+      const from = Math.min(adapted, Math.max(handoff, timeline.time()));
+      if (reduceMotion || Math.abs(from - target) < .001) {
+        seek(destination);
+        if (resume) playback.play();
+        return;
+      }
+      seek(from);
+      jumpDestination = destination;
+      jumpTween = window.gsap.to(timeline, {
+        time: target, duration: Math.abs(target - from), ease: "none", paused: true,
+        onComplete: () => {
+          jumpTween = null;
+          seek(destination);
+          if (resume) playback.play();
+        }
+      });
+      playback.play();
     }
 
     root.setAttribute("data-training-ready", "");
@@ -160,18 +204,24 @@
     timeline.eventCallback("onUpdate", render);
     timeline.eventCallback("onComplete", () => playback.pause());
     playback = window.projectAnimationPlayback(root.querySelector(".protein-training__views"), setPlaying);
+    function refreshMotion(event) {
+      reduceMotion = event.matches;
+      if (reduceMotion && jumpTween) seek(jumpDestination);
+      else render();
+    }
+    if (motion.addEventListener) motion.addEventListener("change", refreshMotion);
+    else motion.addListener(refreshMotion);
     play.addEventListener("click", () => {
       if (playback.playing) playback.pause();
-      else {
-        if (timeline.time() >= end) timeline.time(0, false);
-        playback.play();
-      }
+      else if (timeline.time() >= end) selectStage(stages[0], true);
+      else playback.play();
     });
     slider.addEventListener("input", () => seek(Number(slider.value)));
-    stages.forEach(stage => stage.button.addEventListener("click", () => seek(timeline.labels[stage.id])));
+    stages.forEach(stage => stage.button.addEventListener("click", () => selectStage(stage)));
   }
 
-  if (window.d3 && window.gsap && window.projectAnimationPlayback) {
+  if (window.d3 && window.gsap && window.proteinTrainingEffects &&
+      window.proteinTrainingTransition && window.projectAnimationPlayback) {
     document.querySelectorAll("[data-protein-training]").forEach(init);
   }
 }());

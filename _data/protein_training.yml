@@ -19,7 +19,7 @@ zh-CN:
   correction: 残差 logits
   target: 监督目标 x
   update: 反向更新
-  caption: 图 2(b) · 用掩码 DFM 示意加噪。实线传递数据，虚线指向本阶段更新的网络。生成时固定两路权重。
+  caption: 图 2(b) · 模糊度示意加噪强度。彩色节点参与训练，白色节点冻结，虚线指向本阶段更新的网络。生成时固定两路权重。
   stages:
     - id: pretrain
       name: 阶段一 · 预训练
@@ -52,7 +52,7 @@ en:
   correction: Residual logits
   target: Target x
   update: Backprop.
-  caption: Figure 2(b) · Masked DFM illustrates the noising step. Solid arrows carry data. The dashed arrow points to the network updated in each stage. Both networks are fixed during generation.
+  caption: Figure 2(b) · Blur illustrates the noise level. Colored nodes train, white nodes stay frozen, and the dashed arrow returns to the network being updated. Both networks are fixed during generation.
   stages:
     - id: pretrain
       name: Stage 1 · Pretraining

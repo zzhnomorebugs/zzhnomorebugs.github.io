@@ -5,7 +5,6 @@
          data-field-art="{{ base_path }}/images/research/incomplete-learning/context-query.webp">
   <header class="idcd-animation__header">
     <h3 id="idcd-animation-title">{{ story.title }}</h3>
-    <p>{{ story.intro }}</p>
   </header>
   <div class="idcd-animation__interactive" hidden>
     <nav class="idcd-animation__steps" aria-label="{{ story.navigation }}">
@@ -19,41 +18,41 @@
     <div class="idcd-animation__story">
       <div class="idcd-scene__heading">
         <span class="idcd-scene__phase"></span>
-        <h4></h4>
-      </div>
-      <div class="idcd-stage">
-        <figure class="idcd-board">
-          <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
-          <svg data-idcd-field="left" viewBox="0 0 240 240" aria-hidden="true"></svg>
-        </figure>
-        <div class="idcd-link">
-          <span class="idcd-link__symbol" aria-hidden="true"></span>
-          <span class="idcd-link__label"></span>
-          <span class="idcd-link__update" hidden>
-            <svg viewBox="0 0 96 45" aria-hidden="true">
-              <path d="M48 1v16m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-              <circle data-gradient-signal cx="48" cy="1" r="2.6" fill="currentColor"/>
-              <rect data-model-weights x="25" y="20" width="46" height="24" rx="4" stroke="currentColor" fill="currentColor" fill-opacity=".07"/>
-              <text x="48" y="36" text-anchor="middle" fill="currentColor" font-family="Georgia, serif" font-style="italic" font-size="16">f<tspan dy="3" font-size="10">θ</tspan></text>
-            </svg>
-            <small>{{ story.update }}</small>
-          </span>
-        </div>
-        <figure class="idcd-board">
-          <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
-          <svg data-idcd-field="right" viewBox="0 0 240 240" aria-hidden="true"></svg>
-        </figure>
+        <h4 id="idcd-stage-title"></h4>
       </div>
       {% assign keys = 'measured context query prediction missing' | split: ' ' %}
       <ul class="idcd-animation__legend" aria-label="{{ story.legend }}">
         {% for key in keys %}
-        <li><i class="idcd-key--{{ key }}" aria-hidden="true"></i>{{ story.keys[forloop.index0] | escape }}</li>
+        <li data-idcd-key="{{ key }}"><i class="idcd-key--{{ key }}" aria-hidden="true"></i>{{ story.keys[forloop.index0] | escape }}</li>
         {% endfor %}
       </ul>
-      <div class="idcd-focus">
-        <span class="idcd-focus__marker" aria-hidden="true">↳</span>
-        <p class="idcd-focus__copy"></p>
+      <div class="idcd-stage-viewport" role="group" aria-labelledby="idcd-stage-title" aria-describedby="idcd-frame-description">
+        {% include incomplete-strategy-framework.html %}
+        <div class="idcd-stage">
+          <figure class="idcd-board">
+            <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
+            <svg data-idcd-field="left" viewBox="0 0 240 240" aria-hidden="true"></svg>
+          </figure>
+          <div class="idcd-link">
+            <span class="idcd-link__symbol" aria-hidden="true"></span>
+            <span class="idcd-link__label"></span>
+            <span class="idcd-link__update" hidden>
+              <svg viewBox="0 0 96 45" aria-hidden="true">
+                <path d="M48 1v16m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                <circle data-gradient-signal cx="48" cy="1" r="2.6" fill="currentColor"/>
+                <rect data-model-weights x="25" y="20" width="46" height="24" rx="4" stroke="currentColor" fill="currentColor" fill-opacity=".07"/>
+                <text x="48" y="36" text-anchor="middle" fill="currentColor" font-family="Georgia, serif" font-style="italic" font-size="16">f<tspan dy="3" font-size="10">θ</tspan></text>
+              </svg>
+              <small>{{ story.update }}</small>
+            </span>
+          </div>
+          <figure class="idcd-board">
+            <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
+            <svg data-idcd-field="right" viewBox="0 0 240 240" aria-hidden="true"></svg>
+          </figure>
+        </div>
       </div>
+      <span id="idcd-frame-description" class="idcd-sr-only"></span>
     </div>
     <div class="idcd-animation__playback">
       <button type="button" data-idcd-play>{{ story.play }}</button>
@@ -62,16 +61,20 @@
       <time class="idcd-animation__time" aria-hidden="true"></time>
       <button type="button" data-idcd-next aria-label="{{ story.next }}" title="{{ story.next }}">→</button>
     </div>
-    <span class="visually-hidden" role="status" data-idcd-status></span>
+    <span class="idcd-sr-only" role="status" data-idcd-status></span>
   </div>
-  <ol class="idcd-animation__transcript">
+  <div class="idcd-animation__fallback">
+    <img src="{{ base_path }}/images/research/incomplete-learning/context-query.webp" width="2400" height="1548" loading="lazy" alt="{{ story.scenes[0].outcome | escape }}">
+    <ol class="idcd-sr-only">
     {% for scene in story.scenes %}
     <li><strong>{{ scene.title | escape }}</strong> {{ scene.cue | escape }} {{ scene.outcome | escape }}</li>
     {% endfor %}
-  </ol>
+    </ol>
+  </div>
   <script type="application/json" data-idcd-scenes>{{ story.scenes | jsonify }}</script>
 </section>
 <script src="{{ base_path }}/assets/js/lib/d3-selection-3.0.0.min.js" defer></script>
 <script src="{{ base_path }}/assets/js/lib/gsap-3.13.0.min.js" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-training-fields.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="{{ base_path }}/assets/js/incomplete-strategy-framework.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-training-animation.js?v={{ site.time | date: '%s' }}" defer></script>

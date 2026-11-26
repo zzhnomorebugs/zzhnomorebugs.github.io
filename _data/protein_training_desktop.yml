@@ -1,53 +1,53 @@
 # Nodes: id, left, top, width, height. Edges: id, beat, style, SVG path, optional order.
-# Labels: translation key, center x, baseline y.
+# A common canvas keeps both layouts in the same coordinate system during a stage change.
 pretrain:
-  width: 1040
-  height: 350
+  width: 912
+  height: 272
   nodes:
-    - [clean, 20, 47, 184, 84]
-    - [noisy, 20, 210, 184, 76]
-    - [prior, 335, 103, 306, 141]
-    - [prediction, 807, 137, 190, 73]
-    - [loss, 823, 254, 158, 61]
+    - [clean, 12, 24, 180, 77]
+    - [noisy, 12, 155, 180, 80]
+    - [prior, 268, 61, 330, 156]
+    - [prediction, 681, 105, 200, 68]
+    - [loss, 693, 190, 177, 60]
   edges:
-    - [corrupt, noise, state, 'M112 131 V210']
-    - [read-state, model, state, 'M204 248 H259 V174 H335']
-    - [prior-output, predict, prior, 'M641 174 H807']
-    - [supervise, loss, target, 'M204 88 H233 V29 H1020 V285 H981']
-    - [compare, loss, neutral, 'M902 210 V254']
-    - [learn, update, gradient, 'M823 285 H488 V244']
+    - [corrupt, noise, state, 'M102 101 V155']
+    - [read-state, model, state, 'M192 195 H224 V139 H268']
+    - [prior-output, predict, prior, 'M598 139 H681']
+    - [supervise, loss, target, 'M192 62 H206 V20 H899 V220 H870']
+    - [compare, loss, neutral, 'M781 173 V190']
+    - [learn, update, gradient, 'M693 220 H670 V247 H433 V217']
   labels:
-    - [noise, 153, 176]
-    - [base, 724, 160]
-    - [target, 490, 22]
-    - [update, 655, 308]
+    - [noise, 146, 132]
+    - [base, 640, 129]
+    - [target, 459, 14]
+    - [update, 554, 240]
 adapt:
-  width: 1040
-  height: 368
-  frame: [295, 60, 445, 260]
+  width: 912
+  height: 272
+  frame: [230, 27, 418, 229]
   nodes:
-    - [clean, 20, 36, 184, 84]
-    - [noisy, 20, 181, 184, 76]
-    - [conditions, 20, 287, 184, 59]
-    - [prior, 317, 82, 273, 117]
-    - [residual, 348, 220, 212, 88]
-    - [sum, 669, 121, 38, 38]
-    - [prediction, 807, 104, 190, 72]
-    - [loss, 823, 232, 158, 62]
+    - [clean, 10, 23, 180, 73]
+    - [noisy, 10, 127, 180, 70]
+    - [conditions, 10, 208, 180, 56]
+    - [prior, 241, 33, 282, 117]
+    - [residual, 246, 161, 227, 86]
+    - [sum, 590, 73, 36, 36]
+    - [prediction, 675, 59, 211, 64]
+    - [loss, 689, 166, 184, 68]
   edges:
-    - [corrupt, noise, state, 'M112 120 V181']
-    - [read-state, model, state, 'M204 208 H248 V140 H317']
-    - [share-state, model, state, 'M204 231 H255 V248 H348']
-    - [condition, model, condition, 'M204 316 H278 V280 H348']
-    - [prior-output, predict, prior, 'M590 140 H669']
-    - [add-guidance, predict, residual, 'M560 264 H688 V159']
-    - [merged-output, predict, neutral, 'M707 140 H807', 1]
-    - [supervise, loss, target, 'M204 78 H228 V28 H1020 V263 H981']
-    - [compare, loss, neutral, 'M902 176 V232']
-    - [learn, update, gradient, 'M902 294 V346 H454 V308']
+    - [corrupt, noise, state, 'M100 96 V127']
+    - [read-state, model, state, 'M190 146 H210 V91 H241']
+    - [share-state, model, state, 'M190 173 H220 V185 H246']
+    - [condition, model, condition, 'M190 236 H212 V229 H246']
+    - [prior-output, predict, prior, 'M523 91 H590']
+    - [add-guidance, predict, residual, 'M473 204 H608 V109']
+    - [merged-output, predict, neutral, 'M626 91 H675', 1]
+    - [supervise, loss, target, 'M190 58 H202 V20 H899 V200 H873']
+    - [compare, loss, neutral, 'M781 123 V166']
+    - [learn, update, gradient, 'M781 234 V263 H359 V247']
   labels:
-    - [noise, 153, 155]
-    - [base, 628, 129]
-    - [correction, 623, 251]
-    - [target, 490, 21]
-    - [update, 654, 339]
+    - [noise, 146, 116]
+    - [base, 557, 82]
+    - [correction, 540, 195]
+    - [target, 459, 14]
+    - [update, 712, 256]

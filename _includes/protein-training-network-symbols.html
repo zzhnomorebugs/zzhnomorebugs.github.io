@@ -1,7 +1,5 @@
 {% comment %}Network geometry from the Figure 2(a) SVG export.{% endcomment %}
-<svg class="protein-training__symbols" width="0" height="0" aria-hidden="true">
-  <defs>
-    <g id="protein-training-prior-network">
+{% if kind == 'prior' %}
       <path fill="none" stroke="currentColor" stroke-opacity=".34" stroke-width="1.1" d="
         M375 139 410 121
         M375 139 410 157
@@ -66,7 +64,7 @@
         M610 193 645 211
         M610 229 645 211
       "/>
-      <g fill="var(--retro-paper)" stroke="currentColor" stroke-width="1.4">
+      <g class="pt-neurons" stroke="currentColor" stroke-width="1.4">
         <circle cx="369" cy="139" r="6"/>
         <circle cx="369" cy="175" r="6"/>
         <circle cx="369" cy="211" r="6"/>
@@ -94,8 +92,7 @@
         <circle cx="651" cy="175" r="6"/>
         <circle cx="651" cy="211" r="6"/>
       </g>
-    </g>
-    <g id="protein-training-residual-network">
+{% else %}
       <path fill="none" stroke="currentColor" stroke-opacity=".34" stroke-width="1.1" d="
         M429.5 381.5 475.83 373
         M429.5 381.5 475.83 390
@@ -119,7 +116,7 @@
         M544.17 407 590.5 381.5
         M544.17 407 590.5 398.5
       "/>
-      <g fill="var(--retro-paper)" stroke="currentColor" stroke-width="1.4">
+      <g class="pt-neurons" stroke="currentColor" stroke-width="1.4">
         <circle cx="424" cy="381.5" r="5.5"/>
         <circle cx="424" cy="398.5" r="5.5"/>
         <circle cx="481.33" cy="373" r="5.5"/>
@@ -131,6 +128,4 @@
         <circle cx="596" cy="381.5" r="5.5"/>
         <circle cx="596" cy="398.5" r="5.5"/>
       </g>
-    </g>
-  </defs>
-</svg>
+{% endif %}

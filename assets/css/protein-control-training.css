@@ -42,7 +42,6 @@ layout: none
   --pt-loss-fill: #253c38;
   --pt-gradient: #82c4ad;
 }
-.protein-training__symbols { position: absolute; inset: 0; pointer-events: none; }
 .protein-training__panel {
   border: 1px solid var(--retro-line);
   border-radius: 7px;
@@ -112,6 +111,13 @@ layout: none
 .pt-node--conditions { color: var(--pt-condition); --pt-fill: var(--pt-condition-fill); }
 .pt-node--loss { color: var(--pt-gradient); --pt-fill: var(--pt-loss-fill); }
 .pt-node--sum { color: var(--pt-ink); }
+.pt-neurons circle { fill: #fff; }
+.pt-node[data-network-state="trainable"] .pt-neurons circle {
+  --pt-phase: 0;
+  fill: hsl(calc(var(--pt-training-hue, 195) + var(--pt-phase)) 78% 56%);
+}
+.pt-node[data-network-state="trainable"] .pt-neurons circle:nth-child(3n+2) { --pt-phase: 42; }
+.pt-node[data-network-state="trainable"] .pt-neurons circle:nth-child(3n) { --pt-phase: 85; }
 .pt-box { fill: var(--pt-fill); stroke: currentColor; stroke-width: 1.5; }
 .pt-node[data-flow-active] .pt-box { stroke-width: 2.8; }
 [data-training-stage="pretrain"][data-training-part="update"] .pt-node--prior .pt-box,
@@ -133,9 +139,6 @@ layout: none
 .protein-training__diagram .pt-label--correction { fill: var(--pt-residual); }
 .protein-training__diagram .pt-label--update { fill: var(--pt-gradient); }
 .pt-token rect { fill: var(--pt-canvas); stroke: var(--pt-line); stroke-width: .7; }
-.pt-token--focus rect { stroke: var(--pt-state); stroke-width: 1.5; }
-.pt-node--noisy .pt-token--focus rect { stroke-dasharray: 3 2; }
-.pt-token [data-token-before] { opacity: 0; }
 .protein-training__controls {
   display: flex;
   align-items: center;

@@ -4,13 +4,13 @@
   const model = "<var>f</var><sub>θ</sub>";
   const probability = "<var>p</var><sub>i</sub>";
   const chapters = [
-    { id: "observation", duration: 7, symbols: ["⌖", "<var>i</var>"] },
-    { id: "pixels", duration: 11, symbols: ["<var>C</var>", probability + " = 0"] },
-    { id: "blocks", duration: 12, symbols: ["<var>C</var>", probability + " &gt; 0"] },
-    { id: "holdout", duration: 9, symbols: ["<var>C, Q</var>", "+ <var>ε</var>"] },
-    { id: "predict", duration: 8, symbols: [model, model] },
-    { id: "score", duration: 11, symbols: ["<var>Q</var>", "ℒ<sub>qry</sub>"] },
-    { id: "impute", duration: 9, symbols: ["<var>K</var>", "⟨<var>f</var><sub>θ</sub>⟩"] }
+    { id: "framework", duration: 12, keys: ["context", "query"] },
+    { id: "pixels", duration: 11, keys: ["measured", "context", "missing"], symbols: ["<var>C</var>", probability + " = 0"] },
+    { id: "blocks", duration: 12, keys: ["measured", "context", "query", "missing"], symbols: ["<var>C</var>", probability + " &gt; 0"] },
+    { id: "holdout", duration: 9, keys: ["context", "query", "missing"], symbols: ["<var>C, Q</var>", "+ <var>ε</var>"] },
+    { id: "predict", duration: 8, keys: ["context", "prediction", "missing"], symbols: [model, model] },
+    { id: "score", duration: 11, keys: ["query", "prediction", "missing"], symbols: ["<var>Q</var>", "ℒ<sub>qry</sub>"] },
+    { id: "impute", duration: 9, keys: ["measured", "context", "prediction", "missing"], symbols: ["<var>K</var>", "⟨<var>f</var><sub>θ</sub>⟩"] }
   ];
 
   function timecode(seconds) {
@@ -23,6 +23,10 @@
     if (copy.length !== chapters.length || buttons.length !== chapters.length) return;
 
     const drawFields = window.createIncompleteTrainingFields(root);
+    const drawFramework = window.createIncompleteStrategyFramework(root);
+    const overview = root.querySelector("[data-idcd-framework]");
+    const detail = root.querySelector(".idcd-stage");
+    const legend = root.querySelectorAll("[data-idcd-key]");
     const play = root.querySelector("[data-idcd-play]");
     const prev = root.querySelector("[data-idcd-prev]");
     const next = root.querySelector("[data-idcd-next]");
@@ -36,7 +40,7 @@
     const symbol = root.querySelector(".idcd-link__symbol");
     const action = root.querySelector(".idcd-link__label");
     const update = root.querySelector(".idcd-link__update");
-    const focus = root.querySelector(".idcd-focus__copy");
+    const description = root.querySelector("#idcd-frame-description");
 
     const cursor = { chapter: 0 };
     const timeline = window.gsap.timeline({ paused: true, defaults: { ease: "none" } });
@@ -56,31 +60,41 @@
     let lastBeat = -1;
     let lastSecond = -1;
 
-    function render() {
+    function render(showOverviewPoster = false) {
       const index = Math.min(Math.floor(cursor.chapter), chapters.length - 1);
-      const fraction = cursor.chapter - index;
+      const fraction = showOverviewPoster && index === 0 ? 0.85 : cursor.chapter - index;
       const beat = fraction < 0.46 ? 0 : 1;
       const scene = copy[index];
+      const chapter = chapters[index];
+      const isOverview = index === 0;
       if (current !== index) {
         root.dataset.scene = index;
+        overview.hidden = !isOverview;
+        detail.hidden = isOverview;
+        legend.forEach(key => { key.hidden = !chapter.keys.includes(key.dataset.idcdKey); });
         buttons[current]?.removeAttribute("aria-current");
         buttons[index].setAttribute("aria-current", "step");
         phase.textContent = scene.phase;
         heading.textContent = scene.title;
-        leftRole.textContent = scene.left_role;
-        rightRole.textContent = scene.right_role;
-        leftTitle.textContent = scene.left;
+        if (!isOverview) {
+          leftRole.textContent = scene.left_role;
+          rightRole.textContent = scene.right_role;
+          leftTitle.textContent = scene.left;
+        }
         prev.disabled = index === 0;
         next.disabled = index === chapters.length - 1;
       }
       if (current !== index || lastBeat !== beat) {
-        rightTitle.textContent = (beat && scene.right_after) || scene.right;
-        symbol.innerHTML = chapters[index].symbols[beat];
-        action.textContent = beat ? scene.result : scene.action;
-        focus.textContent = beat ? scene.outcome : scene.cue;
-        update.hidden = !(chapters[index].id === "score" && beat);
+        description.textContent = beat ? scene.outcome : scene.cue;
+        if (!isOverview) {
+          rightTitle.textContent = (beat && scene.right_after) || scene.right;
+          symbol.innerHTML = chapter.symbols[beat];
+          action.textContent = beat ? scene.result : scene.action;
+          update.hidden = !(chapter.id === "score" && beat);
+        }
       }
-      drawFields(index, fraction);
+      if (isOverview) drawFramework(fraction);
+      else drawFields(index, fraction);
       const time = timeline.time();
       const second = Math.floor(time);
       if (second !== lastSecond || current !== index) {
@@ -100,11 +114,13 @@
       play.setAttribute("aria-pressed", String(playing));
     }
 
-    render();
+    // A still overview can show the compatible sample B immediately. Explicit
+    // playback and scrubbing always use the actual position on the timeline.
+    render(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     root.querySelector(".idcd-animation__interactive").hidden = false;
     root.classList.add("is-ready");
     timeline.eventCallback("onUpdate", render);
-    const playback = window.projectAnimationPlayback(root.querySelector(".idcd-stage"), playing => {
+    const playback = window.projectAnimationPlayback(root.querySelector(".idcd-stage-viewport"), playing => {
       updateButton(playing);
       timeline.paused(!playing);
     });
@@ -128,7 +144,7 @@
       } else {
         scrub(start + chapter.duration * 0.85);
       }
-      status.textContent = heading.textContent + " " + focus.textContent;
+      status.textContent = heading.textContent + " " + description.textContent;
     }
 
     play.addEventListener("click", () => {
@@ -146,10 +162,10 @@
     next.addEventListener("click", () => jump(current + 1));
     buttons.forEach((button, index) => button.addEventListener("click", () => jump(index)));
     progress.addEventListener("input", () => scrub(Number(progress.value)));
-    progress.addEventListener("change", () => { status.textContent = focus.textContent; });
+    progress.addEventListener("change", () => { status.textContent = description.textContent; });
   }
 
-  if (window.gsap && window.d3 && window.createIncompleteTrainingFields && window.projectAnimationPlayback) {
+  if (window.gsap && window.d3 && window.createIncompleteTrainingFields && window.createIncompleteStrategyFramework && window.projectAnimationPlayback) {
     document.querySelectorAll("[data-idcd-animate]").forEach(init);
   }
 }());

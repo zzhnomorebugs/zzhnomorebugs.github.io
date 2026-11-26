@@ -8,6 +8,7 @@
   }));
   const observedA = [1, 2, 3, 4, 6, 7, 8];
   const observedB = [0, 1, 4, 5, 6, 7, 8];
+  const gapsA = [0, 5];
   const context = [1, 4, 6, 8];
   const queryB = observedB.filter(i => !context.includes(i));
   const colors = { context: "#5955b7", query: "#b86b19", prediction: "#157d79" };
@@ -25,10 +26,9 @@
   const views = {
     blank: arrange(),
     observed: arrange([observedA, "measuredA"]),
-    locate: arrange([observedA, "quietA"], [[0], "tracked"]),
     pixels: arrange([observedA, "pixels"]),
     footprint: arrange([observedA, "present"]),
-    excluded: arrange([observedA, "present"], [[0, 5], "excluded"]),
+    excluded: arrange([observedA, "present"], [gapsA, "excluded"]),
     contextA: arrange([context, "contextA"]),
     secondContextA: arrange([[2, 3, 4, 7], "contextA"]),
     splitA: arrange([observedA, "measuredA"], [context, "contextA"]),
@@ -38,13 +38,13 @@
     prediction: arrange([all, "predictionB"]),
     predictedQueries: arrange([queryB, "scoredB"]),
     answers: arrange([queryB, "queryB"]),
-    imputation: arrange([observedA, "measuredA"], [[0, 5], "predictionA"])
+    imputation: arrange([observedA, "measuredA"], [gapsA, "predictionA"])
   };
 
   // A track starts from an arrangement. Later entries give the start/end of
   // an on-object change, its new arrangement, and whether tiles resolve in turn.
   const scenes = [
-    [["observed"], ["observed", [.19, .52, "locate"]]],
+    null, // The first chapter has its own two-row framework.
     [["observed", [.08, .40, "pixels", true]],
       ["pixels", [.18, .43, "footprint", true], [.44, .66, "excluded"]]],
     [["observed", [.07, .37, "contextA", true]],
@@ -55,6 +55,22 @@
       ["blank", [.29, .48, "answers", true]]],
     [["observed", [.02, .09, "contextA"], [.18, .25, "secondContextA"], [.34, .40, "observed"]],
       ["observed", [.40, .73, "imputation", true]]]
+  ];
+
+  // A pair of corner marks follows the evidence on each board. Each mark
+  // draws once, then stays still. Matched query blocks use the same timing.
+  function cue(sites, color, start, end) {
+    return { sites, color, start, end };
+  }
+  const matched = cue(queryB, colors.query, .39, .70);
+  const cues = [
+    null,
+    [cue(observedA, colors.context, .10, .43), cue(gapsA, "#8a5348", .45, .68)],
+    [cue(context, colors.context, .12, .37), cue([0], colors.query, .48, .65)],
+    [cue(queryB, colors.query, .03, .25), cue(context, colors.context, .40, .68)],
+    [cue(context, colors.context, .02, .18), cue([0], colors.prediction, .52, .70)],
+    [matched, matched],
+    [cue(gapsA, "#536b72", .38, .57), cue(gapsA, colors.prediction, .46, .76)]
   ];
 
   function rectangle(parent, width = size, height = size) {
@@ -73,21 +89,12 @@
     hatch.append("path").attr("d", "M-2 2L2 -2 M0 9L9 0 M7 11L11 7")
       .attr("fill", "none").attr("stroke", "#d8e1e2").attr("stroke-width", .85);
     rectangle(group("blank")).attr("fill", "url(" + local("hatch") + ")");
-    const tracked = group("tracked");
-    use(tracked, "blank");
-    tracked.append("path").attr("d", "M5 22V5h17M58 5h17v17M75 58v17H58M22 75H5V58")
-      .attr("fill", "none").attr("stroke", "#536b72").attr("stroke-width", 2.8);
-
     // A crop of the illustrated field in the project's context–query figure.
     const texture = group("texture").append("svg").attr("viewBox", "1856 851 397 397")
       .attr("width", size).attr("height", size).attr("overflow", "hidden");
     texture.append("image").attr("href", art).attr("width", 2400).attr("height", 1548);
     use(group("measuredA"), "texture");
     use(group("measuredB"), "texture").attr("transform", "translate(240 240) rotate(180)");
-    const quiet = group("quietA");
-    use(quiet, "measuredA");
-    rectangle(quiet).attr("fill", "#fff").attr("opacity", .43);
-
     function outlines(parent, color, dashed) {
       parent.selectAll("rect.block-outline").data(tiles).join("rect").attr("class", "block-outline")
         .attr("x", t => t.x + 2.5).attr("y", t => t.y + 2.5)
@@ -173,6 +180,44 @@
     return local;
   }
 
+  function makeFocus(svg) {
+    const marks = svg.append("g").attr("class", "field-focus").attr("aria-hidden", "true")
+      .selectAll("g").data(tiles).join("g")
+      .attr("transform", t => "translate(" + t.x + " " + t.y + ")")
+      .attr("opacity", 0);
+    // Inset brackets leave the original solid/context or dashed/query border
+    // visible, and their open centers preserve the underlying field values.
+    for (const [stroke, width] of [["white", 5], ["currentColor", 3]]) {
+      for (const corner of ["M7 23V7h16", "M73 57v16H57"]) {
+        marks.append("path").attr("d", corner).attr("fill", "none").attr("stroke", stroke)
+          .attr("pathLength", 1).attr("stroke-dasharray", "1 1")
+          .attr("stroke-width", width).attr("stroke-linejoin", "round").attr("stroke-linecap", "round");
+      }
+    }
+    const nodes = marks.nodes();
+    const drawn = tiles.map(() => 0);
+    let previous;
+    return function drawFocus(active, p) {
+      if (active !== previous) {
+        marks.attr("opacity", 0).attr("color", active.color);
+        drawn.fill(0);
+        previous = active;
+      }
+      const fraction = (p - active.start) / (active.end - active.start);
+      active.sites.forEach((id, rank) => {
+        // Count through a set of blocks, or mark a single location immediately.
+        const sweep = active.sites.length > 1 ? .58 : 0;
+        const offset = sweep * rank / Math.max(1, active.sites.length - 1);
+        const progress = Math.max(0, Math.min(1, (fraction - offset) / (1 - sweep)));
+        const level = Math.round(100 * progress * (2 - progress)) / 100;
+        if (drawn[id] === level) return;
+        nodes[id].setAttribute("opacity", level);
+        nodes[id].setAttribute("stroke-dashoffset", 1 - level);
+        drawn[id] = level;
+      });
+    };
+  }
+
   function makeBoard(element, art) {
     const svg = window.d3.select(element);
     const local = makePalette(svg, "idcd-field-" + (++instance) + "-", art);
@@ -187,6 +232,7 @@
       .attr("stroke-width", 1);
     rectangle(svg, size - 1, size - 1).attr("x", .5).attr("y", .5)
       .attr("fill", "none").attr("stroke", "#687879").attr("stroke-width", 1);
+    const drawFocus = makeFocus(svg);
 
     // A reader's reticle stays registered to the same physical coordinate.
     // Its open centre leaves the prediction and the clean value visible there.
@@ -203,7 +249,7 @@
       .attr("font-weight", "bold").attr("text-anchor", "middle").attr("fill", "#263d45").text("i");
 
     const cache = tiles.map(() => ({}));
-    return function draw(track, p) {
+    return function draw(track, activeCue, p) {
       let from = track[0], to = from, amount = 1, stagger = false;
       for (const [start, end, target, ordered] of track.slice(1)) {
         if (p < start) break;
@@ -231,6 +277,7 @@
         last.after = after;
         last.opacity = opacity;
       });
+      drawFocus(activeCue, p);
     };
   }
 
@@ -238,7 +285,8 @@
     const boards = ["left", "right"].map(side =>
       makeBoard(root.querySelector('[data-idcd-field="' + side + '"]'), root.dataset.fieldArt));
     return function render(sceneIndex, progress) {
-      boards.forEach((draw, side) => draw(scenes[sceneIndex][side], progress));
+      if (sceneIndex === 0) return;
+      boards.forEach((draw, side) => draw(scenes[sceneIndex][side], cues[sceneIndex][side], progress));
     };
   };
 }());
