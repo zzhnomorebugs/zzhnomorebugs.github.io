@@ -57,6 +57,8 @@
   const params = new URLSearchParams(location.search);
   let view = params.get('view') === 'gantt' ? 'gantt' : 'journey';
   let topic = params.get('topic') || 'all';
+  // Molecular projects used lane 3 before merging with retrosynthesis in lane 0.
+  if (topic === '3') topic = '0';
   if (!columns.some((_, i) => String(i) === topic)) topic = 'all';
   let opener = null;
 
@@ -93,7 +95,8 @@
     journeyContent.replaceChildren();
     const years = [...new Set(list.map(p => Math.floor(p.endIndex / 12)))];
     years.forEach(year => {
-      const matches = list.filter(p => Math.floor(p.endIndex / 12) === year);
+      const matches = list.filter(p => Math.floor(p.endIndex / 12) === year)
+        .sort((a, b) => a.lane - b.lane);
       const section = node('section', 'journey-year');
       section.setAttribute('aria-labelledby', 'journey-year-' + year);
       const label = node('div', 'journey-year__label');
