@@ -237,17 +237,17 @@
       const nx = px + card / 2 + 7;
       formula(prediction, nx, y - 9, 43, 20, 12.5, teal, "\\hat{y}_{" + k + "}(i)",
         '<msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mn>' + k +
-        "</mn></msub><mo>(</mo><mi>i</mi><mo>)</mo>", { left: true });
+        '</mn></msub><mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo>', { left: true });
       const estimate = outputs.fields[j][site];
       formula(prediction, nx, y + 9, 43, 17, 13, ink,
         estimate.toFixed(2), mathNumber(estimate), { left: true });
       predictCards.push(prediction);
       const mx = nx + (compact ? 44 : 47);
-      merge.push(wire("M" + mx + " " + y + "H" + join + "V" + (compact ? 320 : rows[1]), teal, false));
+      merge.push(wire("M" + mx + " " + y + "H" + join + "V" + (compact ? 326 : rows[1]), teal, false));
     });
 
     const fold = compact ?
-      wire("M323 320H94V345m-4-5 4 5 4-5", teal) :
+      wire("M323 326H94V345m-4-5 4 5 4-5", teal) :
       arrow(join, mean[0] - mean[2] / 2 - 8, mean[1], teal);
     const copyMean = arrow(mean[0] + mean[2] / 2 + 10, result[0] - result[2] / 2 - 10, mean[1], teal);
     const meanGroup = cards.append("g").attr("data-imp-mean", "").attr("data-site-value", outputs.mean[site].toFixed(2));
@@ -277,11 +277,11 @@
     formula(meanGroup, mean[0], compact ? 435 : 219, 132, 25, compact ? 13 : 15, teal,
       "\\overline{\\hat{y}}(i)=" + average.toFixed(2),
       '<mover accent="true"><mover accent="true"><mi>y</mi><mo>^</mo></mover><mo>¯</mo></mover>' +
-      "<mo>(</mo><mi>i</mi><mo>)</mo><mo>=</mo>" + mathNumber(average));
+      '<mo stretchy="false">(</mo><mi>i</mi><mo stretchy="false">)</mo><mo>=</mo>' + mathNumber(average));
     const readouts = outputs.fields.map(f => f[site]);
     const sum = readouts.map((value, j) => (j && value >= 0 ? "<mo>+</mo>" : "") + mathNumber(value)).join("");
     const texSum = readouts.map((value, j) => (j && value >= 0 ? "+" : "") + value.toFixed(2)).join("");
-    const equation = formula(text, compact ? 220 : 650, compact ? 305 : 277,
+    const equation = formula(text, compact ? 220 : 650, compact ? 309 : 277,
       compact ? 188 : 265, compact ? 29 : 39, compact ? 11.5 : 15, teal,
       "\\frac{" + texSum + "}{" + readouts.length + "}=" + average.toFixed(2),
       "<mfrac><mrow>" + sum + "</mrow><mn>" + readouts.length + "</mn></mfrac><mo>=</mo>" + mathNumber(average));
