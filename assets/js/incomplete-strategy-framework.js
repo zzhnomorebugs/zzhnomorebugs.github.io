@@ -33,8 +33,18 @@
     defs.append("image").attr("id", id("sheet")).attr("width", 2400).attr("height", 1548)
       .attr("href", root.dataset.fieldArt);
     const stackClip = defs.append("clipPath").attr("id", id("stack"));
-    rect(stackClip, 105, 199, 447, 1069, "#fff");
-    use(frame.selectAll("[data-fw-stack]"), "sheet").attr("clip-path", paint("stack"));
+    // Clip to the five sample sheets, keeping white field values inside the diamonds.
+    stackClip.selectAll("polygon").data([
+      "320,202 533,324 320,447 107,324",
+      "320,309 533,432 320,554 107,432",
+      "329,596 551,723 326,852 106,725",
+      "320,895 533,1017 320,1140 107,1017",
+      "320,1022 533,1144 320,1267 107,1144"
+    ]).join("polygon").attr("points", d => d);
+    const stacks = frame.selectAll("[data-fw-stack]");
+    use(stacks, "sheet").attr("clip-path", paint("stack"));
+    stacks.selectAll("circle").data([563, 577, 590, 856, 870, 883]).join("circle")
+      .attr("cx", 319).attr("cy", y => y).attr("r", 3.5).attr("fill", "currentColor");
 
     // Keep the measured and predicted textures registered to the same coordinates.
     function crop(name, box) {
@@ -49,9 +59,9 @@
 
     const hatch = defs.append("pattern").attr("id", id("blank"))
       .attr("width", 6).attr("height", 6).attr("patternUnits", "userSpaceOnUse");
-    rect(hatch, 0, 0, 6, 6, "#f9fafb");
+    rect(hatch, 0, 0, 6, 6, "var(--idcd-empty)");
     hatch.append("path").attr("d", "M-1 1L1 -1M0 6L6 0M5 7L7 5")
-      .attr("stroke", "#dce3e6").attr("stroke-width", 0.7);
+      .attr("stroke", "var(--idcd-hatch)").attr("stroke-width", 0.7);
 
     // A fixed sparse draw makes the input pixels exactly match the split pixels.
     let seed = 36;
@@ -71,7 +81,8 @@
     const marks = defs.append("g").attr("id", id("pixel-marks"));
     marks.selectAll("rect").data(pixels).join("rect")
       .attr("x", d => d.x).attr("y", d => d.y).attr("width", 4.2).attr("height", 4.2)
-      .attr("fill", "#635bba").attr("fill-opacity", 0.48).attr("stroke", "#484292").attr("stroke-width", 0.8);
+      .attr("fill", "var(--idcd-context-fill)").attr("fill-opacity", 0.52)
+      .attr("stroke", "var(--idcd-context)").attr("stroke-width", 0.9);
     function mask(name, indices) {
       const clip = defs.append("clipPath").attr("id", id(name));
       indices.forEach(i => { const [x, y] = xy(i); rect(clip, x, y, tile, tile, "#fff"); });
@@ -83,8 +94,13 @@
     const grain = defs.append("pattern").attr("id", id("grain"))
       .attr("width", 16).attr("height", 16).attr("patternUnits", "userSpaceOnUse");
     for (let i = 0; i < 64; i += 1) {
-      rect(grain, i % 8 * 2, Math.floor(i / 8) * 2, 2, 2, random() < 0.5 ? "#754c58" : "#59769b")
-        .attr("opacity", random() * 0.32);
+      rect(grain, i % 8 * 2, Math.floor(i / 8) * 2, 2, 2, random() < 0.5 ? "#d56950" : "#4884bf")
+        .attr("opacity", random() * 0.2);
+    }
+    for (const sample of ["A", "B"]) {
+      const measured = defs.append("g").attr("id", id("observed" + sample));
+      use(measured, "field" + sample);
+      rect(measured, 0, 0, size, size, paint("grain"));
     }
     const swap = [];
     const focus = [];
@@ -117,18 +133,19 @@
       const isPixel = route === "pixel";
       const clip = kind === "split" ? "mask" + sample : isPixel ? "pixels" : "blocks";
       const face = group.append("g").attr("clip-path", paint(clip));
-      use(face, "field" + sample);
-      rect(face, 0, 0, size, size, paint("grain"));
+      use(face, "observed" + sample);
       if (kind === "split") {
-        rect(face, 0, 0, size, size, "#f4c16f").attr("opacity", 0.38);
+        rect(face, 0, 0, size, size, "var(--idcd-query-fill)").attr("opacity", 0.27);
+        // Restore the measured texture on context sites so amber only marks held-out data.
+        use(face, "observed" + sample).attr("clip-path", paint(isPixel ? "pixels" : "blocks"));
       }
       if (isPixel) {
         use(group, "pixel-marks");
       } else {
         retained.forEach(i => {
           const [x, y] = xy(i);
-          rect(group, x + 0.6, y + 0.6, tile - 1.2, tile - 1.2, "#7870c9")
-            .attr("fill-opacity", 0.38).attr("stroke", "#5955b7").attr("stroke-width", 1.2);
+          rect(group, x + 0.6, y + 0.6, tile - 1.2, tile - 1.2, "var(--idcd-context-fill)")
+            .attr("fill-opacity", 0.24).attr("stroke", "var(--idcd-context)").attr("stroke-width", 1.3);
         });
       }
     }
@@ -176,15 +193,15 @@
           }
         }
         board.append("path").attr("d", "M40 0v120M80 0v120M0 40h120M0 80h120")
-          .attr("fill", "none").attr("stroke", "#5c6870").attr("stroke-opacity", 0.48).attr("stroke-width", 0.65);
-        rect(board, 0.5, 0.5, 119, 119, "none").attr("stroke", "#829098").attr("stroke-width", 1);
+          .attr("fill", "none").attr("stroke", "var(--idcd-grid)").attr("stroke-opacity", 0.49).attr("stroke-width", 0.65);
+        rect(board, 0.5, 0.5, 119, 119, "none").attr("stroke", "var(--idcd-grid)").attr("stroke-width", 1);
         if (kind === "context") {
           const footprint = route === "pixel" ? observed.A : retained;
-          addEvidence(board, "footprint", footprint, "M4 13V4h9M36 27v9h-9", "#4c418e");
+          addEvidence(board, "footprint", footprint, "M4 13V4h9M36 27v9h-9", "var(--idcd-footprint)");
         } else if (kind === "split" && route === "pixel") {
-          addEvidence(board, "excluded", [0, 5], "M14 14l12 12m-12 0 12-12", "#76453c");
+          addEvidence(board, "excluded", [0, 5], "M14 14l12 12m-12 0 12-12", "var(--idcd-excluded)");
         } else if (kind === "split" && route === "block") {
-          addEvidence(board, "query", [0], "M3 13V3h10M37 27v10H27", "#995415");
+          addEvidence(board, "query", [0], "M3 13V3h10M37 27v10H27", "var(--idcd-query)");
         }
         if (kind === "output") target(board, route === "pixel" ? "#284c88" : "#9a4d19");
       });

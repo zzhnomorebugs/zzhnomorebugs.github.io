@@ -195,11 +195,40 @@
 
 .idcd-animation {
   --idcd-gutter: clamp(0.8rem, 3vw, 1.7rem);
+  --idcd-accent: #006f70;
+  --idcd-on-accent: #fff;
+  --idcd-pixel-route: #245ac3;
+  --idcd-block-route: #a54418;
+  --idcd-context: #6540bf;
+  --idcd-footprint: #542baf;
+  --idcd-excluded: #9b3943;
+  --idcd-query: #a95400;
+  --idcd-prediction: #007668;
+  --idcd-context-fill: #9462fa;
+  --idcd-query-fill: #ffb534;
+  --idcd-prediction-fill: #19bea5;
+  --idcd-empty: #fbfcff;
+  --idcd-hatch: #c8d7e3;
+  --idcd-grid: #60768a;
+  --idcd-edge: color-mix(in srgb, currentColor 20%, transparent);
   margin: 2rem 0;
-  border: 1px solid var(--retro-line);
+  border: 1px solid var(--idcd-edge);
   border-radius: 8px;
-  background: var(--retro-paper);
+  background: transparent;
   color: var(--retro-ink);
+}
+{% if site.site_theme == 'dark' %}.idcd-animation,{% endif %}
+[data-theme="dark"] .idcd-animation,
+.dark .idcd-animation {
+  --idcd-accent: #69e1d4;
+  --idcd-on-accent: #112336;
+  --idcd-pixel-route: #91baff;
+  --idcd-block-route: #ffad7e;
+  --idcd-empty: #233140;
+  --idcd-hatch: #496075;
+  --idcd-grid: #849aae;
+  --idcd-footprint: #ba91ff;
+  --idcd-excluded: #ff9aa2;
 }
 .idcd-animation__header {
   padding: 1.1rem var(--idcd-gutter) 0.85rem;
@@ -221,7 +250,7 @@
 .idcd-animation :is(button, input):focus-visible {
   position: relative;
   z-index: 1;
-  outline: 2px solid var(--retro-accent);
+  outline: 2px solid var(--idcd-accent);
   outline-offset: 2px;
 }
 .idcd-animation button:disabled { opacity: 0.42; cursor: default; }
@@ -240,7 +269,7 @@
   justify-content: flex-start;
   padding: 0.55rem 0.45rem;
   border: 0;
-  border-bottom: 2px solid var(--retro-line);
+  border-bottom: 2px solid var(--idcd-edge);
   border-radius: 3px 3px 0 0;
   background: transparent;
   text-align: start;
@@ -254,10 +283,10 @@
 .idcd-step__label { font-size: 0.76rem; font-weight: 600; }
 .idcd-animation__steps button:hover,
 .idcd-animation__steps button[aria-current="step"] {
-  background: var(--retro-accent-soft);
-  color: var(--retro-accent);
+  color: var(--idcd-accent);
+  border-color: currentColor;
 }
-.idcd-animation__steps button[aria-current="step"] { border-color: var(--retro-accent); }
+.idcd-animation__steps button[aria-current="step"] { box-shadow: inset 0 -1px currentColor; }
 .idcd-animation__steps button[aria-current="step"] .idcd-step__index { color: inherit; }
 
 .idcd-animation__story { padding: 0 var(--idcd-gutter) 0.8rem; }
@@ -269,7 +298,7 @@
   margin: 1.05rem 0 0;
 }
 .idcd-scene__phase, .idcd-board__role {
-  color: var(--retro-accent);
+  color: var(--idcd-accent);
   font-size: 0.7rem;
   font-weight: 650;
   line-height: 1.4;
@@ -287,9 +316,9 @@
   justify-content: center;
   gap: 0.7rem;
   padding: 0.95rem clamp(0.6rem, 3vw, 2.1rem) 0.95rem;
-  border: 1px solid var(--retro-line);
+  border: 1px solid var(--idcd-edge);
   border-radius: 5px;
-  background: var(--retro-accent-soft);
+  background: transparent;
 }
 .idcd-board {
   display: grid;
@@ -329,7 +358,7 @@
   gap: 0.25rem;
   max-width: 100%;
   padding-top: 2.4rem;
-  color: var(--retro-accent);
+  color: var(--idcd-accent);
   font-weight: 600;
   line-height: 1.4;
   text-align: center;
@@ -343,7 +372,7 @@
   display: grid;
   justify-items: center;
   width: 5rem;
-  color: var(--retro-accent);
+  color: var(--idcd-accent);
 }
 .idcd-link__update svg { display: block; width: 3.8rem; height: auto; }
 .idcd-link__update small { font-size: 0.68rem; }
@@ -373,37 +402,37 @@
   border: 1px solid;
   border-radius: 2px;
 }
-.idcd-key--measured { color: #576675; background: linear-gradient(125deg, #7e9fc5, #fff 52%, #d68e84); }
-.idcd-key--context { color: #5955b7; background: #b1aedb; }
-.idcd-animation__legend .idcd-key--query { color: #b86b19; border-style: dashed; background: #f1d197; }
-.idcd-key--prediction { color: #157d79; background: #9bcfc5; }
-.idcd-key--missing { color: #9caaaf; background: repeating-linear-gradient(135deg, #f6f8f8 0 3px, #d8e1e2 3px 4px); }
+.idcd-key--measured { color: var(--idcd-grid); background: linear-gradient(125deg, #6499cc, white 52%, #d97b65); }
+.idcd-key--context { color: var(--idcd-context); background: var(--idcd-context-fill); }
+.idcd-animation__legend .idcd-key--query { color: var(--idcd-query); border-style: dashed; background: var(--idcd-query-fill); }
+.idcd-key--prediction { color: var(--idcd-prediction); background: var(--idcd-prediction-fill); }
+.idcd-key--missing { color: var(--idcd-grid); background: repeating-linear-gradient(135deg, var(--idcd-empty) 0 3px, var(--idcd-hatch) 3px 4px); }
 
 .idcd-animation__playback {
   display: flex;
   align-items: center;
   gap: 0.55rem;
   padding: 0.6rem var(--idcd-gutter);
-  border-top: 1px solid var(--retro-line);
+  border-top: 1px solid var(--idcd-edge);
 }
 .idcd-animation__playback button {
   min-height: 36px;
   padding: 0.32rem 0.55rem;
-  border: 1px solid var(--retro-line);
+  border: 1px solid var(--idcd-edge);
   border-radius: 4px;
-  background: var(--retro-paper);
+  background: transparent;
   font-size: 0.76rem;
   font-weight: 600;
 }
 .idcd-animation__playback button[data-idcd-play] {
-  border-color: var(--retro-accent);
-  background: var(--retro-accent);
-  color: var(--retro-paper);
+  border-color: var(--idcd-accent);
+  background: var(--idcd-accent);
+  color: var(--idcd-on-accent);
 }
 .idcd-animation__playback button:hover:not(:disabled) {
-  border-color: var(--retro-accent);
-  background: var(--retro-accent-soft);
-  color: var(--retro-accent);
+  border-color: var(--idcd-accent);
+  background: transparent;
+  color: var(--idcd-accent);
 }
 .idcd-animation__playback input[type="range"] {
   flex: 1 1 4rem;
@@ -411,7 +440,7 @@
   min-width: 1.5rem;
   height: 28px;
   margin: 0;
-  accent-color: var(--retro-accent);
+  accent-color: var(--idcd-accent);
   cursor: pointer;
 }
 .idcd-animation__time { flex: none; white-space: nowrap; }
@@ -478,9 +507,9 @@
   grid-template-columns: minmax(82px, 0.65fr) clamp(13px, 2.3%, 28px) minmax(0, 3fr);
   align-items: center;
   padding: var(--fw-pad);
-  border: 1px solid var(--retro-line);
+  border: 1px solid var(--idcd-edge);
   border-radius: 6px;
-  background: var(--retro-paper);
+  background: transparent;
   color: var(--retro-ink);
 }
 .idcd-framework[hidden] { display: none; }
@@ -507,7 +536,7 @@
   align-self: stretch;
   width: 100%;
   height: 100%;
-  color: var(--retro-accent);
+  color: var(--idcd-accent);
 }
 .idcd-framework__paths { display: grid; gap: 0.6rem; min-width: 0; }
 .idcd-framework__columns, .idcd-framework__flow {
@@ -520,23 +549,22 @@
 .idcd-framework__columns > :nth-child(2) { grid-column: 3; }
 .idcd-framework__columns > :nth-child(3) { grid-column: 5; }
 .idcd-framework__lane {
-  --fw-route: #3e5fa2;
-  --fw-tint: rgba(117, 142, 194, 0.055);
+  --fw-route: var(--idcd-pixel-route);
   min-width: 0;
   padding: 0.47rem var(--fw-pad) 0.65rem;
-  border: 1px solid var(--fw-route);
+  border: 1px solid color-mix(in srgb, var(--fw-route) 55%, transparent);
+  border-inline-start-color: var(--fw-route);
   border-inline-start-width: 3px;
   border-radius: 5px;
-  background: var(--fw-tint);
+  background: transparent;
 }
 .idcd-framework__lane[data-strategy="block"] {
-  --fw-route: #ad632d;
-  --fw-tint: rgba(206, 140, 89, 0.06);
+  --fw-route: var(--idcd-block-route);
 }
 .idcd-framework[data-strategy-focus="pixel"] [data-strategy="pixel"],
 .idcd-framework[data-strategy-focus="block"] [data-strategy="block"] {
   box-shadow: inset 0 0 0 1px var(--fw-route);
-  background: color-mix(in srgb, var(--fw-route) 9%, var(--retro-paper));
+  border-color: var(--fw-route);
 }
 .idcd-framework__rowhead {
   display: flex;
@@ -547,10 +575,10 @@
   font-size: clamp(0.72rem, 1.35vw, 0.87rem);
   line-height: 1.25;
 }
-.idcd-framework__rowhead > strong { padding: 0.14em 0.42em; border-radius: 3px; color: var(--retro-ink); }
+.idcd-framework__rowhead > strong { padding: 0.14em 0.42em; border-radius: 3px; color: var(--fw-route); }
 .idcd-framework[data-strategy-focus="pixel"] [data-strategy="pixel"] .idcd-framework__rowhead > strong,
 .idcd-framework[data-strategy-focus="block"] [data-strategy="block"] .idcd-framework__rowhead > strong {
-  color: white;
+  color: var(--idcd-on-accent);
   background: var(--fw-route);
 }
 .idcd-framework [data-fw-probability] { color: var(--retro-muted); font-size: 0.72rem; text-align: end; }

@@ -11,7 +11,11 @@
   const gapsA = [0, 5];
   const context = [1, 4, 6, 8];
   const queryB = observedB.filter(i => !context.includes(i));
-  const colors = { context: "#5955b7", query: "#b86b19", prediction: "#157d79" };
+  const colors = {
+    context: "var(--idcd-context)",
+    query: "var(--idcd-query)",
+    prediction: "var(--idcd-prediction)"
+  };
   let instance = 0;
 
   // Each arrangement maps the same nine spatial locations to visible evidence.
@@ -63,7 +67,7 @@
         ["observed", [.02, .09, "contextA"], [.18, .25, "secondContextA"], [.34, .40, "observed"]],
         ["observed", [.40, .73, "imputation", true]]
       ],
-      cues: [cue(gapsA, "#536b72", .38, .57), cue(gapsA, colors.prediction, .46, .76)]
+      cues: [cue(gapsA, "var(--idcd-grid)", .38, .57), cue(gapsA, colors.prediction, .46, .76)]
     }
   };
 
@@ -79,9 +83,9 @@
 
     const hatch = defs.append("pattern").attr("id", prefix + "hatch")
       .attr("patternUnits", "userSpaceOnUse").attr("width", 9).attr("height", 9);
-    rectangle(hatch, 9, 9).attr("fill", "#f6f8f8");
+    rectangle(hatch, 9, 9).attr("fill", "var(--idcd-empty)");
     hatch.append("path").attr("d", "M-2 2L2 -2 M0 9L9 0 M7 11L11 7")
-      .attr("fill", "none").attr("stroke", "#d8e1e2").attr("stroke-width", .85);
+      .attr("fill", "none").attr("stroke", "var(--idcd-hatch)").attr("stroke-width", .85);
     rectangle(group("blank")).attr("fill", "url(" + local("hatch") + ")");
     // A crop of the illustrated field in the project's context–query figure.
     const texture = group("texture").append("svg").attr("viewBox", "1856 851 397 397")
@@ -104,18 +108,18 @@
     ["A", "B"].forEach(sample => {
       const retained = group("context" + sample);
       use(retained, "measured" + sample);
-      tint(retained, colors.context, .36);
+      tint(retained, "var(--idcd-context-fill)", .24);
       outlines(retained, colors.context, false);
       const predicted = group("prediction" + sample);
       // Shift and scale the structures relative to the clean target. This is
       // a schematic estimate, so the score views show a genuine visual residual.
       use(predicted, "measured" + sample).attr("transform", "translate(-10 -2) scale(1.13)");
-      tint(predicted, colors.prediction, .20);
+      tint(predicted, "var(--idcd-prediction-fill)", .16);
       outlines(predicted, colors.prediction, false);
     });
     const target = group("queryB");
     use(target, "measuredB");
-    tint(target, "#f4ae4c", .27);
+    tint(target, "var(--idcd-query-fill)", .27);
     outlines(target, colors.query, true);
     const scored = group("scoredB");
     use(scored, "predictionB");
@@ -127,7 +131,7 @@
       seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
       return (seed + .5) / 4294967296;
     }
-    const grains = ["#4c68a3", "#7699c3", "#afc6df", "#edf1f4", "#edc8b8", "#d69a86", "#ad6b5f"];
+    const grains = ["#3979b4", "#6c9ecb", "#b1cfe7", "#f7f7f5", "#f1ccbb", "#e19b7d", "#be6451"];
     const noise = defs.append("pattern").attr("id", prefix + "grain")
       .attr("patternUnits", "userSpaceOnUse").attr("width", 52).attr("height", 52);
     noise.selectAll("rect").data(Array.from({length: 169}, (_, i) => i)).join("rect")
@@ -139,7 +143,7 @@
     const noisy = group("noisyB");
     use(noisy, "measuredB");
     rectangle(noisy).attr("fill", "url(" + local("grain") + ")").attr("opacity", .74);
-    tint(noisy, colors.context, .22);
+    tint(noisy, "var(--idcd-context-fill)", .15);
     outlines(noisy, colors.context, false);
 
     return local;
@@ -193,10 +197,10 @@
     const previous = cells.append("use").nodes();
     const incoming = cells.append("use").nodes();
     svg.append("path").attr("d", "M80 0v240M160 0v240M0 80h240M0 160h240")
-      .attr("fill", "none").attr("stroke", "#637577").attr("stroke-opacity", .62)
+      .attr("fill", "none").attr("stroke", "var(--idcd-grid)").attr("stroke-opacity", .46)
       .attr("stroke-width", 1);
     rectangle(svg, size - 1, size - 1).attr("x", .5).attr("y", .5)
-      .attr("fill", "none").attr("stroke", "#687879").attr("stroke-width", 1);
+      .attr("fill", "none").attr("stroke", "var(--idcd-grid)").attr("stroke-width", 1);
     const drawFocus = makeFocus(svg);
 
     // A reader's reticle stays registered to the same physical coordinate.

@@ -3,13 +3,13 @@
 
   const model = "<var>f</var><sub>θ</sub>";
   const chapters = [
-    { id: "framework", duration: 12, keys: ["context", "query"] },
-    { id: "pixels", duration: 11, keys: ["context", "query"] },
-    { id: "blocks", duration: 12, keys: ["context", "query"] },
-    { id: "holdout", duration: 9, keys: ["context", "query", "missing"], symbols: ["<var>C, Q</var>", "+ <var>ε</var>"] },
-    { id: "predict", duration: 8, keys: ["context", "prediction", "missing"], symbols: [model, model] },
-    { id: "score", duration: 11, keys: ["query", "prediction", "missing"], symbols: ["<var>Q</var>", "ℒ<sub>qry</sub>"] },
-    { id: "impute", duration: 9, keys: ["measured", "context", "prediction", "missing"], symbols: ["<var>K</var>", "⟨<var>f</var><sub>θ</sub>⟩"] }
+    { id: "framework", duration: 8, keys: ["context", "query"] },
+    { id: "pixels", duration: 7, keys: ["context", "query"] },
+    { id: "blocks", duration: 8, keys: ["context", "query"] },
+    { id: "holdout", duration: 6, keys: ["context", "query", "missing"], symbols: ["<var>C, Q</var>", "+ <var>ε</var>"] },
+    { id: "predict", duration: 5, keys: ["context", "prediction", "missing"], symbols: [model, model] },
+    { id: "score", duration: 8, keys: ["query", "prediction", "missing"], symbols: ["<var>Q</var>", "ℒ<sub>qry</sub>"] },
+    { id: "impute", duration: 6, keys: ["measured", "context", "prediction", "missing"], symbols: ["<var>K</var>", "⟨<var>f</var><sub>θ</sub>⟩"] }
   ];
 
   function timecode(seconds) {
@@ -47,11 +47,13 @@
       timeline.addLabel(id).to(cursor, { chapter: index + 1, duration }, id);
     });
     // Follow the loss back to the same model that produced the prediction.
+    const scoreStart = timeline.labels.score;
+    const scoreDuration = timeline.labels.impute - scoreStart;
     timeline.fromTo(root.querySelector("[data-gradient-signal]"),
-      { attr: { cy: 1 } }, { attr: { cy: 18 }, duration: 0.9, repeat: 1 }, "score+=5.8");
+      { attr: { cy: 1 } }, { attr: { cy: 18 }, duration: 0.08 * scoreDuration, repeat: 1 }, scoreStart + 0.53 * scoreDuration);
     timeline.fromTo(root.querySelector("[data-model-weights]"),
       { attr: { "fill-opacity": 0.06 } },
-      { attr: { "fill-opacity": 0.32 }, duration: 0.45, repeat: 1, yoyo: true }, "score+=6.6");
+      { attr: { "fill-opacity": 0.32 }, duration: 0.04 * scoreDuration, repeat: 1, yoyo: true }, scoreStart + 0.60 * scoreDuration);
 
     const duration = timeline.duration();
     progress.max = duration;
