@@ -71,11 +71,11 @@ project_chapters:
     </a>
     <figcaption class="retro-figure__caption">Figure 1 · The overall division of work in controllable generation. A general prior supplies sequence patterns, target conditions influence generation updates, and independent evaluation checks the generated results.</figcaption>
   </figure>
-  <p>Training a conditional generator directly requires learning both sequence patterns and the influence of property conditions. This project separates those responsibilities and gives each type of data a distinct role: <strong>unconditional generative pretraining uses public natural protein sequence collections to learn general sequence patterns; downstream training then freezes the prior and trains only the conditional guidance, or residual model, on a smaller task dataset with property labels.</strong> Unconditional pretraining does not require a downstream property label for every sequence; those labels teach the task-specific correction. The workflow has three stages:</p>
-  <ol class="retro-pipeline" aria-label="Three stages from pretraining to conditional generation">
-    <li><strong>Pretraining: Learn sequence patterns</strong><span>Learn to predict clean tokens from noisy states using a large protein sequence collection, producing a reusable general generative prior.</span></li>
-    <li><strong>Conditional training: Learn to correct predictions</strong><span>Freeze the prior and train the conditional residual on a smaller task dataset with property labels, using the loss on the combined prediction.</span></li>
-    <li><strong>Conditional generation: Predict and update repeatedly</strong><span>Keep both models fixed and progressively update the generation state under the given conditions to obtain candidate sequences.</span></li>
+  <p>Training has two stages. The prior \(f\) learns the language of protein sequences by predicting which amino acids fit their sequence context. The conditional residual \(g\) learns how those preferences should change for a given reference sequence and target property. After training, the two models guide generation together.</p>
+  <ol class="retro-pipeline" aria-label="Two training stages and their use during generation">
+    <li><strong>Stage 1 · Learn the sequence language</strong><span>Add noise to natural sequences from UniRef50. Train \(f\) to predict the original amino acids from the remaining context, using the sequences themselves as supervision.</span></li>
+    <li><strong>Stage 2 · Learn conditional guidance</strong><span>Freeze \(f\) and train \(g\) on task sequences with property labels. Compare the combined prediction with the clean sequence and update only \(g\).</span></li>
+    <li><strong>Generation · Propose a candidate</strong><span>Fix both models. At each step, \(f\) supplies the base prediction, \(g\) adjusts it for the conditions, and BFN or DFM updates the state.</span></li>
   </ol>
   <p>For editing tasks conditioned on a reference sequence, the objective can be expressed as learning a conditional distribution:</p>
   <div class="retro-equation">\[p_\theta(x\mid x_{\mathrm{ref}},y).\]</div>
@@ -121,8 +121,8 @@ project_chapters:
   <p>Here, \(i\) denotes a position and \(k\) an amino acid class. The probability \(q_i(k)\) predicts the <strong>clean token</strong> at that position; the generation rule must still use it to determine the next state update. Normalizing at each position does not discard relationships between positions: both branches use the sequence context.</p>
   <div class="retro-callout"><strong>What does the residual actually correct?</strong><p>Consider abstract classes \(\alpha,\beta\). The prior may favor \(\alpha\), while the current condition calls for a greater relative preference for \(\beta\). The residual can increase the score of \(\beta\) relative to the other classes, and softmax renormalizes the corrected scores. A zero residual recovers the general prior's prediction. The residual itself is neither a probability nor an instruction for an already selected mutation.</p></div>
 
-  <h3>3.3 Train the combined prediction, updating only the residual</h3>
-  <p>First, train the general prior \(f\) on UniRef. Then freeze it and train the conditional residual \(g\) on task data with reference context and property labels. When the two branches are viewed as one denoiser, the inputs, prediction, and supervision follow the standard conditional diffusion training pattern.</p>
+  <h3>3.3 How the two training stages fit together</h3>
+  <p>Both stages start with a clean training sequence \(x\). Adding noise at time \(t\) gives the model its input \(s_t\). The original \(x\) supplies the target amino acid at each position. Stage 1 trains \(f\) on UniRef50. Stage 2 uses labeled task sequences, with the reference \(x_{\mathrm{ref}}\) and property label \(y\) as conditions for \(g\). The two branches add their logits, and the loss on the combined prediction updates only \(g\).</p>
   {% include protein-training-animation.html %}
   <ol>
     <li><strong>Construct the training input.</strong> Use the real sequence \(x\) as the clean target, sample a time \(t\), and construct its noisy state \(s_t\) according to the chosen framework. Supply the reference sequence and the property condition associated with that training example.</li>

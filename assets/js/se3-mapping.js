@@ -104,7 +104,7 @@
     var reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
     var index=0,phase=0,playing=false,raf=0,last=0,announced='';
     var view='overview',walkPosition=0,viewTime=0,inspectAt=8,inspected=false;
-    var autoplayStarted=false,visible=false,resumeOnVisible=false,userPaused=false;
+    var autoplayStarted=false;
     // Every arrow uses the same reveal time, regardless of its screen length.
     var arrowDuration=1400,arrowPause=200,arrowSlot=arrowDuration+arrowPause;
     var stageDurations=[1750,2*arrowSlot,2*arrowSlot,4*arrowSlot];
@@ -390,16 +390,6 @@
       slow.textContent=inspecting?story.inspecting:story.inspect;slow.disabled=inspecting;
       play.setAttribute('aria-pressed',String(playing));slow.removeAttribute('aria-pressed');
     }
-    function pause(manual){
-      playing=false;cancelAnimationFrame(raf);last=0;
-      if(manual){userPaused=true;resumeOnVisible=false;}
-      buttons();
-    }
-    function run(){
-      userPaused=false;autoplayStarted=true;
-      if(!visible||document.hidden){resumeOnVisible=true;buttons();return;}
-      resumeOnVisible=false;playing=true;last=0;buttons();cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);
-    }
     // All visible state is a pure function of the film frame and selected
     // inspection step. Playback and seeking therefore traverse identical
     // camera, tangent, mapping, and denoising states in either direction.
@@ -441,7 +431,7 @@
       playhead=Math.min(end+frames(loopPauseDuration),playhead+delta*fps/1000);
       applyFrame(Math.floor(playhead+1e-7));
       if(view==='done'){
-        if(reduced.matches){pause(false);return;}
+        if(reduced.matches){playback.pause();return;}
         if(playhead>=end+frames(loopPauseDuration)){
           inspectAt=8;playhead=0;applyFrame(0);
         }
@@ -449,45 +439,36 @@
       raf=requestAnimationFrame(tick);
     }
     function reset(){
-      pause(false);inspectAt=8;seekFrame(0);run();
+      inspectAt=8;seekFrame(0);playback.play();
     }
-    play.addEventListener('click',function(){if(playing)pause(true);else if(view==='done')reset();else run();});
+    play.addEventListener('click',function(){if(playing)playback.pause();else if(view==='done')reset();else playback.play();});
     slow.addEventListener('click',function(){
-      pause(false);
       inspectAt=Math.min(STEPS-1,Math.ceil(walkPosition));
       // Finish any partial trajectory segment before inspecting its endpoint.
-      seekFrame(Math.min(walkPosition,inspectAt)*frames(walkStepDuration));run();
+      seekFrame(Math.min(walkPosition,inspectAt)*frames(walkStepDuration));playback.play();
     });
     restart.addEventListener('click',reset);
     slider.addEventListener('input',function(){
-      var requested=Number(slider.value);pause(true);seekFrame(requested);
+      var requested=Number(slider.value);playback.pause();seekFrame(requested);
     });
     root.querySelectorAll('[data-mapping-jump]').forEach(function(button){button.disabled=false;button.addEventListener('click',function(){
-      pause(true);
+      playback.pause();
       if(view==='overview'||view==='done')inspectAt=Math.min(STEPS-1,Math.ceil(walkPosition));
       var step=Number(button.dataset.mappingJump),offset=stageDurations.slice(0,step).reduce(function(sum,ms){return sum+frames(ms);},0)+0.98*frames(stageDurations[step]);
       seekFrame(timelineBounds().detail+offset);
       scene.scrollIntoView({behavior:reduced.matches?'auto':'smooth',block:'start'});
     });});
-    document.addEventListener('visibilitychange',function(){
-      if(document.hidden){resumeOnVisible=resumeOnVisible||playing;pause(false);}
-      else if(resumeOnVisible&&!userPaused&&visible)run();
-    });
-    reduced.addEventListener('change',function(){
-      if(reduced.matches){resumeOnVisible=false;pause(false);}
-      else if(!userPaused&&(resumeOnVisible||!autoplayStarted||view!=='done'))run();
-      render();
-    });
+    if(reduced.addEventListener)reduced.addEventListener('change',render);
+    else reduced.addListener(render);
     var width=scene.clientWidth;build();
     if('ResizeObserver'in window)new ResizeObserver(function(){if(Math.abs(scene.clientWidth-width)>1){width=scene.clientWidth;build();}}).observe(scene);
     root.dataset.mappingReady='true';controls.hidden=false;buttons();
-    if('IntersectionObserver'in window)new IntersectionObserver(function(entries){
-      var entry=entries[0];visible=entry.isIntersecting;
-      if(!visible){if(playing){resumeOnVisible=true;pause(false);}return;}
-      if(resumeOnVisible&&!userPaused)run();
-      else if(!autoplayStarted&&!userPaused&&!reduced.matches&&entry.intersectionRect.height>=Math.min(240,scene.clientHeight*0.35))run();
-    },{threshold:[0,0.15,0.3,0.5,0.7,1]}).observe(scene);
-    else{visible=true;if(!reduced.matches)run();}
+    var playback=window.projectAnimationPlayback(scene,function(enabled){
+      playing=enabled;last=0;
+      if(playing){autoplayStarted=true;raf=requestAnimationFrame(tick);}
+      else cancelAnimationFrame(raf);
+      buttons();
+    });
   }
   document.querySelectorAll('[data-se3-mapping]').forEach(init);
 }());

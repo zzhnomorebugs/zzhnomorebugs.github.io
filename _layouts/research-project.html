@@ -3,6 +3,7 @@ layout: default
 ---
 
 {% include base_path %}
+<script src="{{ base_path }}/assets/js/project-animation-playback.js?v={{ site.time | date: '%s' }}" defer></script>
 
 {% assign project_title = page.project_title | default: page.title %}
 {% if page.lang == "zh-CN" %}{% assign project_research_url = "/zh/research/" %}{% else %}{% assign project_research_url = "/research/" %}{% endif %}

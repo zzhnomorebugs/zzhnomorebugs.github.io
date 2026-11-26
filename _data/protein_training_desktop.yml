@@ -1,0 +1,53 @@
+# Nodes: id, left, top, width, height. Edges: id, beat, style, SVG path, optional order.
+# Labels: translation key, center x, baseline y.
+pretrain:
+  width: 1040
+  height: 350
+  nodes:
+    - [clean, 20, 47, 184, 84]
+    - [noisy, 20, 210, 184, 76]
+    - [prior, 335, 103, 306, 141]
+    - [prediction, 807, 137, 190, 73]
+    - [loss, 823, 254, 158, 61]
+  edges:
+    - [corrupt, noise, state, 'M112 131 V210']
+    - [read-state, model, state, 'M204 248 H259 V174 H335']
+    - [prior-output, predict, prior, 'M641 174 H807']
+    - [supervise, loss, target, 'M204 88 H233 V29 H1020 V285 H981']
+    - [compare, loss, neutral, 'M902 210 V254']
+    - [learn, update, gradient, 'M823 285 H488 V244']
+  labels:
+    - [noise, 153, 176]
+    - [base, 724, 160]
+    - [target, 490, 22]
+    - [update, 655, 308]
+adapt:
+  width: 1040
+  height: 368
+  frame: [295, 60, 445, 260]
+  nodes:
+    - [clean, 20, 36, 184, 84]
+    - [noisy, 20, 181, 184, 76]
+    - [conditions, 20, 287, 184, 59]
+    - [prior, 317, 82, 273, 117]
+    - [residual, 348, 220, 212, 88]
+    - [sum, 669, 121, 38, 38]
+    - [prediction, 807, 104, 190, 72]
+    - [loss, 823, 232, 158, 62]
+  edges:
+    - [corrupt, noise, state, 'M112 120 V181']
+    - [read-state, model, state, 'M204 208 H248 V140 H317']
+    - [share-state, model, state, 'M204 231 H255 V248 H348']
+    - [condition, model, condition, 'M204 316 H278 V280 H348']
+    - [prior-output, predict, prior, 'M590 140 H669']
+    - [add-guidance, predict, residual, 'M560 264 H688 V159']
+    - [merged-output, predict, neutral, 'M707 140 H807', 1]
+    - [supervise, loss, target, 'M204 78 H228 V28 H1020 V263 H981']
+    - [compare, loss, neutral, 'M902 176 V232']
+    - [learn, update, gradient, 'M902 294 V346 H454 V308']
+  labels:
+    - [noise, 153, 155]
+    - [base, 628, 129]
+    - [correction, 623, 251]
+    - [target, 490, 21]
+    - [update, 654, 339]

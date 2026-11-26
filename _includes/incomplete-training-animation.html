@@ -1,155 +1,77 @@
-{% assign idcd_zh = false %}{% if page.lang == 'zh-CN' %}{% assign idcd_zh = true %}{% endif %}
+{% assign story = site.data.incomplete_training[page.lang] %}
 <section class="idcd-animation" id="incomplete-training-animation" data-idcd-animate
-     aria-labelledby="idcd-animation-title"
-     data-play-label="{% if idcd_zh %}播放讲解{% else %}Play walkthrough{% endif %}"
-     data-pause-label="{% if idcd_zh %}暂停{% else %}Pause{% endif %}"
-     data-replay-label="{% if idcd_zh %}重播讲解{% else %}Replay walkthrough{% endif %}">
+         aria-labelledby="idcd-animation-title" data-play-label="{{ story.play }}"
+         data-pause-label="{{ story.pause }}" data-replay-label="{{ story.replay }}"
+         data-field-art="{{ base_path }}/images/research/incomplete-learning/context-query.webp">
   <header class="idcd-animation__header">
-    <h3 id="idcd-animation-title">{% if idcd_zh %}从两种划分策略到一轮训练{% else %}From two partition strategies to one training step{% endif %}</h3>
-    <p>{% if idcd_zh %}先比较两种划分怎样改变查询机会，再跟着同一个九宫格样本走完一轮训练。{% else %}Compare how the partitions change which locations can be queried, then follow one incomplete grid through a training step.{% endif %}</p>
+    <h3 id="idcd-animation-title">{{ story.title }}</h3>
+    <p>{{ story.intro }}</p>
   </header>
-
-  <div class="idcd-animation__controls" data-idcd-controls hidden>
-    <div class="idcd-animation__playback">
-      <button type="button" data-idcd-play>{% if idcd_zh %}播放讲解{% else %}Play walkthrough{% endif %}</button>
-      <button type="button" data-idcd-prev aria-label="{% if idcd_zh %}上一步{% else %}Previous step{% endif %}">←</button>
-      <button type="button" data-idcd-next aria-label="{% if idcd_zh %}下一步{% else %}Next step{% endif %}">→</button>
-      <input type="range" min="0" max="1" step="any" value="0" data-idcd-progress
-             aria-label="{% if idcd_zh %}讲解进度{% else %}Walkthrough progress{% endif %}">
-    </div>
-    <div class="idcd-animation__steps" role="group" aria-label="{% if idcd_zh %}讲解步骤{% else %}Walkthrough steps{% endif %}">
-      <button type="button" data-idcd-jump="0">{% if idcd_zh %}逐像素划分{% else %}Pixelwise split{% endif %}</button>
-      <button type="button" data-idcd-jump="1">{% if idcd_zh %}按整块划分{% else %}Whole-block split{% endif %}</button>
-      <button type="button" data-idcd-jump="2">{% if idcd_zh %}构造训练样本{% else %}Build training pair{% endif %}</button>
-      <button type="button" data-idcd-jump="3">{% if idcd_zh %}加噪{% else %}Add noise{% endif %}</button>
-      <button type="button" data-idcd-jump="4">{% if idcd_zh %}预测{% else %}Predict{% endif %}</button>
-      <button type="button" data-idcd-jump="5">{% if idcd_zh %}计算损失并更新{% else %}Compute loss &amp; update{% endif %}</button>
-    </div>
-  </div>
-
-  <ul class="idcd-animation__legend">
-    <li><i class="idcd-legend__context" aria-hidden="true"></i>{% if idcd_zh %}上下文 · 输入{% else %}Context · input{% endif %}</li>
-    <li><i class="idcd-legend__query" aria-hidden="true"></i>{% if idcd_zh %}查询 · 目标{% else %}Query · target{% endif %}</li>
-    <li><i class="idcd-legend__blank" aria-hidden="true"></i>{% if idcd_zh %}白色 · 该图未显示数值{% else %}White · values absent from this panel{% endif %}</li>
-  </ul>
-
-  <div class="idcd-animation__story">
-    <section class="idcd-scene idcd-scene--pixel" data-idcd-scene data-duration="8500" aria-labelledby="idcd-pixel-title">
-      <h4 id="idcd-pixel-title">{% if idcd_zh %}逐像素划分可能暴露原始缺失的位置{% else %}A pixelwise split can reveal the original missing blocks{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}按像素选取上下文和查询{% else %}Select context and query pixels{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="pixel-split" %}
-        </div>
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}模型只看到散落的上下文{% else %}The model sees scattered context pixels{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="pixel-input" focus="missing" %}
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}两处彩色块的预测无约束{% else %}Predictions in both multicolored blocks are unconstrained{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="pixel-prediction" %}
-        </div>
+  <div class="idcd-animation__interactive" hidden>
+    <nav class="idcd-animation__steps" aria-label="{{ story.navigation }}">
+      {% for scene in story.scenes %}
+      <button type="button" data-idcd-jump="{{ forloop.index0 }}">
+        <span class="idcd-step__index" aria-hidden="true">0{{ forloop.index }}</span>
+        <span class="idcd-step__label">{{ scene.step | escape }}</span>
+      </button>
+      {% endfor %}
+    </nav>
+    <div class="idcd-animation__story">
+      <div class="idcd-scene__heading">
+        <span class="idcd-scene__phase"></span>
+        <h4></h4>
       </div>
-      <p>{% if idcd_zh %}每个样本只观测七块，而这个蓝紫色上下文在全部七个实测块内都留下了像素。因此，给定这个上下文形状，左上和右中两块的查询概率为零，相应的预测没有损失约束。{% else %}Every sample has exactly seven measured blocks, and this context leaves purple pixels in all seven. Given this context footprint, the top-left and middle-right blocks have zero query probability, so the loss leaves their predictions unconstrained.{% endif %}</p>
-    </section>
-
-    <section class="idcd-scene idcd-scene--block" data-idcd-scene data-duration="10500" aria-labelledby="idcd-block-title">
-      <h4 id="idcd-block-title">{% if idcd_zh %}按整块划分可以增加查询机会，但需要保留足够的上下文{% else %}A whole-block split can open up queries while reducing context{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="↔">
-          <strong>{% if idcd_zh %}样本 A · 标出的两块没有测量{% else %}Sample A · both outlined blocks are unmeasured{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="block-split" focus="missing" %}
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}样本 B · 上下文形状相同，两块实测值可作查询{% else %}Sample B · same context footprint, both blocks have targets{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="block-alternative" focus="missing" %}
-        </div>
-      </div>
-      <p>{% if idcd_zh %}A 和 B 留下同样四个蓝紫色块。若数据里有 B 这样的观测模式，A 中缺失的两块就有机会在其他样本里提供真实监督。上下文留得太多会压缩查询机会，留得太少又会损失预测所需的观测线索。{% else %}A and B keep the same four purple context blocks. If observation patterns like B occur in the data, the two blocks missing in A can receive supervision from other samples. Keeping too much context limits query opportunities, while keeping too little removes useful evidence for prediction.{% endif %}</p>
-    </section>
-
-    <section class="idcd-scene" data-idcd-scene data-duration="6500" aria-labelledby="idcd-split-title">
-      <h4 id="idcd-split-title">{% if idcd_zh %}从实测位置构造一组上下文与查询{% else %}Build a context–query pair from measured locations{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}不完整训练集{% else %}Incomplete training set{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="stack" %}
-        </div>
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}取一份不完整样本{% else %}Draw an incomplete sample{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="observations" cells="blank field field field field blank field field field" %}
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}保留蓝紫色观测，暂时隐藏浅橙色观测{% else %}Keep purple measurements and hold out amber ones{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="training-split" cells="blank context query query context blank context query context" %}
-        </div>
-      </div>
-      <p>{% if idcd_zh %}沿用样本 A 的缺失位置。从七个已有观测块中选出四块作为上下文，暂藏其余三个已测块作为查询答案。原始观测中的两处白色块没有训练标签。{% else %}Keep the missing-block locations from sample A. Select four of the seven measured blocks as context and hold out the other three for query supervision. The two white blocks in the original observation have no labels.{% endif %}</p>
-    </section>
-
-    <section class="idcd-scene" data-idcd-scene data-duration="6500" aria-labelledby="idcd-noise-title">
-      <h4 id="idcd-noise-title">{% if idcd_zh %}采样扩散时间与高斯噪声，得到带噪上下文{% else %}Sample diffusion time and Gaussian noise for the context{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}干净上下文{% else %}Clean context{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="clean-context" cells="blank field blank blank field blank field blank field" %}
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}带噪上下文{% else %}Noisy context{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="noisy-context" %}
-        </div>
-      </div>
-      <div class="idcd-scene__formula">
-        <math>
-          <msub><mi>x</mi><mrow><mi>ctx</mi><mo>,</mo><mi>t</mi></mrow></msub>
-          <mo>=</mo><msub><mi>M</mi><mi>ctx</mi></msub><mo>⊙</mo>
-          <mo>(</mo><msub><mi>α</mi><mi>t</mi></msub><msub><mi>x</mi><mi>obs</mi></msub>
-          <mo>+</mo><msub><mi>σ</mi><mi>t</mi></msub><mi>ε</mi><mo>)</mo>
-        </math>
-      </div>
-      <p>{% if idcd_zh %}按时间 <var>t</var> 对应的噪声调度构造模型输入。上下文位置不变，查询答案保留原始的干净测量。{% else %}Use the noise schedule at time <var>t</var> to construct the input. The context locations stay fixed and the query targets retain their clean measured values.{% endif %}</p>
-    </section>
-
-    <section class="idcd-scene" data-idcd-scene data-duration="6500" aria-labelledby="idcd-predict-title">
-      <h4 id="idcd-predict-title">{% if idcd_zh %}模型根据带噪上下文预测干净场{% else %}The model predicts a clean field from noisy context{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}模型输入{% else %}Model input{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="noisy-context" %}
-          <span class="idcd-scene__formula">
-            <math><mi>t</mi><mo>,</mo><msub><mi>x</mi><mrow><mi>ctx</mi><mo>,</mo><mi>t</mi></mrow></msub><mo>,</mo><msub><mi>M</mi><mi>ctx</mi></msub></math>
+      <div class="idcd-stage">
+        <figure class="idcd-board">
+          <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
+          <svg data-idcd-field="left" viewBox="0 0 240 240" aria-hidden="true"></svg>
+        </figure>
+        <div class="idcd-link">
+          <span class="idcd-link__symbol" aria-hidden="true"></span>
+          <span class="idcd-link__label"></span>
+          <span class="idcd-link__update" hidden>
+            <svg viewBox="0 0 96 45" aria-hidden="true">
+              <path d="M48 1v16m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+              <circle data-gradient-signal cx="48" cy="1" r="2.6" fill="currentColor"/>
+              <rect data-model-weights x="25" y="20" width="46" height="24" rx="4" stroke="currentColor" fill="currentColor" fill-opacity=".07"/>
+              <text x="48" y="36" text-anchor="middle" fill="currentColor" font-family="Georgia, serif" font-style="italic" font-size="16">f<tspan dy="3" font-size="10">θ</tspan></text>
+            </svg>
+            <small>{{ story.update }}</small>
           </span>
         </div>
-        <div class="idcd-scene__node" data-link="→">
-          <div class="idcd-scene__operator"><math><msub><mi>f</mi><mi>θ</mi></msub></math></div>
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}干净场预测（示意）{% else %}Illustrative clean-field prediction{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="prediction" %}
-        </div>
+        <figure class="idcd-board">
+          <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
+          <svg data-idcd-field="right" viewBox="0 0 240 240" aria-hidden="true"></svg>
+        </figure>
       </div>
-      <p>{% if idcd_zh %}输入只有扩散时间、带噪上下文和上下文掩码。模型为整幅场输出预测，浅橙色标记的查询位置与答案留到下一步计算损失。{% else %}The model sees only diffusion time, noisy context, and its mask. It predicts the full field, while the amber query locations and target values are kept for the loss.{% endif %}</p>
-    </section>
-
-    <section class="idcd-scene" data-idcd-scene data-duration="8500" aria-labelledby="idcd-update-title">
-      <h4 id="idcd-update-title">{% if idcd_zh %}只比较查询位置，用误差更新模型{% else %}Score only query locations and update the model{% endif %}</h4>
-      <div class="idcd-scene__diagram">
-        <div class="idcd-scene__node" data-link="↔">
-          <strong>{% if idcd_zh %}取出查询位置的预测{% else %}Select predicted query values{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="prediction" cells="blank blank field field blank blank blank field blank" focus="query" %}
-        </div>
-        <div class="idcd-scene__node" data-link="→">
-          <strong>{% if idcd_zh %}对照同位置的真实测量{% else %}Compare with matching real measurements{% endif %}</strong>
-          {% include incomplete-training-grid.html panel="query-target" cells="blank blank query query blank blank blank query blank" focus="query" %}
-        </div>
-        <div class="idcd-scene__node">
-          <strong>{% if idcd_zh %}反向传播{% else %}Backpropagate{% endif %}</strong>
-          <div class="idcd-scene__operator"><math><msub><mo>∇</mo><mi>θ</mi></msub><msub><mi>ℒ</mi><mi>qry</mi></msub></math></div>
-        </div>
+      {% assign keys = 'measured context query prediction missing' | split: ' ' %}
+      <ul class="idcd-animation__legend" aria-label="{{ story.legend }}">
+        {% for key in keys %}
+        <li><i class="idcd-key--{{ key }}" aria-hidden="true"></i>{{ story.keys[forloop.index0] | escape }}</li>
+        {% endfor %}
+      </ul>
+      <div class="idcd-focus">
+        <span class="idcd-focus__marker" aria-hidden="true">↳</span>
+        <p class="idcd-focus__copy"></p>
       </div>
-      <p>{% if idcd_zh %}查询掩码只选中橙框对应的位置，计算预测与干净测量的平方误差，再反向传播更新参数。下一轮重新抽取样本、划分和噪声。{% else %}The query mask selects the outlined positions for the squared error against clean measurements. Backpropagate that loss to update the model, then draw another sample, partition, and noise for the next step.{% endif %}</p>
-    </section>
+    </div>
+    <div class="idcd-animation__playback">
+      <button type="button" data-idcd-play>{{ story.play }}</button>
+      <button type="button" data-idcd-prev aria-label="{{ story.previous }}" title="{{ story.previous }}">←</button>
+      <input type="range" min="0" step="0.1" value="0" data-idcd-progress aria-label="{{ story.progress }}">
+      <time class="idcd-animation__time" aria-hidden="true"></time>
+      <button type="button" data-idcd-next aria-label="{{ story.next }}" title="{{ story.next }}">→</button>
+    </div>
+    <span class="visually-hidden" role="status" data-idcd-status></span>
   </div>
-  <span class="visually-hidden" role="status" data-idcd-status></span>
+  <ol class="idcd-animation__transcript">
+    {% for scene in story.scenes %}
+    <li><strong>{{ scene.title | escape }}</strong> {{ scene.cue | escape }} {{ scene.outcome | escape }}</li>
+    {% endfor %}
+  </ol>
+  <script type="application/json" data-idcd-scenes>{{ story.scenes | jsonify }}</script>
 </section>
+<script src="{{ base_path }}/assets/js/lib/d3-selection-3.0.0.min.js" defer></script>
+<script src="{{ base_path }}/assets/js/lib/gsap-3.13.0.min.js" defer></script>
+<script src="{{ base_path }}/assets/js/incomplete-training-fields.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-training-animation.js?v={{ site.time | date: '%s' }}" defer></script>

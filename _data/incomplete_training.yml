@@ -1,0 +1,190 @@
+zh-CN:
+  title: 左上角没测到，模型从哪里学会补它？
+  intro: 标记 i 帮你在两幅图中找到同一位置，模型看不到这个标记。先比较两种 context 划分，再跟着一次预测，看哪些实测值能教模型补全。
+  navigation: 选择讲解阶段
+  play: 播放
+  pause: 暂停
+  replay: 重播
+  previous: 上一阶段
+  next: 下一阶段
+  progress: 讲解进度
+  update: 更新模型参数
+  legend: 图中标记
+  keys: [实测场值, 'Context · 输入', 'Query · 留出实测', '预测（示意）', 数值未显示]
+  scenes:
+    - step: 原始观测
+      phase: 不完整的训练数据
+      title: 每个样本测到七块，缺的两块可以不同
+      left_role: 训练样本 A
+      left: 七块实测的场
+      right_role: 同一份样本 A
+      right: 左上角的位置 i
+      action: 跟踪位置
+      result: 没有测量
+      cue: 红白蓝纹理表示场值。斜纹处没有显示数值；样本 A 的两块斜纹区在采集时就没测到。
+      outcome: 看左上角的 i。这份记录不能给出 i 的训练答案。什么样的 context 能让模型从其他记录学到这里？
+    - step: 逐像素取样
+      phase: 划分策略一 · 逐像素
+      title: 七块都留下像素，空白块的位置就暴露了
+      left_role: 样本 A → 模型可见
+      left: 从每个实测块保留一些像素
+      right_role: 由 context 形状推断
+      right: 哪七块原本有测量？
+      right_after: 左上角一定是原始缺口
+      action: 数有痕迹的块
+      result: i 的查询概率为零
+      cue: 只看留给模型的蓝紫色像素。九宫格中，恰好七块各有至少一个像素，已经用完了这个例子的七个实测块。
+      outcome: 任何能留下这种 context 形状的样本都没测到 i。模型可以在 i 输出一个数，但对于这种输入，损失函数永远收不到该处的实测答案。
+    - step: 按整块取样
+      phase: 划分策略二 · 按整块
+      title: 四块 context 的位置相同，i 却可能有答案
+      left_role: 模型可见
+      left: 只保留四个完整块
+      right_role: 相容的原始观测
+      right: 样本 A · 左上缺测
+      right_after: 样本 B · 左上实测
+      action: 固定四块的位置
+      result: i 可作 query
+      cue: 固定左图四个蓝紫块的位置。只看这四块的形状，无法分辨其余五块中哪两块原本缺失。
+      outcome: 换成样本 B。蓝紫块的位置相同，里面的场值可以不同。B 在左上角测到了 i；只要这种样本和划分会出现，i 就能作为 query 参与训练。
+    - step: 构造输入
+      phase: 一次训练 · 输入
+      title: 从样本 B 留出答案，只给 context 加噪
+      left_role: 训练数据端 · 样本 B
+      left: 四块作输入，三块留作答案
+      right_role: 模型输入
+      right: 只保留 context 的数值和位置
+      right_after: 同样四块，加上时刻 t 的噪声
+      action: 留出 query
+      result: 加入高斯噪声
+      cue: 橙框里的三块确实测过。把它们的干净数值留在损失端，另外两个原始缺口仍然没有标签。
+      outcome: 模型收到扩散时间 t、带噪的四块测量和 context 掩码。右图其余五块的外观相同，模型看不到哪些会被评分。
+    - step: 预测全场
+      phase: 一次训练 · 前向预测
+      title: 答案揭晓前，模型要先预测整幅干净场
+      left_role: 模型输入 · 样本 B
+      left: 带噪 context 与它的位置
+      right_role: 模型输出
+      right: 干净场的预测
+      action: 条件预测
+      result: 输出整场
+      cue: 同一个模型读取这四块测量中的空间线索，给九块中的每个位置都作出预测。
+      outcome: 现在 i 已经有了预测值。模型仍然看不到 i 的实测答案。下一步才用 query 掩码选出能核对的位置。
+    - step: 核对与更新
+      phase: 一次训练 · 查询损失
+      title: 只核对三块留出的测量，用误差更新模型
+      left_role: 来自模型输出
+      left: 取出 query 处的预测
+      right_role: 来自训练数据
+      right: 揭晓相同位置的干净测量
+      action: 对齐位置
+      result: 计算平方误差
+      cue: 把左图的预测与右图的实测按位置对齐。只有三块参与损失，其中就包括两图标记的 i。
+      outcome: 三块上的平方误差通过反向传播更新模型参数。反复更换样本、划分和噪声，模型逐渐学会用可见观测估计有监督位置的场值。
+    - step: 补全缺口
+      phase: 训练之后 · 推理
+      title: 回到样本 A，把学到的条件预测用在缺口
+      left_role: 待补全的样本 A
+      left: 从七块实测中抽取 context
+      right_role: 重建输出
+      right: 保留实测块
+      right_after: 两个缺口填入估计值
+      action: 抽取多个 context
+      result: 平均预测
+      cue: 看左图两次留下的蓝紫块，位置发生了变化。推理时，在接近零噪声的同一份观测上多次抽取 context，用训练好的模型分别预测。
+      outcome: 把多次预测的均值填进两个缺口，写回原来的七块实测。左上角 i 现在有了估计值；样本 A 自身仍没有该点的真值可供核对。
+en:
+  title: Where does the model get a target for a missing location?
+  intro: The marker i tracks the same location in both views. It is hidden from the model. Compare two ways to choose context, then follow a prediction back to the measurements that teach the model to impute.
+  navigation: Choose a stage
+  play: Play
+  pause: Pause
+  replay: Replay
+  previous: Previous stage
+  next: Next stage
+  progress: Walkthrough progress
+  update: Update weights
+  legend: Field markings
+  keys: [Measured field, 'Context · input', 'Query · held out', 'Prediction (illustrative)', No value shown]
+  scenes:
+    - step: Observation
+      phase: Incomplete training data
+      title: Each sample measures seven blocks. The two gaps can move.
+      left_role: Training sample A
+      left: Seven measured blocks
+      right_role: The same sample A
+      right: Location i at the top left
+      action: Track the site
+      result: Unmeasured
+      cue: The red–white–blue texture shows field values. Hatching hides values. In sample A, the two hatched blocks were never measured.
+      outcome: Look at i in the top-left block. This record has no target value there. Which context would let the model learn about i from another record?
+    - step: Pixel split
+      phase: Partition strategy one · pixels
+      title: A trace in every measured block gives away the gaps
+      left_role: Sample A → visible to the model
+      left: Keep pixels in each measured block
+      right_role: Deduced from the context footprint
+      right: Which seven blocks were measured?
+      right_after: The top-left block must be missing
+      action: Count the traces
+      result: Zero query probability
+      cue: Look only at the indigo context pixels. They touch seven blocks, accounting for every measured block in this example.
+      outcome: Every sample compatible with this footprint lacks a measurement at i. The model can output a value there, but this context gives the loss no target to score at i.
+    - step: Block split
+      phase: Partition strategy two · whole blocks
+      title: The same four context locations can leave a target at i
+      left_role: Visible to the model
+      left: Keep four whole blocks
+      right_role: Compatible observations
+      right: Sample A · top left missing
+      right_after: Sample B · top left measured
+      action: Fix the footprint
+      result: i can be queried
+      cue: Hold the four indigo block locations fixed. Their footprint leaves open which two of the other five blocks were originally missing.
+      outcome: Switch to B. Its four indigo blocks have the same locations, though their field values can differ. B measured i. When this pattern and partition occur, i can serve as a training query.
+    - step: Prepare input
+      phase: One training step · input
+      title: Set aside B’s targets and add noise to its context
+      left_role: Training data · sample B
+      left: Four input blocks, three held-out targets
+      right_role: Model input
+      right: Keep context values and locations
+      right_after: The same four blocks, noised at time t
+      action: Hold out queries
+      result: Add Gaussian noise
+      cue: The three amber blocks were measured. Set their clean values aside for the loss. The two original gaps still have no labels.
+      outcome: The model gets diffusion time t, four noisy blocks and the context mask. The other five blocks look alike from the input side. Their scoring locations stay hidden.
+    - step: Predict
+      phase: One training step · forward pass
+      title: Predict the entire clean field before revealing any target
+      left_role: Model input · sample B
+      left: Noisy context and its locations
+      right_role: Model output
+      right: Predicted clean field
+      action: Condition on input
+      result: Full-field estimate
+      cue: The same model reads spatial clues from those four blocks and makes a prediction at every location in all nine blocks.
+      outcome: There is now a prediction at i. Its measured value is still withheld. The query mask selects the predictions that the loss can check next.
+    - step: Score & update
+      phase: One training step · query loss
+      title: Score the three held-out blocks and update the model
+      left_role: From the model output
+      left: Select predictions at queries
+      right_role: From the training record
+      right: Reveal matching clean measurements
+      action: Match locations
+      result: Squared error
+      cue: Match each prediction on the left to its measurement on the right. Only three blocks enter the loss, including the marked location i.
+      outcome: Squared errors on those blocks backpropagate to the model weights. Repeating this with new samples, splits and noise teaches the model to estimate field values from the available context.
+    - step: Impute
+      phase: After training · inference
+      title: Return to A and apply the learned prediction to its gaps
+      left_role: Sample A to complete
+      left: Draw contexts from seven measured blocks
+      right_role: Reconstruction
+      right: Preserve measured blocks
+      right_after: Fill both gaps with estimates
+      action: Sample contexts
+      result: Average predictions
+      cue: Watch the indigo blocks switch between two choices. At near-zero noise, draw contexts from the same noisy observation and predict from each with the trained model.
+      outcome: Fill the two gaps with the averaged predictions and restore the seven measured blocks. Location i now has an estimate. Sample A itself still has no ground truth there.

@@ -1,0 +1,79 @@
+{% assign diagram_id = 'pt-' | append: stage.id | append: '-' | append: size %}
+<svg class="protein-training__diagram protein-training__diagram--{{ size }}" data-training-diagram="{{ size }}"
+     viewBox="0 0 {{ geometry.width }} {{ geometry.height }}" role="img" aria-labelledby="{{ diagram_id }}-title {{ diagram_id }}-desc">
+  <title id="{{ diagram_id }}-title">{{ stage.name }} · {{ stage.title | strip_html }}</title>
+  <desc id="{{ diagram_id }}-desc">{{ stage.description }}</desc>
+  <defs>
+    {% assign wire_styles = 'state prior residual condition neutral target gradient' | split: ' ' %}
+    {% for style in wire_styles %}
+    <marker id="{{ diagram_id }}-arrow-{{ style }}" viewBox="0 0 9 8" refX="8.5" refY="4"
+      markerWidth="9" markerHeight="8" markerUnits="userSpaceOnUse" orient="auto">
+      <path class="pt-color--{{ style }}" d="M0 0 L9 4 0 8Z" fill="currentColor"/>
+    </marker>
+    {% endfor %}
+  </defs>
+  {% if geometry.frame %}
+  <rect class="pt-network-frame" x="{{ geometry.frame[0] }}" y="{{ geometry.frame[1] }}" width="{{ geometry.frame[2] }}" height="{{ geometry.frame[3] }}" rx="6"/>
+  {% endif %}
+  {% for edge in geometry.edges %}
+  <path data-flow-edge="{{ edge[0] }}" data-beat="{{ edge[1] }}" data-order="{{ edge[4] | default: 0 }}"
+    class="pt-wire pt-color--{{ edge[2] }}" d="{{ edge[3] }}" marker-end="url(#{{ diagram_id }}-arrow-{{ edge[2] }})"/>
+  {% endfor %}
+  {% for label in geometry.labels %}
+  <text class="pt-edge-label pt-label--{{ label[0] }}" x="{{ label[1] }}" y="{{ label[2] }}">{{ training[label[0]] }}{% if label[0] == 'noise' %} · <tspan class="pt-math">t</tspan>{% endif %}</text>
+  {% endfor %}
+  {% for node in geometry.nodes %}
+  {% assign kind = node[0] %}
+  {% assign w = node[3] %}
+  {% assign h = node[4] %}
+  {% assign mid = w | divided_by: 2.0 %}
+  {% assign cy = h | divided_by: 2.0 %}
+  {% case kind %}
+  {% when 'clean', 'noisy' %}{% assign beat = 'noise' %}
+  {% when 'sum', 'prediction' %}{% assign beat = 'predict' %}
+  {% when 'loss' %}{% assign beat = 'loss' %}
+  {% else %}{% assign beat = 'model' %}
+  {% endcase %}
+  <g data-flow-node="{{ kind }}" data-beat="{{ beat }}" class="pt-node pt-node--{{ kind }}"
+    transform="translate({{ node[1] }} {{ node[2] }})">
+    {% if kind == 'sum' %}
+      <circle class="pt-box" cx="{{ mid }}" cy="{{ cy }}" r="{{ mid }}"/>
+      <path class="pt-plus" d="M{{ mid | minus: 7 }} {{ cy }} h14 M{{ mid }} {{ cy | minus: 7 }} v14"/>
+    {% else %}
+      <rect class="pt-box" width="{{ w }}" height="{{ h }}" rx="6"/>
+    {% endif %}
+    {% case kind %}
+    {% when 'clean', 'noisy' %}
+      <text class="pt-node-title" x="{{ mid }}" y="20">{% if kind == 'clean' %}{{ stage.source }}{% else %}{{ training.noisy }}{% endif %}</text>
+      <text class="pt-node-detail" x="{{ mid }}" y="38">{% if kind == 'clean' %}{{ training.clean }} <tspan class="pt-math">x</tspan>{% else %}<tspan class="pt-math">s<tspan class="pt-sub">t</tspan>, t</tspan>{% endif %}</text>
+      {% assign tokens = 'β α γ γ α' | split: ' ' %}
+      {% for token in tokens %}
+        {% assign offset = forloop.index0 | times: 21 | minus: 42 | plus: mid %}
+        <g class="pt-token{% if forloop.index == 2 %} pt-token--focus{% endif %}" transform="translate({{ offset }} {{ h | minus: 17 }})">
+          <rect x="-9" y="-10" width="18" height="19" rx="3"/>
+          {% if forloop.index == 2 %}
+            {% if kind == 'noisy' %}<text y="4" data-token-before>{% if stage.id == 'adapt' %}β{% else %}α{% endif %}</text><text y="4" data-token-after>□</text>
+            {% else %}<text y="4">{% if stage.id == 'adapt' %}β{% else %}α{% endif %}</text>{% endif %}
+          {% else %}<text y="4">{{ token }}</text>{% endif %}
+        </g>
+      {% endfor %}
+    {% when 'prior', 'residual' %}
+      <text class="pt-node-title" x="{{ mid }}" y="20">{{ training[kind] }} <tspan class="pt-math">{% if kind == 'prior' %}f{% else %}g{% endif %}</tspan></text>
+      <svg x="8" y="27" width="{{ w | minus: 16 }}" height="{{ h | minus: 49 }}"
+        viewBox="{% if kind == 'prior' %}360 113 300 124{% else %}416 365 188 50{% endif %}" aria-hidden="true">
+        <use href="#protein-training-{{ kind }}-network"/>
+      </svg>
+      <text class="pt-status" x="{{ mid }}" y="{{ h | minus: 8 }}">{% if kind == 'prior' and stage.id == 'adapt' %}{{ training.frozen }}{% else %}{{ training.trainable }}{% endif %}</text>
+    {% when 'conditions' %}
+      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | minus: 3 }}">{{ training.conditions }} <tspan class="pt-math">x<tspan class="pt-sub">ref</tspan></tspan></text>
+      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 16 }}">{{ training.property }} <tspan class="pt-math">y</tspan></text>
+    {% when 'prediction' %}
+      <text class="pt-node-title" x="{{ mid }}" y="{{ cy | minus: 3 }}">softmax</text>
+      <text class="pt-node-detail" x="{{ mid }}" y="{{ cy | plus: 17 }}">{{ training.prediction }} <tspan class="pt-math">q</tspan></text>
+    {% when 'loss' %}
+      <text class="pt-node-title" x="{{ mid }}" y="{{ cy | minus: 3 }}">{{ training.loss }}</text>
+      <text class="pt-math" x="{{ mid }}" y="{{ cy | plus: 17 }}">ℒ(q, x, t)</text>
+    {% endcase %}
+  </g>
+  {% endfor %}
+</svg>

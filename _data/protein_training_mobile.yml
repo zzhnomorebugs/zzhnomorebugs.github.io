@@ -1,0 +1,52 @@
+# The clean target and gradient travel on separate routes around the forward pass.
+pretrain:
+  width: 384
+  height: 530
+  nodes:
+    - [clean, 14, 24, 148, 80]
+    - [noisy, 231, 28, 142, 72]
+    - [prior, 101, 180, 238, 151]
+    - [prediction, 203, 431, 167, 58]
+    - [loss, 20, 431, 131, 58]
+  edges:
+    - [corrupt, noise, state, 'M162 64 H231']
+    - [read-state, model, state, 'M301 100 V141 H220 V180']
+    - [prior-output, predict, prior, 'M287 331 V431']
+    - [supervise, loss, target, 'M74 104 V431']
+    - [compare, loss, neutral, 'M203 460 H151']
+    - [learn, update, gradient, 'M119 431 V378 H194 V331']
+  labels:
+    - [noise, 196, 55]
+    - [base, 327, 387]
+    - [target, 40, 246]
+    - [update, 154, 370]
+adapt:
+  width: 384
+  height: 530
+  frame: [14, 197, 359, 198]
+  nodes:
+    - [clean, 14, 24, 148, 80]
+    - [noisy, 231, 28, 142, 72]
+    - [conditions, 255, 132, 119, 52]
+    - [prior, 23, 208, 171, 111]
+    - [residual, 211, 225, 154, 89]
+    - [sum, 177, 348, 32, 32]
+    - [prediction, 203, 431, 167, 58]
+    - [loss, 20, 431, 131, 58]
+  edges:
+    - [corrupt, noise, state, 'M162 64 H231']
+    - [read-state, model, state, 'M241 100 V118 H108 V208']
+    - [share-state, model, state, 'M248 100 V225']
+    - [condition, model, condition, 'M316 184 V225']
+    - [prior-output, predict, prior, 'M108 319 V364 H177']
+    - [add-guidance, predict, residual, 'M288 314 V364 H209']
+    - [merged-output, predict, neutral, 'M193 380 V412 H287 V431', 1]
+    - [supervise, loss, target, 'M25 104 V154 H5 V460 H20']
+    - [compare, loss, neutral, 'M203 460 H151']
+    - [learn, update, gradient, 'M85 489 V518 H380 V269 H365']
+  labels:
+    - [noise, 196, 55]
+    - [base, 145, 350]
+    - [correction, 243, 350]
+    - [target, 44, 418]
+    - [update, 267, 511]

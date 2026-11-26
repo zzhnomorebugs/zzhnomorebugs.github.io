@@ -1,0 +1,66 @@
+zh-CN:
+  stages_label: 两阶段训练
+  play: 播放
+  pause: 暂停
+  replay: 重播
+  progress: 训练动画进度
+  clean: 干净序列
+  noisy: 带噪输入
+  prior: 蛋白质语言先验
+  residual: 条件引导
+  frozen: 已冻结
+  trainable: 训练中
+  conditions: 参考序列
+  property: 目标性质
+  prediction: 干净 token 概率
+  loss: 去噪损失
+  noise: 加噪
+  base: 基础 logits
+  correction: 残差 logits
+  target: 监督目标 x
+  update: 反向更新
+  caption: 图 2(b) · 用掩码 DFM 示意加噪。实线传递数据，虚线指向本阶段更新的网络。生成时固定两路权重。
+  stages:
+    - id: pretrain
+      name: 阶段一 · 预训练
+      title: <var>f</var> 学习蛋白质语言
+      source: UniRef50
+      description: 从 UniRef50 的干净序列 x 构造带噪输入。先验 f 预测原来的氨基酸，去噪损失用 x 监督并更新 f。
+    - id: adapt
+      name: 阶段二 · 条件训练
+      title: <var>g</var> 学习引导生成
+      source: 带标签任务集
+      description: 带噪状态和时间输入冻结的 f 和可训练的 g，参考序列和性质仅输入 g。两路 logits 相加后经 softmax 得到预测。用干净序列计算损失，只更新 g。
+en:
+  stages_label: Two training stages
+  play: Play
+  pause: Pause
+  replay: Replay
+  progress: Training animation progress
+  clean: Clean sequence
+  noisy: Noisy input
+  prior: Language prior
+  residual: Guidance residual
+  frozen: Frozen
+  trainable: Trainable
+  conditions: Reference
+  property: Target property
+  prediction: Clean-token probs.
+  loss: Denoising loss
+  noise: Noise
+  base: Base logits
+  correction: Residual logits
+  target: Target x
+  update: Backprop.
+  caption: Figure 2(b) · Masked DFM illustrates the noising step. Solid arrows carry data. The dashed arrow points to the network updated in each stage. Both networks are fixed during generation.
+  stages:
+    - id: pretrain
+      name: Stage 1 · Pretraining
+      title: <var>f</var> learns the protein language
+      source: UniRef50
+      description: A clean UniRef50 sequence gives both the noisy input and the target. The denoising loss updates f to predict the original residues from sequence context.
+    - id: adapt
+      name: Stage 2 · Conditional training
+      title: <var>g</var> learns to guide generation
+      source: Labeled task data
+      description: Frozen f and trainable g read the noisy state and time. Only g reads the reference and target property. Their logits are added before softmax. The clean sequence supervises the combined prediction and only g updates.

@@ -1,131 +1,177 @@
 (function () {
   "use strict";
 
-  const timeline = [
-    { stage: "pretrain", duration: 29 },
-    { stage: "adapt", duration: 37 },
-    { stage: "combined", duration: 41 }
+  // The five beats share a clock, including when the reader scrubs backwards.
+  const beats = [
+    { id: "noise", duration: 3.2 },
+    { id: "model", duration: 3.2 },
+    { id: "predict", duration: 3.4 },
+    { id: "loss", duration: 2.8 },
+    { id: "update", duration: 3.6 }
   ];
-  const millisecondsPerFrame = 200;
+  const segment = 0.11;
+
+  function collectStage(view, button) {
+    const diagrams = window.d3.select(view).selectAll("[data-training-diagram]");
+    const marks = diagrams.selectAll("[data-flow-node], path[data-flow-edge]");
+    const edges = diagrams.selectAll("path[data-flow-edge]");
+
+    // A short moving stroke shares the original route and its coordinate system.
+    // Normalized path lengths also work for the currently hidden responsive SVG.
+    const pulses = edges.clone(false).datum(function () {
+      return { beat: this.dataset.beat, order: Number(this.dataset.order || 0) };
+    })
+      .attr("data-flow-pulse", "")
+      .attr("data-flow-edge", null)
+      .attr("id", null)
+      .attr("aria-hidden", "true")
+      .attr("pathLength", 1)
+      .style("pointer-events", "none")
+      .style("marker-start", "none")
+      .style("marker-mid", "none")
+      .style("marker-end", "none")
+      .style("stroke-dasharray", segment + " 2")
+      .style("stroke-linecap", "round")
+      .style("stroke-width", "6px")
+      .style("opacity", 0);
+
+    return {
+      id: view.dataset.trainingView,
+      view,
+      button,
+      label: view.getAttribute("aria-label") || button.textContent.trim(),
+      before: diagrams.selectAll("[data-token-before]"),
+      after: diagrams.selectAll("[data-token-after]"),
+      beats: beats.map(beat => {
+        const packets = pulses.filter(d => d.beat === beat.id);
+        const orders = [...new Set(packets.data().map(d => d.order))].sort((a, b) => a - b);
+        packets.each(d => { d.lane = orders.indexOf(d.order); });
+        return {
+          id: beat.id,
+          duration: beat.duration,
+          marks: marks.filter(function () { return this.dataset.beat === beat.id; }),
+          packets,
+          lanes: orders.length
+        };
+      })
+    };
+  }
+
+  function drawPackets(beat, progress) {
+    // Allow time to read the destination once a packet reaches its arrowhead.
+    const sweep = (progress - 0.07) / 0.76 * beat.lanes;
+    beat.packets.each(function (d) {
+      const position = sweep - d.lane;
+      const travelling = position > 0 && position < 1;
+      this.style.opacity = travelling ? 1 : 0;
+      if (travelling) this.style.strokeDashoffset = segment - (1 + segment) * position;
+    });
+  }
 
   function init(root) {
     const play = root.querySelector("[data-training-play]");
     const slider = root.querySelector("[data-training-progress]");
-    const jumps = root.querySelectorAll("[data-training-jump]");
-    const views = Array.from(root.querySelectorAll("[data-training-show]"), (node) => ({
-      node,
-      stages: node.dataset.trainingShow.split(" ")
-    }));
-    const beats = root.querySelectorAll("[data-training-beat]");
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const starts = new Map();
-    let end = 0;
-    timeline.forEach(({ stage, duration }) => {
-      starts.set(stage, end);
-      end += duration;
-    });
-    slider.max = end;
+    const stages = Array.from(root.querySelectorAll("[data-training-view]"), view =>
+      collectStage(view, root.querySelector('[data-training-jump="' + view.dataset.trainingView + '"]'))
+    );
+    const clock = { beat: 0 };
+    const timeline = window.gsap.timeline({ paused: true, defaults: { ease: "none" } });
+    const frames = [];
 
-    let position = 0;
-    let lastTimestamp = null;
-    let request = 0;
-    let visible = !("IntersectionObserver" in window);
-    let wantsPlayback = !reduced.matches;
+    stages.forEach(stage => {
+      timeline.addLabel(stage.id);
+      stage.beats.forEach(beat => {
+        const label = stage.id + "-" + beat.id;
+        frames.push({ stage, beat });
+        timeline.addLabel(label).to(clock, { beat: frames.length, duration: beat.duration }, label);
+      });
+    });
+
+    const end = timeline.duration();
+    slider.max = end;
+    let activeFrame;
+    let lastTenth = -1;
+    let playback;
 
     function render() {
-      const frame = Math.floor(position);
-      const active = timeline.findLast(({ stage }) => starts.get(stage) <= frame);
-      const offset = frame - starts.get(active.stage);
-      const beat = Math.min(4, Math.floor(5 * offset / (active.duration * 0.85)));
+      const index = Math.min(Math.floor(clock.beat), frames.length - 1);
+      const frame = frames[index];
+      const { stage, beat } = frame;
+      const progress = clock.beat - index;
 
-      if (root.dataset.trainingStage !== active.stage) {
-        root.dataset.trainingStage = active.stage;
-        views.forEach(({ node, stages }) => {
-          node.toggleAttribute("hidden", !stages.includes(active.stage));
+      if (!activeFrame || activeFrame.stage !== stage) {
+        root.dataset.trainingStage = stage.id;
+        stages.forEach(item => {
+          const active = item === stage;
+          item.view.setAttribute("aria-hidden", String(!active));
+          item.view.inert = !active;
+          if (active) item.button.setAttribute("aria-current", "step");
+          else item.button.removeAttribute("aria-current");
         });
-        jumps.forEach((button) => {
-          if (button.dataset.trainingJump === active.stage) {
-            button.setAttribute("aria-current", "step");
-          } else {
-            button.removeAttribute("aria-current");
-          }
-        });
+        lastTenth = -1;
+      }
+      if (activeFrame !== frame) {
+        if (activeFrame) {
+          activeFrame.beat.marks.attr("data-flow-active", null);
+          activeFrame.beat.packets.style("opacity", 0);
+        }
+        root.dataset.trainingPart = beat.id;
+        beat.marks.attr("data-flow-active", "");
+        activeFrame = frame;
       }
 
-      if (root.dataset.trainingBeat !== String(beat)) {
-        root.dataset.trainingBeat = beat;
-        beats.forEach((node) => {
-          node.toggleAttribute("data-training-beat-active", Number(node.dataset.trainingBeat) === beat);
-        });
+      // At rest the diagram shows the completed corruption. During playback a
+      // copy of the residue arrives, then the mask replaces it in the noisy row.
+      let mask = 1;
+      if (beat.id === "noise" && progress > 0 && progress < 0.82) {
+        const expose = Math.min(progress / 0.18, 1, (0.82 - progress) / 0.34);
+        mask = 1 - expose;
       }
+      stage.before.style("opacity", 1 - mask);
+      stage.after.style("opacity", mask);
+      drawPackets(beat, progress);
 
-      if (Number(slider.value) !== frame) slider.value = frame;
+      const time = timeline.time();
+      const tenth = Math.round(time * 10);
+      if (lastTenth !== tenth) {
+        lastTenth = tenth;
+        slider.value = tenth / 10;
+        slider.setAttribute("aria-valuetext", stage.label + " · " + Math.floor(time) + " s");
+      }
     }
 
-    function syncPlayback() {
-      const playing = wantsPlayback && visible && !document.hidden && position < end;
-      if (playing && !request) {
-        request = window.requestAnimationFrame(tick);
-      } else if (!playing) {
-        window.cancelAnimationFrame(request);
-        request = 0;
-        lastTimestamp = null;
-      }
+    function setPlaying(playing) {
+      timeline.paused(!playing);
       root.toggleAttribute("data-training-playing", playing);
-      const label = playing ? root.dataset.pauseLabel :
-        position === end ? root.dataset.replayLabel : root.dataset.playLabel;
-      if (play.textContent !== label) play.textContent = label;
+      play.textContent = playing ? root.dataset.pauseLabel :
+        timeline.time() >= end ? root.dataset.replayLabel : root.dataset.playLabel;
     }
 
-    function tick(timestamp) {
-      request = 0;
-      if (lastTimestamp !== null) {
-        const elapsed = timestamp - lastTimestamp;
-        position = Math.min(end, position + elapsed / millisecondsPerFrame);
-      }
-      lastTimestamp = timestamp;
+    function seek(time) {
+      playback.pause();
+      timeline.time(time, false);
       render();
-      if (position === end) wantsPlayback = false;
-      syncPlayback();
+      setPlaying(false);
     }
 
-    function seek(frame) {
-      wantsPlayback = false;
-      position = frame;
-      render();
-      syncPlayback();
-    }
-
+    root.setAttribute("data-training-ready", "");
+    root.querySelectorAll("[data-training-controls]").forEach(node => { node.hidden = false; });
+    render();
+    timeline.eventCallback("onUpdate", render);
+    timeline.eventCallback("onComplete", () => playback.pause());
+    playback = window.projectAnimationPlayback(root.querySelector(".protein-training__views"), setPlaying);
     play.addEventListener("click", () => {
-      wantsPlayback = !root.hasAttribute("data-training-playing");
-      if (position === end) {
-        position = 0;
-        render();
+      if (playback.playing) playback.pause();
+      else {
+        if (timeline.time() >= end) timeline.time(0, false);
+        playback.play();
       }
-      syncPlayback();
     });
     slider.addEventListener("input", () => seek(Number(slider.value)));
-    jumps.forEach((button) => {
-      button.addEventListener("click", () => seek(starts.get(button.dataset.trainingJump)));
-    });
-    document.addEventListener("visibilitychange", syncPlayback);
-    reduced.addEventListener("change", () => {
-      if (reduced.matches) {
-        wantsPlayback = false;
-        syncPlayback();
-      }
-    });
-
-    root.querySelectorAll("[data-training-controls]").forEach((controls) => { controls.hidden = false; });
-    render();
-    syncPlayback();
-    if ("IntersectionObserver" in window) {
-      new IntersectionObserver(([entry]) => {
-        visible = entry.isIntersecting;
-        syncPlayback();
-      }, { threshold: 0.08 }).observe(root);
-    }
+    stages.forEach(stage => stage.button.addEventListener("click", () => seek(timeline.labels[stage.id])));
   }
 
-  document.querySelectorAll("[data-protein-training]").forEach(init);
+  if (window.d3 && window.gsap && window.projectAnimationPlayback) {
+    document.querySelectorAll("[data-protein-training]").forEach(init);
+  }
 }());
