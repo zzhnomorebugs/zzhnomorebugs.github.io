@@ -99,6 +99,23 @@
 
     const paths = diagrams.map((svg, i) => new Map(Array.from(svg.querySelectorAll("[data-flow-edge]"),
       el => [el.dataset.flowEdge, edgeOf(el, nodes[i])])));
+    // Let the moving prior clear the space for the new guidance branch. The
+    // desktop and mobile layouts open that space at different points.
+    const prior = nodes[0].get("prior"), frozenPrior = nodes[1].get("prior");
+    const residual = nodes[1].get("residual");
+    const firstGap = residual.y - (prior.y + prior.h);
+    const finalGap = residual.y - (frozenPrior.y + frozenPrior.h);
+    if (firstGap < 0 && finalGap > 0) {
+      const branch = [residual.el, ...second.querySelectorAll(".pt-label--correction, .pt-label--update")];
+      for (const edge of paths[1].values()) {
+        if (edge.from === "residual" || edge.to === "residual") branch.push(edge.el);
+      }
+      updates.push(p => {
+        const opacity = String(Math.max(0, mix(firstGap, finalGap, p) / finalGap));
+        for (const el of branch) el.style.opacity = opacity;
+      });
+      resets.push(() => { for (const el of branch) el.style.opacity = ""; });
+    }
     for (const key of new Set([...paths[0].keys(), ...paths[1].keys()])) {
       const a = paths[0].get(key), b = paths[1].get(key);
       if (a && b && a.from === b.from && a.to === b.to) {
@@ -164,6 +181,7 @@
 
   window.proteinTrainingTransition = function (first, second) {
     const views = [first, second];
+    const changingDetails = views.map(view => view.querySelectorAll("[data-dataset-content], [data-flow-node='prior'] .pt-status"));
     const overlay = document.createElement("div");
     overlay.className = "protein-training__view protein-training__shared-labels";
     overlay.inert = true;
@@ -178,8 +196,14 @@
       else if (previous > 0 && previous < 1) layouts.forEach(layout => layout.reset());
       for (const layout of layouts) if (layout.moveTitle) layout.moveTitle(p);
       views.forEach((view, index) => {
+        const weight = index ? p : 1 - p;
         view.style.visibility = between ? "visible" : "";
-        view.style.opacity = between ? String(index ? p : 1 - p) : "";
+        view.style.opacity = between ? String(weight) : "";
+        // Different record schemas and training statuses share these positions.
+        // Fade out the old content before revealing the new labels.
+        for (const content of changingDetails[index]) {
+          content.style.opacity = between ? String(Math.max(0, 2 * weight - 1)) : "";
+        }
       });
       previous = p;
     };

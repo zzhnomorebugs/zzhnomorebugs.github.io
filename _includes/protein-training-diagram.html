@@ -40,7 +40,7 @@
   {% assign mid = w | divided_by: 2.0 %}
   {% assign cy = h | divided_by: 2.0 %}
   {% case kind %}
-  {% when 'clean', 'noisy' %}{% assign beat = 'noise' %}
+  {% when 'dataset', 'clean', 'noisy' %}{% assign beat = 'noise' %}
   {% when 'sum', 'prediction' %}{% assign beat = 'predict' %}
   {% when 'loss' %}{% assign beat = 'loss' %}
   {% else %}{% assign beat = 'model' %}
@@ -55,11 +55,15 @@
       <rect class="pt-box" width="{{ w }}" height="{{ h }}" rx="6"/>
     {% endif %}
     {% case kind %}
+    {% when 'dataset' %}
+      <g data-dataset-content>
+        {% include protein-training-dataset.html %}
+      </g>
     {% when 'clean', 'noisy' %}
-      <text class="pt-node-title" x="{{ mid }}" y="20">{% if kind == 'clean' %}{{ stage.source }}{% else %}{{ training.noisy }}{% endif %}</text>
-      <text class="pt-node-detail" x="{{ mid }}" y="38">{% if kind == 'clean' %}{{ training.clean }} <tspan class="pt-math">x</tspan>{% else %}<tspan class="pt-math">s<tspan class="pt-sub">t</tspan></tspan>{% endif %}</text>
+      <text class="pt-node-title" x="{{ mid }}" y="20">{{ training[kind] }}</text>
+      <text class="pt-node-detail" x="{{ mid }}" y="35">{% if kind == 'clean' %}<tspan class="pt-math">x</tspan>{% else %}<tspan class="pt-math">s<tspan class="pt-sub">t</tspan></tspan>{% endif %}</text>
       {% if stage.id == 'pretrain' %}{% assign tokens = 'β α γ γ α' | split: ' ' %}{% else %}{% assign tokens = 'β β γ γ α' | split: ' ' %}{% endif %}
-      <g class="pt-token" transform="translate({{ mid | minus: 42 }} {{ h | minus: 17 }})">
+      <g class="pt-token" transform="translate({{ mid | minus: 42 }} {{ h | minus: 15 }})">
         {% for token in tokens %}
         <rect x="{{ forloop.index0 | times: 21 | minus: 9 }}" y="-10" width="18" height="19" rx="3"/>
         {% endfor %}

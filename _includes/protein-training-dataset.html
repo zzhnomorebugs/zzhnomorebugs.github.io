@@ -1,0 +1,61 @@
+{% assign strip_id = diagram_id | append: '-sequence-' %}
+{% assign motifs = 'abbca,bacba,cacbb,bcaba' | split: ',' %}
+<defs>
+  {% for motif in motifs %}
+  <symbol id="{{ strip_id }}{{ forloop.index0 }}" viewBox="0 0 59 8" preserveAspectRatio="none">
+    {% assign residues = motif | split: '' %}
+    {% for residue in residues %}
+    <rect class="pt-residue--{{ residue }}" x="{{ forloop.index0 | times: 12 }}" y="0" width="11" height="8" rx="1.5" fill="currentColor"/>
+    {% endfor %}
+  </symbol>
+  {% endfor %}
+</defs>
+<text class="pt-node-title pt-dataset-title" x="{{ mid }}" y="20">{{ stage.source }}</text>
+<text class="pt-dataset-detail" x="{{ mid }}" y="36">{{ stage.scale }}</text>
+{% if stage.id == 'pretrain' %}
+  <text class="pt-dataset-detail" x="{{ mid }}" y="50">{{ stage.fields }}</text>
+  {% assign paper_w = w | minus: 18 %}
+  {% assign paper_h = h | minus: 72 %}
+  {% assign row_h = paper_h | minus: 13 | divided_by: 7.0 %}
+  <g transform="translate(7 64)">
+    <rect class="pt-dataset-sheet" x="5" y="-8" width="{{ paper_w }}" height="{{ paper_h }}" rx="3"/>
+    <rect class="pt-dataset-sheet" x="2.5" y="-4" width="{{ paper_w }}" height="{{ paper_h }}" rx="3"/>
+    <rect class="pt-dataset-sheet" width="{{ paper_w }}" height="{{ paper_h }}" rx="3"/>
+    {% for row in (0..6) %}
+    <g data-dataset-sample transform="translate(6 {{ row | times: row_h | plus: 5 }})">
+      <g data-sample-field="x">
+        <use class="pt-sample-strip" href="#{{ strip_id }}{{ row | modulo: motifs.size }}"
+          width="{{ paper_w | minus: 12 }}" height="{{ row_h | times: 0.65 }}"/>
+      </g>
+    </g>
+    {% endfor %}
+    <g fill="var(--pt-muted)" transform="translate({{ paper_w | divided_by: 2.0 }} {{ paper_h | minus: 6 }})">
+      <circle cx="-4" r="1.3"/><circle r="1.3"/><circle cx="4" r="1.3"/>
+    </g>
+  </g>
+{% else %}
+  {% assign card_w = w | minus: 12 %}
+  {% assign card_h = h | minus: 56 | divided_by: 2.0 %}
+  {% assign row_h = card_h | minus: 5 | divided_by: 3.0 %}
+  {% assign strip_w = card_w | minus: 35 %}
+  {% for card in (0..1) %}
+  <g class="pt-task-sample" data-dataset-sample transform="translate(6 {{ card_h | plus: 6 | times: card | plus: 44 }})">
+    <rect class="pt-dataset-sheet" width="{{ card_w }}" height="{{ card_h }}" rx="4"/>
+    {% assign fields = 'x reference y' | split: ' ' %}
+    {% for field in fields %}
+    <g data-sample-field="{{ field }}" transform="translate(5 {{ row_h | times: forloop.index0 | plus: row_h | minus: 2 }})">
+      {% if field == 'y' %}
+        <text class="pt-field-name">{{ training.label }}</text>
+        <rect class="pt-sample-tag" x="32" y="-10" width="30" height="15" rx="4"/>
+        <text class="pt-label-value pt-math" x="47">y<tspan class="pt-sub pt-roman">{{ card | plus: 1 }}</tspan></text>
+      {% else %}
+        <text class="pt-sample-key pt-math">x{% if field == 'reference' %}<tspan class="pt-sub pt-roman">ref</tspan>{% endif %}</text>
+        {% assign motif_index = card | times: 2 | plus: forloop.index0 %}
+        <use class="pt-sample-strip{% if field == 'reference' %} pt-sample-strip--reference{% endif %}"
+          href="#{{ strip_id }}{{ motif_index }}" x="24" y="-7" width="{{ strip_w }}" height="7"/>
+      {% endif %}
+    </g>
+    {% endfor %}
+  </g>
+  {% endfor %}
+{% endif %}

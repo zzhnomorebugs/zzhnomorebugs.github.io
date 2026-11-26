@@ -88,7 +88,7 @@ layout: none
 .protein-training__view { padding: .45rem .4rem .25rem; }
 .protein-training[data-training-ready] .protein-training__views { display: grid; }
 .protein-training[data-training-ready] .protein-training__view { grid-area: 1 / 1; align-self: center; min-width: 0; }
-.protein-training__shared-labels { pointer-events: none; }
+.protein-training__shared-labels { pointer-events: none; z-index: 1; }
 .protein-training__view[aria-hidden="true"] { visibility: hidden; }
 .protein-training__diagram { display: block; width: 100%; height: auto; overflow: visible; }
 .protein-training__diagram--mobile { display: none; }
@@ -143,6 +143,17 @@ layout: none
 .protein-training__diagram .pt-label--correction { fill: var(--pt-residual); }
 .protein-training__diagram .pt-label--update { fill: var(--pt-gradient); }
 .pt-token rect { fill: var(--pt-canvas); stroke: var(--pt-line); stroke-width: .7; }
+.pt-node--dataset { color: var(--pt-state); --pt-fill: var(--pt-frame); }
+.protein-training__diagram .pt-dataset-detail { font-size: 12px; fill: var(--pt-muted); }
+.pt-dataset-sheet { fill: var(--pt-canvas); stroke: var(--pt-line); stroke-width: .8; }
+.pt-sample-strip { color: var(--pt-prior); }
+.pt-sample-strip--reference { color: var(--pt-condition); }
+.pt-residue--b { opacity: .65; }
+.pt-residue--c { opacity: .4; }
+.protein-training__diagram .pt-sample-key { font-size: 14px; text-anchor: start; }
+.protein-training__diagram .pt-field-name { font: 11px system-ui, sans-serif; text-anchor: start; }
+.pt-sample-tag { fill: var(--pt-condition-fill); stroke: var(--pt-condition); stroke-width: .7; }
+.protein-training__diagram .pt-label-value { font-size: 12px; }
 .protein-training__controls {
   display: flex;
   align-items: center;
@@ -158,6 +169,8 @@ layout: none
   .protein-training__diagram--desktop { display: none; }
   .protein-training__diagram--mobile { display: block; max-width: 30rem; margin-inline: auto; }
   .pt-node-title { font-size: 15px; }
+  .pt-node--clean .pt-node-title,
+  .pt-node--residual .pt-node-title { font-size: 13px; }
   .pt-node-detail, .pt-status { font-size: 13px; }
   .protein-training__diagram .pt-edge-label { font-size: 12px; }
 }
