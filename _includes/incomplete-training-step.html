@@ -1,0 +1,31 @@
+{% if page.lang == 'zh-CN' %}
+  {% assign board_titles = '样本 B|带噪 context|全场预测|干净 query' | split: '|' %}
+  {% assign board_details = '7 块实测|4 块输入|9 块预测|3 块留出实测' | split: '|' %}
+{% else %}
+  {% assign board_titles = 'Sample B|Noisy context|Field estimate|Clean queries' | split: '|' %}
+  {% assign board_details = '7 measured|4 input blocks|9 predictions|3 held out' | split: '|' %}
+{% endif %}
+<svg class="idcd-training" data-idcd-training viewBox="0 0 816 336" hidden
+     role="img" aria-labelledby="idcd-train-title idcd-train-desc">
+  <title id="idcd-train-title">{% if page.lang == 'zh-CN' %}一次训练更新{% else %}One training update{% endif %}</title>
+  <desc id="idcd-train-desc">{% if page.lang == 'zh-CN' %}样本 B 中，四块带噪 context、掩码和时间 t 进入模型。模型先预测全部九块，再用留出的三块干净实测计算 query 平方误差，更新同一个模型。{% else %}Four noisy context blocks, their mask, and time t enter the model. It predicts all nine blocks. Three held-out clean measurements provide the query squared error that updates the same model.{% endif %}</desc>
+  <g data-train-wires></g>
+  {% assign board_names = 'source context prediction targets' | split: ' ' %}
+  {% for board_name in board_names %}
+  <g data-train-board="{{ board_name }}">
+    <text class="idcd-training__title">{{ board_titles[forloop.index0] }}</text>
+    <text class="idcd-training__detail">{{ board_details[forloop.index0] }}</text>
+    <g data-train-grid></g>
+  </g>
+  {% endfor %}
+  <g data-train-node="model">
+    <rect x="-31" y="-19" width="62" height="38" rx="8"/>
+    <text class="idcd-training__symbol" y="6">f<tspan dy="4" font-size="14">θ</tspan></text>
+    <text class="idcd-training__model-input" y="-27">t, M<tspan dy="3" font-size="10">ctx</tspan></text>
+  </g>
+  <g data-train-node="loss">
+    <rect x="-52" y="-19" width="104" height="38" rx="8"/>
+    <text class="idcd-training__loss" y="5">{% if page.lang == 'zh-CN' %}Query 平方误差{% else %}Query MSE{% endif %}</text>
+  </g>
+  <text class="idcd-training__feedback" data-train-feedback>{% if page.lang == 'zh-CN' %}更新模型参数{% else %}Update weights{% endif %}</text>
+</svg>

@@ -204,6 +204,9 @@
   --idcd-excluded: #9b3943;
   --idcd-query: #a95400;
   --idcd-prediction: #007668;
+  --idcd-context-ink: var(--idcd-context);
+  --idcd-query-ink: var(--idcd-query);
+  --idcd-prediction-ink: var(--idcd-prediction);
   --idcd-context-fill: #9462fa;
   --idcd-query-fill: #ffb534;
   --idcd-prediction-fill: #19bea5;
@@ -222,6 +225,9 @@
 .dark .idcd-animation {
   --idcd-accent: #69e1d4;
   --idcd-on-accent: #112336;
+  --idcd-context-ink: #cbb0ff;
+  --idcd-query-ink: #ffc87d;
+  --idcd-prediction-ink: #69e1d4;
   --idcd-pixel-route: #91baff;
   --idcd-block-route: #ffad7e;
   --idcd-empty: #233140;
@@ -257,7 +263,7 @@
 
 .idcd-animation__steps {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 2px;
   padding: 0 var(--idcd-gutter);
 }
@@ -290,6 +296,11 @@
 .idcd-animation__steps button[aria-current="step"] .idcd-step__index { color: inherit; }
 
 .idcd-animation__story { padding: 0 var(--idcd-gutter) 0.8rem; }
+.idcd-imputation {
+  border: 1px solid var(--idcd-edge);
+  border-radius: 6px;
+  background: transparent;
+}
 .idcd-scene__heading {
   display: flex;
   align-items: baseline;
@@ -297,7 +308,7 @@
   gap: 0.25rem 0.75rem;
   margin: 1.05rem 0 0;
 }
-.idcd-scene__phase, .idcd-board__role {
+.idcd-scene__phase {
   color: var(--idcd-accent);
   font-size: 0.7rem;
   font-weight: 650;
@@ -309,73 +320,6 @@
   font-size: clamp(0.94rem, 2vw, 1.12rem);
   line-height: 1.45;
 }
-.idcd-stage {
-  display: grid;
-  grid-template-columns: minmax(0, 16rem) minmax(5rem, 7rem) minmax(0, 16rem);
-  align-items: end;
-  justify-content: center;
-  gap: 0.7rem;
-  padding: 0.95rem clamp(0.6rem, 3vw, 2.1rem) 0.95rem;
-  border: 1px solid var(--idcd-edge);
-  border-radius: 5px;
-  background: transparent;
-}
-.idcd-board {
-  display: grid;
-  align-self: stretch;
-  align-content: end;
-  justify-items: center;
-  min-width: 0;
-  margin: 0;
-}
-.idcd-board figcaption {
-  display: grid;
-  align-content: end;
-  gap: 0.15rem;
-  width: 100%;
-  min-height: 2.8rem;
-  margin: 0 0 0.6rem;
-  color: var(--retro-ink);
-  font: inherit;
-  line-height: 1.4;
-  text-align: center;
-}
-.idcd-board__title { font-size: 0.87rem; overflow-wrap: anywhere; }
-.idcd-board svg[data-idcd-field] {
-  display: block;
-  width: 100%;
-  max-width: 13rem;
-  height: auto;
-  aspect-ratio: 1;
-}
-.idcd-link {
-  position: relative;
-  display: grid;
-  align-self: center;
-  justify-self: center;
-  justify-items: center;
-  align-content: center;
-  gap: 0.25rem;
-  max-width: 100%;
-  padding-top: 2.4rem;
-  color: var(--idcd-accent);
-  font-weight: 600;
-  line-height: 1.4;
-  text-align: center;
-  overflow-wrap: anywhere;
-}
-.idcd-link__symbol { font-size: 1.3rem; line-height: 1.1; }
-.idcd-link__label { font-size: 0.75rem; }
-.idcd-link__update {
-  position: absolute;
-  top: 100%;
-  display: grid;
-  justify-items: center;
-  width: 5rem;
-  color: var(--idcd-accent);
-}
-.idcd-link__update svg { display: block; width: 3.8rem; height: auto; }
-.idcd-link__update small { font-size: 0.68rem; }
 .retro-chapter .idcd-animation__legend {
   display: flex;
   flex-wrap: wrap;
@@ -460,34 +404,12 @@
 .idcd-animation.is-ready .idcd-animation__fallback { display: none; }
 
 @media (max-width: 760px) {
-  .idcd-animation__steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .idcd-animation__steps button { flex-direction: row; gap: 0.3rem; align-items: baseline; }
 }
 @media (max-width: 560px) {
   .idcd-animation { --idcd-gutter: 0.65rem; }
   .idcd-scene__heading { display: grid; gap: 0.2rem; }
-  .idcd-stage {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.55rem 0.6rem;
-    padding: 0.65rem 0.45rem;
-  }
-  .idcd-board { grid-row: 1; }
-  .idcd-board figcaption { min-height: 3rem; margin-bottom: 0.35rem; }
-  .idcd-board__title { font-size: 0.79rem; }
-  .idcd-link {
-    grid-row: 2;
-    grid-column: 1 / -1;
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.45rem;
-    padding: 0;
-  }
-  .idcd-link__symbol { font-size: 1.1rem; }
-  .idcd-animation[data-scene="5"] .idcd-link { min-height: 3rem; }
-  .idcd-link__update { position: static; width: auto; }
-  .idcd-link__update svg { width: 2.8rem; }
+  .idcd-animation__steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .retro-chapter .idcd-animation__legend { justify-content: flex-start; gap: 0.25rem 0.6rem; }
   .idcd-animation__steps button { flex-direction: column; gap: 0.12rem; padding: 0.35rem 0.25rem; }
   .idcd-animation__header { padding-top: 0.75rem; }
@@ -644,3 +566,5 @@
   .idcd-framework__model > span { font-size: 0.72rem; }
   .idcd-framework__lane { padding-block: 0.35rem 0.45rem; }
 }
+
+@import "incomplete-training-step";

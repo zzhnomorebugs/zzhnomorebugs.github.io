@@ -1,0 +1,24 @@
+.idcd-training {
+  display: block;
+  width: 100%;
+  height: auto;
+  box-sizing: border-box;
+  border: 1px solid var(--idcd-edge);
+  border-radius: 6px;
+  background: transparent;
+  overflow: hidden;
+}
+.idcd-training[hidden] { display: none; }
+.idcd-training text { text-anchor: middle; }
+.idcd-training__title { fill: var(--retro-ink); font-size: 16px; font-weight: 650; }
+.idcd-training__detail { fill: var(--retro-muted); font-size: 13px; }
+.idcd-training__symbol { fill: var(--idcd-prediction-ink); font: italic 26px Georgia, serif; }
+.idcd-training__model-input { fill: var(--idcd-context-ink); font: italic 17px Georgia, serif; }
+.idcd-training__loss { fill: var(--idcd-query-ink); font-size: 13.5px; font-weight: 650; }
+.idcd-training__feedback { fill: var(--idcd-prediction-ink); font-size: 13px; font-weight: 650; }
+.idcd-training [data-train-node] rect { fill: none; stroke: currentColor; stroke-width: 2px; }
+.idcd-training [data-train-node="model"] { color: var(--idcd-prediction-ink); }
+.idcd-training [data-train-node="loss"] { color: var(--idcd-query-ink); }
+.idcd-training[data-compact] .idcd-training__title { font-size: 14.5px; }
+.idcd-training[data-compact] .idcd-training__detail,
+.idcd-training[data-compact] .idcd-training__feedback { font-size: 13.5px; }

@@ -28,29 +28,8 @@
       </ul>
       <div class="idcd-stage-viewport" role="group" aria-labelledby="idcd-stage-title" aria-describedby="idcd-frame-description">
         {% include incomplete-strategy-framework.html %}
-        <div class="idcd-stage">
-          <figure class="idcd-board">
-            <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
-            <svg data-idcd-field="left" viewBox="0 0 240 240" aria-hidden="true"></svg>
-          </figure>
-          <div class="idcd-link">
-            <span class="idcd-link__symbol" aria-hidden="true"></span>
-            <span class="idcd-link__label"></span>
-            <span class="idcd-link__update" hidden>
-              <svg viewBox="0 0 96 45" aria-hidden="true">
-                <path d="M48 1v16m-4-4 4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5"/>
-                <circle data-gradient-signal cx="48" cy="1" r="2.6" fill="currentColor"/>
-                <rect data-model-weights x="25" y="20" width="46" height="24" rx="4" stroke="currentColor" fill="currentColor" fill-opacity=".07"/>
-                <text x="48" y="36" text-anchor="middle" fill="currentColor" font-family="Georgia, serif" font-style="italic" font-size="16">f<tspan dy="3" font-size="10">θ</tspan></text>
-              </svg>
-              <small>{{ story.update }}</small>
-            </span>
-          </div>
-          <figure class="idcd-board">
-            <figcaption><span class="idcd-board__role"></span><strong class="idcd-board__title"></strong></figcaption>
-            <svg data-idcd-field="right" viewBox="0 0 240 240" aria-hidden="true"></svg>
-          </figure>
-        </div>
+        {% include incomplete-training-step.html %}
+        {% include incomplete-imputation.html %}
       </div>
       <span id="idcd-frame-description" class="idcd-sr-only"></span>
     </div>
@@ -76,5 +55,6 @@
 <script src="{{ base_path }}/assets/js/lib/d3-selection-3.0.0.min.js" defer></script>
 <script src="{{ base_path }}/assets/js/lib/gsap-3.13.0.min.js" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-training-fields.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="{{ base_path }}/assets/js/incomplete-imputation.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-strategy-framework.js?v={{ site.time | date: '%s' }}" defer></script>
 <script src="{{ base_path }}/assets/js/incomplete-training-animation.js?v={{ site.time | date: '%s' }}" defer></script>
