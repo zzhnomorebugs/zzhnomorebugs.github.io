@@ -44,7 +44,7 @@ zh-CN:
       phase: 推理 · 样本 A
       title: 从同一份观测抽三次 context，缺口处的预测怎样取平均？
       cue: 在接近零噪声的时刻，只给样本 A 的观测加一次噪。依次叠起三份不同的 context，每份都从同样七个已测块中抽出四块。
-      outcome: 三份 context 分别经过同一个训练好的模型。在每个缺失位置把三次预测相加除以三，填回 A 的两个缺口，七块原始测量保留原值。三次抽样和图中数值均为示意。
+      outcome: 同一模型从三份 context 得到的预测同时出现，连线汇向它们的逐点均值。两个缺口填入各自位置的均值，七块实测保留原值。三次抽样和图中数值均为示意。
 en:
   framework:
     source: Incomplete samples
@@ -91,4 +91,4 @@ en:
       phase: Inference · sample A
       title: How do three contexts from the same observation fill a gap?
       cue: Noise A’s observation once at near-zero noise. Stack three different draws, each containing four of the same seven measured blocks.
-      outcome: The same trained model predicts separately from each context. At each missing location, add the three predictions and divide by three. Fill A’s two gaps with their means and keep all seven original measurements. The three draws and displayed values are illustrative.
+      outcome: The same model makes three context-specific predictions. They appear together with their pointwise mean. Fill A’s two gaps with the corresponding means and keep all seven original measurements. The three draws and displayed values are illustrative.

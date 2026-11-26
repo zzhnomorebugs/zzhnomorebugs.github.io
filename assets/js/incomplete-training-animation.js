@@ -6,7 +6,7 @@
     { id: "pixels", duration: 7, keys: ["context", "query"] },
     { id: "blocks", duration: 8, keys: ["context", "query"] },
     { id: "train", duration: 11, keys: ["context", "query", "prediction", "missing"] },
-    { id: "impute", duration: 14, keys: ["measured", "context", "prediction", "missing"] }
+    { id: "impute", duration: 8, keys: ["measured", "context", "prediction", "missing"] }
   ];
 
   function timecode(seconds) {
