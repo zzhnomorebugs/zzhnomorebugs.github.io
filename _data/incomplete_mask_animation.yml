@@ -1,0 +1,102 @@
+zh-CN:
+  title: BFN 如何从噪声生成与观测重叠的掩码？
+  intro: 右图取图 1 黑海叶绿素 a 样本的中央区域，每格至少一半面积有测量时计为已观测。左图用简化的空间去噪器演示一次反向扩散采样。
+  fallback: 冻结的掩码先验预测各位置的观测概率。从已有观测抽取的锚点引导每一步潜变量更新。最终掩码与已有观测的交集提供上下文，其余实测值提供查询监督。
+  navigation: 选择采样阶段
+  left: 掩码采样
+  right: 与原始观测叠加
+  split: 场模型的训练划分
+  observed: 实测边界
+  anchor: 随机锚点
+  inside: 交集
+  outside: 超出观测
+  query: 查询
+  excluded: 观测外 · 舍去
+  context: 上下文
+  probability: 观测类概率
+  down: 降低
+  up: 提高
+  step: 反向步
+  jump_back: 回看上下文与查询如何参与训练
+  labels:
+    play: 继续播放
+    pause: 暂停
+    replay: 重播
+    noise: 高斯初态的类别概率
+    predict: 干净掩码的预测概率
+    base: 基础步的类别概率
+    gradient: 负梯度对潜变量的修正
+    guided: 引导后的类别概率
+    binary: 最终二值掩码
+    missing: 缺失
+    measured: 观测
+    compare: 的候选格落在实测内
+    final_compare: 的生成格落在实测内
+    final_query: 个实测格留作查询
+  scenes:
+    - step: 概率预测
+      lead: 从高斯噪声出发。
+      body: '掩码先验根据当前潜变量 \(\boldsymbol z_t\) 预测每个位置属于观测类的概率。右图暂取概率过半的格子作为候选，与实测轮廓对照。'
+    - step: 抽取锚点
+      lead: 哪些位置能引导这条轨迹？
+      body: '在原始观测 \(\boldsymbol M\) 内随机抽取一组锚点 \(\boldsymbol y\)。圆点标出抽中的位置，这组锚点在后续反向步中保持固定。'
+    - step: 梯度修正
+      lead: 在去噪基础步上加一次修正。
+      body: '将预测概率与锚点指示图比较，计算全图交叉熵。沿负梯度 \(-\nabla_{\boldsymbol z_t}\mathcal L_{\mathrm{guide}}\) 修正本步潜变量。蓝绿与棕色分别标出提高和降低观测类倾向的位置。'
+    - step: 迭代去噪
+      lead: 把修正后的潜变量送入下一步。
+      body: '用同一组锚点重复预测、去噪和梯度修正。留意右图的交集，本次采样中，候选区域逐渐聚集到已有观测附近。'
+    - step: 训练划分
+      lead: 哪些格子给模型看，哪些用来算误差？
+      body: '逐格取最大 logit 得到二值掩码 \(\widehat{\boldsymbol M}\)。交集处的实测值输入场模型，橙色格的实测值留作查询，只在这些位置计算训练损失。'
+en:
+  title: How does a BFN generate a mask that overlaps the observations?
+  intro: The right grid shows a central crop of the Black Sea chlorophyll sample in Figure 1. A cell counts as observed if measurements cover at least half its area. On the left, a simplified spatial denoiser illustrates one reverse diffusion trajectory.
+  fallback: The frozen mask prior predicts observation probabilities. Anchors drawn from the available measurements guide each latent update. The final intersection provides the context, and the remaining measurements supply the query targets.
+  navigation: Select a sampling stage
+  left: Mask sampling
+  right: Overlay on observations
+  split: Field model training split
+  observed: Observed boundary
+  anchor: Anchors
+  inside: Overlap
+  outside: Outside observations
+  query: Query
+  excluded: Outside · discarded
+  context: Context
+  probability: Observed-class probability
+  down: Lower
+  up: Higher
+  step: Reverse step
+  jump_back: Revisit context and query training
+  labels:
+    play: Resume
+    pause: Pause
+    replay: Replay
+    noise: Initial class probabilities
+    predict: Predicted clean-mask probabilities
+    base: Base-step class probabilities
+    gradient: Negative-gradient correction
+    guided: Guided class probabilities
+    binary: Final binary mask
+    missing: Missing
+    measured: Observed
+    compare: of candidate cells are observed
+    final_compare: of generated cells are observed
+    final_query: measured cells held out as queries
+  scenes:
+    - step: Predict
+      lead: Start with Gaussian noise.
+      body: 'The mask prior reads the latent \(\boldsymbol z_t\) and estimates the probability that each cell is observed. The overlay provisionally selects cells above 0.5 so you can compare them with the measured footprint.'
+    - step: Draw anchors
+      lead: Which measurements guide this trajectory?
+      body: 'Draw random anchors \(\boldsymbol y\) within the observed mask \(\boldsymbol M\). Circles mark the selected cells. The same anchors guide every reverse step.'
+    - step: Apply gradient
+      lead: Correct the base denoising step.
+      body: 'Compare the predicted probabilities with the anchor indicator over the full grid. The negative cross-entropy gradient \(-\nabla_{\boldsymbol z_t}\mathcal L_{\mathrm{guide}}\) adjusts the latent. Teal raises the tendency toward the observed class and brown lowers it.'
+    - step: Repeat
+      lead: Feed the corrected latent into the next step.
+      body: 'Repeat prediction, denoising and gradient correction with the same anchors. Watch the overlap on the right as the candidate region concentrates around the measurements in this run.'
+    - step: Train
+      lead: Which measurements are inputs, and which supply the targets?
+      body: 'Take the highest-logit class in each cell to obtain the binary mask \(\widehat{\boldsymbol M}\). Measurements in the intersection go into the field model. Orange cells hold the query targets used to calculate its training loss.'

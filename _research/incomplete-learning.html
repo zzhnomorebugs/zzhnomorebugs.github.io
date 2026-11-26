@@ -420,7 +420,7 @@ project_chapters:
   <p>The mask prior preserves real observation geometry and produces varying contexts for the same sample. Its training data contain only binary observation geometry, including patterns produced by clouds or orbital sampling. It does not access the ground-truth field values to be filled in.</p>
   <figure class="retro-figure">
     <a class="image-popup" href="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp"><img src="{{ base_path }}/images/research/incomplete-learning/mask-prior-pipeline.webp" width="2400" height="1002" loading="lazy" alt="Full pipeline: pretrain on real binary masks, generate masks guided by random anchors, intersect with current observations, and train the field reconstruction model"></a>
-    <figcaption class="retro-figure__caption">Figure 6 · Real masks pretrain the generative prior; random observation anchors from the current sample guide generation. Intersecting the generated mask with the original observations produces the context, and the remaining observations become queries. The losses in the figure should be interpreted consistently with the equations in the text: the global cross-entropy has a minus sign and is minimized, and the query mask applies to both prediction and target so that error is computed only at real query locations.</figcaption>
+    <figcaption class="retro-figure__caption">Figure 6 · Real masks pretrain the generative prior; <a href="#incomplete-mask-animation">random observation anchors from the current sample guide generation</a>. Intersecting the generated mask with the original observations produces the context, and the remaining observations become queries. The losses in the figure should be interpreted consistently with the equations in the text: the global cross-entropy has a minus sign and is minimized, and the query mask applies to both prediction and target so that error is computed only at real query locations.</figcaption>
   </figure>
   <h3>Modeling binary masks through continuous latent variables</h3>
   <p>The implementation uses a continuous latent-variable parameterization inspired by Bayesian Flow Networks (BFN). Each pixel has \(C=2\) classes: missing and observed. Let \(c\) denote the class and \(\boldsymbol e_c\) its one-hot vector. Embed with scale \(\kappa&gt;0\), then add Gaussian noise:</p>
@@ -501,6 +501,7 @@ project_chapters:
   <h3 id="incomplete-alignment">Align generated masks with the current observations</h3>
 <p>Unconditional generation may produce realistic masks with almost no intersection with the current sample. With too little context, there may be many queries, but the model loses the clues needed to infer spatial structure.</p>
   <p>OAMP randomly retains some anchors from the currently valid observations, rather than forcing every observed location to remain in the context. Random anchors allow different partitions of the same sample.</p>
+  {% include incomplete-mask-animation.html %}
   <div class="retro-equation">\[
   \begin{aligned}
     y_i&=\boldsymbol 1[r_i&lt;\rho]M_i,

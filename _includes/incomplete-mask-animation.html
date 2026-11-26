@@ -1,0 +1,66 @@
+{% assign mask_story = site.data.incomplete_mask_animation[page.lang] %}
+<section id="incomplete-mask-animation" class="mask-flow" data-mask-flow data-project-animation aria-labelledby="mask-flow-title">
+  <header class="mask-flow__header">
+    <h3 id="mask-flow-title">{{ mask_story.title }}</h3>
+    <button class="mask-flow__play" type="button" hidden>{{ mask_story.labels.play }}</button>
+  </header>
+  <p class="mask-flow__intro">{{ mask_story.intro }}</p>
+  <p class="mask-flow__fallback">{{ mask_story.fallback }}</p>
+  <div data-mask-interactive hidden>
+    <nav class="mask-flow__steps" aria-label="{{ mask_story.navigation }}">
+      {% for scene in mask_story.scenes %}
+      <button type="button" data-mask-scene="{{ forloop.index0 }}">
+        <span class="mask-flow__step-index" aria-hidden="true">0{{ forloop.index }}</span> {{ scene.step }}
+      </button>
+      {% endfor %}
+    </nav>
+    <div class="mask-flow__panels">
+      <div class="mask-flow__panel">
+        <div class="mask-flow__panel-head">
+          <h4 data-mask-mode>{{ mask_story.left }}</h4>
+          <small>{{ mask_story.step }} <span data-mask-iteration>1</span></small>
+        </div>
+        <svg class="mask-flow__map" data-mask-field role="img" aria-labelledby="mask-field-title">
+          <title id="mask-field-title">{{ mask_story.left }}</title>
+        </svg>
+        <div class="mask-flow__legend">
+          <span data-mask-probability>{{ mask_story.probability }} &nbsp; 0 <i class="mask-flow__ramp"></i> 1</span>
+          <span data-mask-signed hidden>{{ mask_story.down }} <i class="mask-flow__ramp mask-flow__ramp--signed"></i> {{ mask_story.up }}</span>
+          <span data-mask-binary hidden><i class="mask-flow__swatch--zero"></i>0 · {{ mask_story.labels.missing }} &nbsp; <i class="mask-flow__swatch--one"></i>1 · {{ mask_story.labels.measured }}</span>
+        </div>
+      </div>
+      <div class="mask-flow__panel">
+        <div class="mask-flow__panel-head">
+          <h4><span data-mask-overlay-title>{{ mask_story.right }}</span><span data-mask-split-title hidden>{{ mask_story.split }}</span></h4>
+          <small>\(\boldsymbol M\)<span data-mask-split-symbol hidden> &nbsp;→&nbsp; \(\boldsymbol M_{\mathrm{ctx}},\,\boldsymbol M_{\mathrm{qry}}\)</span></small>
+        </div>
+        <svg class="mask-flow__map" data-mask-overlay role="img" aria-labelledby="mask-overlay-title" aria-describedby="mask-counts">
+          <title id="mask-overlay-title">{{ mask_story.right }}</title>
+        </svg>
+        <div class="mask-flow__legend">
+          <span><i class="mask-flow__swatch--observed"></i>{{ mask_story.observed }}</span>
+          <span data-mask-anchor-key hidden><i class="mask-flow__swatch--anchor"></i>{{ mask_story.anchor }}</span>
+          <span><i class="mask-flow__swatch--inside"></i><span data-mask-inside-key>{{ mask_story.inside }}</span><span data-mask-context-key hidden>{{ mask_story.context }}</span></span>
+          <span data-mask-outside-key><i class="mask-flow__swatch--outside"></i>{{ mask_story.outside }}</span>
+          <span data-mask-query-key hidden><i class="mask-flow__swatch--query"></i>{{ mask_story.query }}</span>
+          <span data-mask-excluded-key hidden><i class="mask-flow__swatch--excluded"></i>{{ mask_story.excluded }}</span>
+        </div>
+        <div class="mask-flow__readout" id="mask-counts">
+          <strong data-mask-rate></strong> <span data-mask-counts></span>
+        </div>
+      </div>
+    </div>
+    <div class="mask-flow__caption" aria-live="off">
+      {% for scene in mask_story.scenes %}
+      <p aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}">
+        <strong>{{ scene.lead }}</strong> {{ scene.body }}
+        {% if forloop.last %}<a href="#incomplete-training-animation">{{ mask_story.jump_back }} →</a>{% endif %}
+      </p>
+      {% endfor %}
+    </div>
+  </div>
+  <script type="application/json" data-mask-labels>{{ mask_story.labels | jsonify }}</script>
+</section>
+<script src="{{ base_path }}/assets/js/lib/ScrollTrigger-3.13.0.min.js" defer></script>
+<script src="{{ base_path }}/assets/js/incomplete-mask-sampler.js?v={{ site.time | date: '%s' }}" defer></script>
+<script src="{{ base_path }}/assets/js/incomplete-mask-animation.js?v={{ site.time | date: '%s' }}" defer></script>
