@@ -1,4 +1,12 @@
 .mask-flow {
+  /* Figure 6 uses separate colors for sampling and the final training split. */
+  --mask-empty: #0e1419;
+  --mask-observed: #f8f8f8;
+  --mask-boundary: #a3a3a3;
+  --mask-generated: #f97b64;
+  --mask-anchor: #f9c64c;
+  --mask-context: #79deb0;
+  --mask-query: #f7d97d;
   margin: 2.1rem 0;
   padding: 1.1rem 0;
   border-block: 1px solid var(--retro-line);
@@ -126,7 +134,7 @@
   width: 100%;
   height: auto;
   border: 1px solid var(--retro-line);
-  background: #f3f5f2;
+  background: var(--mask-empty);
 }
 .mask-flow__legend,
 .mask-flow__readout {
@@ -156,19 +164,18 @@
   height: 0.64em;
   border: 1px solid var(--retro-line);
   border-radius: 1px;
-  background: linear-gradient(90deg, #f3f5f2, #176d75, #103e53);
+  background: linear-gradient(90deg in srgb, var(--mask-empty), var(--mask-generated));
 }
 .mask-flow__legend .mask-flow__ramp--signed {
   background: linear-gradient(90deg, #ac6237, #f3f5f2, #126a78);
 }
-.mask-flow__swatch--observed { border: 1.5px solid #435462; background: #f3f5f2; }
-.mask-flow__swatch--anchor { border: 1.5px solid #344048; border-radius: 50%; background: #ffcb57; }
-.mask-flow__swatch--inside { background: #217b82; }
-.mask-flow__swatch--outside { background: #a99cbc; }
-.mask-flow__swatch--query { background: #d88947; }
-.mask-flow__swatch--excluded { background: repeating-linear-gradient(135deg, #f3f5f2 0 3px, #a99cbc 3px 4px); }
-.mask-flow__swatch--zero { background: #f3f5f2; border: 1px solid #98a6a9; }
-.mask-flow__swatch--one { background: #103e53; }
+.mask-flow__swatch--observed { border: 1.5px solid var(--mask-boundary); background: var(--mask-observed); }
+.mask-flow__swatch--anchor { border: 1.5px solid var(--mask-empty); border-radius: 50%; background: var(--mask-anchor); }
+.mask-flow__swatch--generated { background: var(--mask-generated); }
+.mask-flow__swatch--outside { background: repeating-linear-gradient(135deg, var(--mask-empty) 0 2px, var(--mask-generated) 2px 4px); }
+.mask-flow__swatch--context { background: var(--mask-context); }
+.mask-flow__swatch--query { background: var(--mask-query); }
+.mask-flow__swatch--zero { background: var(--mask-empty); }
 .mask-flow__readout { gap: 0.25rem 0.55rem; color: var(--retro-ink); }
 .mask-flow__readout strong {
   color: var(--retro-accent);

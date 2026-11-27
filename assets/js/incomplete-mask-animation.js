@@ -71,34 +71,29 @@
   const footprint = tileLayer(overlay);
   const hatch = overlay.append("defs").append("pattern").attr("id", "mask-flow-hatch")
     .attr("patternUnits", "userSpaceOnUse").attr("width", 0.5).attr("height", 0.5);
-  hatch.append("path").attr("d", "M-0.25 0.25l0.5 -0.5M0 0.5l0.5 -0.5M0.25 0.75l0.5 -0.5")
-    .attr("stroke", "#a99cbc").attr("stroke-width", 0.095);
-  // Keep the discarded part visible at the handoff to field-model training.
-  const discarded = overlay.append("path").attr("fill", "url(#mask-flow-hatch)").attr("opacity", 0)
-    .attr("d", cells.filter((i) => generated[i] && !observed[i])
-      .map((i) => "M" + (i % cols) + " " + Math.floor(i / cols) + "h1v1h-1z").join(""));
-  overlay.append("path").attr("d", boundaryPath()).attr("stroke", "#435462")
+  const stripes = hatch.append("path").attr("d", "M-0.25 0.25l0.5 -0.5M0 0.5l0.5 -0.5M0.25 0.75l0.5 -0.5")
+    .attr("stroke", "var(--mask-generated)").attr("stroke-width", 0.18);
+  const boundary = overlay.append("path").attr("d", boundaryPath()).attr("stroke", "var(--mask-boundary)")
     .attr("stroke-width", 0.11).attr("fill", "none").attr("stroke-linecap", "square");
   const anchorGroup = overlay.append("g").attr("opacity", 0);
   const dots = anchorGroup.selectAll("circle")
     .data(cells.filter((i) => anchors[i])).join("circle")
     .attr("cx", (i) => i % cols + 0.5).attr("cy", (i) => Math.floor(i / cols) + 0.5)
-    .attr("r", 0.24).attr("fill", "#ffcb57").attr("stroke", "#344048").attr("stroke-width", 0.075);
+    .attr("r", 0.24).attr("fill", "var(--mask-anchor)").attr("stroke", "var(--mask-empty)").attr("stroke-width", 0.075);
 
   const mix = (from, to, amount) => from + (to - from) * amount;
   function color(from, to, amount) {
-    return "rgb(" + from.map((channel, i) => Math.round(mix(channel, to[i], amount))).join(",") + ")";
+    if (amount <= 0) return from;
+    if (amount >= 1) return to;
+    return `color-mix(in srgb, ${from}, ${to} ${(100 * amount).toFixed(2)}%)`;
   }
 
-  const paper = [243, 245, 242], teal = [23, 109, 117], deep = [16, 62, 83];
-  const lookup = Array.from({length: 256}, (_, i) => {
-    const p = i / 255;
-    return p < 0.5 ? color(paper, teal, 2 * p) : color(teal, deep, 2 * p - 1);
-  });
+  const empty = "var(--mask-empty)", measured = "var(--mask-observed)", sampled = "var(--mask-generated)";
+  const lookup = Array.from({length: 256}, (_, i) => color(empty, sampled, i / 255));
   const amplitude = Math.max(...first.gradient.map(Math.abs)) || 1;
   tileLayer(gradient).attr("fill", (i) => {
     const delta = first.gradient[i] / amplitude;
-    return color(paper, delta < 0 ? [172, 98, 55] : [18, 106, 120], Math.abs(delta));
+    return color("#f3f5f2", delta < 0 ? "#ac6237" : "#126a78", Math.abs(delta));
   });
 
   const state = {position: 0};
@@ -121,13 +116,14 @@
     const fractionOverlay = mix(from.overlay, to.overlay, fraction);
     const fractionAnchors = mix(from.anchors, to.anchors, fraction);
     const isSplit = fractionSplit > 0.5;
-    const observedOnly = color([221, 231, 229], [216, 137, 71], fractionSplit);
-    const candidateOnly = color(paper, [169, 156, 188], fractionOverlay * (1 - fractionSplit));
-    const intersection = color([221, 231, 229], [33, 123, 130], fractionOverlay);
+    const observedOnly = color(measured, "var(--mask-query)", fractionSplit);
+    const intersection = fractionSplit > 0 ? color(sampled, "var(--mask-context)", fractionSplit)
+      : color(measured, sampled, fractionOverlay);
     let selected = 0, inside = 0;
     probabilities.attr("fill", (i) => lookup[Math.round(255 * mix(from.values[i], to.values[i], fraction))]);
     gradient.attr("opacity", mix(from.correction, to.correction, fraction));
-    discarded.attr("opacity", fractionSplit);
+    stripes.attr("stroke-opacity", fractionOverlay);
+    boundary.attr("opacity", 1 - fractionSplit);
     anchorGroup.attr("opacity", fractionAnchors);
     // Stagger the reveal spatially; membership in this sample never changes.
     const reveal = current.scene === 1 ? fractionAnchors : 1;
@@ -143,9 +139,9 @@
       if (candidate) {
         selected++;
         if (observed[i]) inside++;
-        return observed[i] ? intersection : candidateOnly;
+        return observed[i] ? intersection : "url(#mask-flow-hatch)";
       }
-      return observed[i] ? observedOnly : "#f3f5f2";
+      return observed[i] ? observedOnly : empty;
     });
 
     if (current.scene !== lastScene) {
@@ -167,6 +163,7 @@
     if (isSplit !== lastSplit) {
       lastSplit = isSplit;
       show("[data-mask-overlay-title]", !isSplit);
+      show("[data-mask-observed-key]", !isSplit);
       show("[data-mask-inside-key]", !isSplit);
       show("[data-mask-outside-key]", !isSplit);
       show("[data-mask-split-title]", isSplit);

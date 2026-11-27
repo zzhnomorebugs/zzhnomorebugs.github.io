@@ -6,10 +6,10 @@ zh-CN:
   left: 掩码采样
   right: 与原始观测叠加
   split: 场模型的训练划分
-  observed: 实测边界
+  observed: 原始观测
   anchor: 随机锚点
-  inside: 交集
-  outside: 超出观测
+  inside: 生成区域（观测内）
+  outside: 生成区域（观测外）
   query: 查询
   excluded: 观测外 · 舍去
   context: 上下文
@@ -48,7 +48,7 @@ zh-CN:
       body: '用同一组锚点重复预测、去噪和梯度修正。留意右图的交集，本次采样中，候选区域逐渐聚集到已有观测附近。'
     - step: 训练划分
       lead: 哪些格子给模型看，哪些用来算误差？
-      body: '逐格取最大 logit 得到二值掩码 \(\widehat{\boldsymbol M}\)。交集处的实测值输入场模型，橙色格的实测值留作查询，只在这些位置计算训练损失。'
+      body: '逐格取最大 logit 得到二值掩码 \(\widehat{\boldsymbol M}\)。薄荷绿色格是两个掩码的交集，其实测值输入场模型。黄色格的实测值留作查询，只在这些位置计算训练损失。'
 en:
   title: How does a BFN generate a mask that overlaps the observations?
   intro: The right grid shows a central crop of the Black Sea chlorophyll sample in Figure 1. A cell counts as observed if measurements cover at least half its area. On the left, a simplified spatial denoiser illustrates one reverse diffusion trajectory.
@@ -57,10 +57,10 @@ en:
   left: Mask sampling
   right: Overlay on observations
   split: Field model training split
-  observed: Observed boundary
+  observed: Original observations
   anchor: Anchors
-  inside: Overlap
-  outside: Outside observations
+  inside: Generated (inside observations)
+  outside: Generated (outside observations)
   query: Query
   excluded: Outside · discarded
   context: Context
@@ -99,4 +99,4 @@ en:
       body: 'Repeat prediction, denoising and gradient correction with the same anchors. Watch the overlap on the right as the candidate region concentrates around the measurements in this run.'
     - step: Train
       lead: Which measurements are inputs, and which supply the targets?
-      body: 'Take the highest-logit class in each cell to obtain the binary mask \(\widehat{\boldsymbol M}\). Measurements in the intersection go into the field model. Orange cells hold the query targets used to calculate its training loss.'
+      body: 'Take the highest-logit class in each cell to obtain the binary mask \(\widehat{\boldsymbol M}\). Mint green cells mark the intersection of the masks and supply measurements to the field model. Yellow cells hold the query targets used to calculate its training loss.'

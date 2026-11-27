@@ -26,7 +26,7 @@
         <div class="mask-flow__legend">
           <span data-mask-probability>{{ mask_story.probability }} &nbsp; 0 <i class="mask-flow__ramp"></i> 1</span>
           <span data-mask-signed hidden>{{ mask_story.down }} <i class="mask-flow__ramp mask-flow__ramp--signed"></i> {{ mask_story.up }}</span>
-          <span data-mask-binary hidden><i class="mask-flow__swatch--zero"></i>0 · {{ mask_story.labels.missing }} &nbsp; <i class="mask-flow__swatch--one"></i>1 · {{ mask_story.labels.measured }}</span>
+          <span data-mask-binary hidden><i class="mask-flow__swatch--zero"></i>0 · {{ mask_story.labels.missing }} &nbsp; <i class="mask-flow__swatch--generated"></i>1 · {{ mask_story.labels.measured }}</span>
         </div>
       </div>
       <div class="mask-flow__panel">
@@ -38,12 +38,13 @@
           <title id="mask-overlay-title">{{ mask_story.right }}</title>
         </svg>
         <div class="mask-flow__legend">
-          <span><i class="mask-flow__swatch--observed"></i>{{ mask_story.observed }}</span>
+          <span data-mask-observed-key><i class="mask-flow__swatch--observed"></i>{{ mask_story.observed }}</span>
           <span data-mask-anchor-key hidden><i class="mask-flow__swatch--anchor"></i>{{ mask_story.anchor }}</span>
-          <span><i class="mask-flow__swatch--inside"></i><span data-mask-inside-key>{{ mask_story.inside }}</span><span data-mask-context-key hidden>{{ mask_story.context }}</span></span>
+          <span data-mask-inside-key><i class="mask-flow__swatch--generated"></i>{{ mask_story.inside }}</span>
           <span data-mask-outside-key><i class="mask-flow__swatch--outside"></i>{{ mask_story.outside }}</span>
+          <span data-mask-context-key hidden><i class="mask-flow__swatch--context"></i>{{ mask_story.context }}</span>
           <span data-mask-query-key hidden><i class="mask-flow__swatch--query"></i>{{ mask_story.query }}</span>
-          <span data-mask-excluded-key hidden><i class="mask-flow__swatch--excluded"></i>{{ mask_story.excluded }}</span>
+          <span data-mask-excluded-key hidden><i class="mask-flow__swatch--outside"></i>{{ mask_story.excluded }}</span>
         </div>
         <div class="mask-flow__readout" id="mask-counts">
           <strong data-mask-rate></strong> <span data-mask-counts></span>
