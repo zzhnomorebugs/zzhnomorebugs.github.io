@@ -56,8 +56,10 @@
     return edges.join("");
   }
 
-  const field = d3.select(find("[data-mask-field]"));
-  const overlay = d3.select(find("[data-mask-overlay]"));
+  const fieldMap = find("[data-mask-field]");
+  const overlayMap = find("[data-mask-overlay]");
+  const field = d3.select(fieldMap);
+  const overlay = d3.select(overlayMap);
   [field, overlay].forEach((svg) => svg.attr("viewBox", [-0.25, -0.25, cols + 0.5, rows + 0.5].join(" ")));
 
   function tileLayer(svg) {
@@ -212,9 +214,9 @@
     if (ended) {
       ended = false;
       userPaused = false;
-      timeline.seek(0);
+      timeline.seek(0, false);
     } else {
-      userPaused = !userPaused;
+      userPaused = !timeline.paused();
     }
     syncPlayback();
   });
@@ -231,7 +233,8 @@
 
   gsap.registerPlugin(ScrollTrigger);
   const viewport = ScrollTrigger.create({
-    trigger: root, start: "top bottom", end: "bottom top",
+    // On narrow screens the heading can be visible before either map.
+    trigger: fieldMap, endTrigger: overlayMap, start: "top bottom", end: "bottom top",
     onToggle: (self) => { inView = self.isActive; syncPlayback(); },
     onRefresh: (self) => { inView = self.isActive; syncPlayback(); }
   });
