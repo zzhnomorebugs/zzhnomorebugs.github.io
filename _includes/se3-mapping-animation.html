@@ -54,15 +54,15 @@
     </div>
   </div>
 
-  <div class="se3-mapping__controls" data-mapping-controls hidden>
-    <button type="button" class="se3-mapping__play" data-mapping-play>{% if mapping_language == 'zh' %}播放动画{% else %}Play animation{% endif %}</button>
-    <button type="button" class="se3-mapping__step-play" data-mapping-step-play>{% if mapping_language == 'zh' %}放大当前小步{% else %}Inspect this step{% endif %}</button>
-    <button type="button" class="se3-mapping__restart" data-mapping-restart>{% if mapping_language == 'zh' %}从头开始{% else %}Restart{% endif %}</button>
-    <label class="se3-mapping__progress-label" for="se3-mapping-progress">
-      <span>{% if mapping_language == 'zh' %}动画进度{% else %}Animation progress{% endif %}</span>
-      <input id="se3-mapping-progress" type="range" min="0" max="0" value="0" step="1" data-mapping-progress>
-    </label>
-    <output class="se3-mapping__counter" for="se3-mapping-progress" data-mapping-counter hidden aria-hidden="true"></output>
+  <div class="project-animation-controls" data-mapping-controls hidden>
+    <button type="button" class="project-animation-controls__play" data-mapping-play>{% if mapping_language == 'zh' %}播放动画{% else %}Play animation{% endif %}</button>
+    <button type="button" data-mapping-step-play>{% if mapping_language == 'zh' %}放大当前小步{% else %}Inspect this step{% endif %}</button>
+    <button type="button" data-mapping-restart>{% if mapping_language == 'zh' %}从头开始{% else %}Restart{% endif %}</button>
+    <div class="project-animation-controls__timeline">
+      <label class="project-animation-controls__label" for="se3-mapping-progress">{% if mapping_language == 'zh' %}动画进度{% else %}Animation progress{% endif %}</label>
+      <input id="se3-mapping-progress" class="project-animation-controls__progress" type="range" min="0" max="0" value="0" step="1" data-mapping-progress>
+      <output class="project-animation-controls__time" for="se3-mapping-progress" data-mapping-counter hidden aria-hidden="true"></output>
+    </div>
   </div>
   <p class="se3-mapping__status" data-mapping-status aria-live="polite">{% if mapping_language == 'zh' %}当前小步：读取距离 → 预测距离切向量 → 转换到坐标切空间 → Shift 更新坐标。{% else %}Current step: read distances → predict a distance tangent vector → map to the coordinate tangent space → Shift the coordinates.{% endif %}</p>
 

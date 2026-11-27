@@ -23,9 +23,11 @@
       </section>
       {% endfor %}
     </div>
-    <div class="protein-training__controls" data-training-controls hidden>
-      <button type="button" data-training-play>{{ training.play }}</button>
-      <input type="range" min="0" value="0" step="0.1" data-training-progress aria-label="{{ training.progress }}">
+    <div class="project-animation-controls protein-training__controls" data-training-controls hidden>
+      <button type="button" class="project-animation-controls__play" data-training-play>{{ training.play }}</button>
+      <div class="project-animation-controls__timeline">
+        <input class="project-animation-controls__progress" type="range" min="0" value="0" step="0.1" data-training-progress aria-label="{{ training.progress }}">
+      </div>
     </div>
   </div>
   <figcaption class="retro-figure__caption" id="protein-training-caption">{{ training.caption }}</figcaption>

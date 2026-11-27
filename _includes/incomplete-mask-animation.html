@@ -2,7 +2,6 @@
 <section id="incomplete-mask-animation" class="mask-flow" data-mask-flow data-project-animation aria-labelledby="mask-flow-title">
   <header class="mask-flow__header">
     <h3 id="mask-flow-title">{{ mask_story.title }}</h3>
-    <button class="mask-flow__play" type="button" hidden>{{ mask_story.labels.play }}</button>
   </header>
   <p class="mask-flow__intro">{{ mask_story.intro }}</p>
   <p class="mask-flow__fallback">{{ mask_story.fallback }}</p>
@@ -50,6 +49,9 @@
           <strong data-mask-rate></strong> <span data-mask-counts></span>
         </div>
       </div>
+    </div>
+    <div class="project-animation-controls">
+      <button class="mask-flow__play project-animation-controls__play" type="button" hidden>{{ mask_story.labels.play }}</button>
     </div>
     <div class="mask-flow__caption" aria-live="off">
       {% for scene in mask_story.scenes %}

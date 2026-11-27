@@ -69,10 +69,10 @@ const mask = {
 
 function maskLayout(root) {
   return root.evaluate(element => {
-    const boxes = ['.mask-flow__play', '[data-mask-field]', '[data-mask-overlay]', '[aria-current=step]'];
-    const [play, field, overlay, step] = boxes.map(selector => element.querySelector(selector).getBoundingClientRect().toJSON());
+    const boxes = ['.mask-flow__header', '.mask-flow__play', '[data-mask-field]', '[data-mask-overlay]', '[aria-current=step]'];
+    const [header, play, field, overlay, step] = boxes.map(selector => element.querySelector(selector).getBoundingClientRect().toJSON());
     return {
-      play, field, overlay, step, root: element.getBoundingClientRect().toJSON(),
+      header, play, field, overlay, step, root: element.getBoundingClientRect().toJSON(),
       height: window.innerHeight, width: document.documentElement.clientWidth,
       overflow: element.scrollWidth - element.clientWidth,
     };
@@ -116,6 +116,9 @@ for (const lang of languages) {
     const displayGeometry = () => field.evaluate(element => {
       window.scrollBy({ top: element.getBoundingClientRect().top - innerHeight * 0.63, behavior: 'instant' });
     });
+    const displayControls = () => overlay.evaluate(element => {
+      window.scrollBy({ top: element.getBoundingClientRect().bottom - innerHeight * 0.5, behavior: 'instant' });
+    });
     const firstPicture = () => field.locator('rect[fill]').evaluateAll(tiles => tiles.map(tile => tile.getAttribute('fill')));
 
     await state(false);
@@ -128,13 +131,10 @@ for (const lang of languages) {
     });
     await renderFrames(page);
     let layout = await maskLayout(root);
-    assert.ok(layout.play.top >= 0 && layout.play.bottom < layout.height, 'play control is visible before either diagram');
+    assert.ok(layout.header.bottom > 0 && layout.header.bottom < layout.height, 'the heading is in view');
+    assert.ok(layout.play.top >= layout.height, 'the play control follows the diagrams');
     assert.ok(layout.field.top >= layout.height && layout.overlay.top >= layout.height, 'both diagrams remain below the fold');
     assert.equal(await play.getAttribute('data-playing'), 'false', 'the heading alone must not start autoplay');
-
-    await play.tap();
-    await renderFrames(page);
-    assert.equal(await play.getAttribute('data-playing'), 'false', 'play waits for a visible diagram');
     assert.deepEqual(await firstPicture(), initial);
 
     await displayGeometry();
@@ -151,7 +151,11 @@ for (const lang of languages) {
     await state(false);
     layout = await maskLayout(root);
     assert.ok(layout.overlay.bottom <= 0 && layout.root.bottom > 0,
-      'both diagrams are offscreen while the ending caption remains visible');
+      'both diagrams are offscreen while the section is still in view');
+    const offscreenFrame = await firstPicture();
+    await renderFrames(page);
+    assert.equal(await play.getAttribute('data-playing'), 'false', 'playback stays paused below both diagrams');
+    assert.deepEqual(await firstPicture(), offscreenFrame, 'the displayed frame stays fixed offscreen');
 
     await displayGeometry();
     await state(true);
@@ -163,6 +167,7 @@ for (const lang of languages) {
     await setHidden(page, false);
     await state(true);
 
+    await displayControls();
     await play.tap();
     await state(false);
     const pausedFrame = await firstPicture();
@@ -186,7 +191,7 @@ for (const lang of languages) {
       assert.equal(await mode(), expectedMode);
     }
 
-    await displayGeometry();
+    await displayControls();
     await play.tap();
     await state(true);
     await page.waitForFunction(({ selector, label }) => document.querySelector(selector).textContent === label,

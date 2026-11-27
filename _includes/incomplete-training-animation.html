@@ -33,12 +33,14 @@
       </div>
       <span id="idcd-frame-description" class="idcd-sr-only"></span>
     </div>
-    <div class="idcd-animation__playback">
-      <button type="button" data-idcd-play>{{ story.play }}</button>
+    <div class="project-animation-controls idcd-animation__playback">
+      <button type="button" class="project-animation-controls__play" data-idcd-play>{{ story.play }}</button>
       <button type="button" data-idcd-prev aria-label="{{ story.previous }}" title="{{ story.previous }}">←</button>
-      <input type="range" min="0" step="0.1" value="0" data-idcd-progress aria-label="{{ story.progress }}">
-      <time class="idcd-animation__time" aria-hidden="true"></time>
       <button type="button" data-idcd-next aria-label="{{ story.next }}" title="{{ story.next }}">→</button>
+      <div class="project-animation-controls__timeline">
+        <input class="project-animation-controls__progress" type="range" min="0" step="0.1" value="0" data-idcd-progress aria-label="{{ story.progress }}">
+        <time class="project-animation-controls__time idcd-animation__time" aria-hidden="true"></time>
+      </div>
     </div>
     <span class="idcd-sr-only" role="status" data-idcd-status></span>
   </div>

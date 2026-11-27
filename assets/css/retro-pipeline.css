@@ -208,15 +208,9 @@
 .retro-train .rt-prediction .rt-bar { height: 12px; }
 .retro-train .rt-prediction strong { display: block; margin-top: .2rem; font-size: .71rem; font-weight: 500; }
 .retro-train .rt-target-reference { padding-top: .5rem; border-top: 1px solid var(--retro-line); font-size: .7rem; color: var(--retro-accent); }
-.retro-train .rt-controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .9rem 0 .5rem; }
-.retro-train button { appearance: none; margin: 0; padding: .45rem .7rem; border: 1px solid var(--retro-line); border-radius: 3px; background: var(--retro-paper); color: var(--retro-ink); font: inherit; font-size: .85rem; line-height: 1.5; box-shadow: none; text-shadow: none; cursor: pointer; }
-.retro-train button:hover:not(:disabled) { border-color: var(--retro-accent); color: var(--retro-accent); }
-.retro-train button:disabled { opacity: .35; cursor: default; }
-.retro-train [data-rt-play] { min-width: 6.5rem; background: var(--retro-accent); color: var(--retro-paper); border-color: var(--retro-accent); }
-.retro-train [data-rt-play]:hover { background: var(--retro-accent); color: var(--retro-paper) !important; filter: brightness(1.12); }
-.retro-train .rt-progress-label { margin: 0 0 0 auto; padding-left: .5rem; font-size: .76rem; color: var(--retro-muted); font-weight: 400; }
-.retro-train .rt-progress { appearance: auto; width: auto; min-width: 80px; flex: 1 1 100px; max-width: 220px; height: 24px; margin: 0; padding: 0; border: 0; box-shadow: none; accent-color: var(--retro-accent); cursor: pointer; }
-.retro-train .rt-progress:focus-visible { outline: 2px solid var(--retro-accent); outline-offset: 3px; }
+.retro-train :where(.rt-screen, .rt-steps) button { appearance: none; margin: 0; padding: .45rem .7rem; border: 1px solid var(--retro-line); border-radius: 3px; background: var(--retro-paper); color: var(--retro-ink); font: inherit; font-size: .85rem; line-height: 1.5; box-shadow: none; text-shadow: none; cursor: pointer; }
+.retro-train :where(.rt-screen, .rt-steps) button:hover:not(:disabled) { border-color: var(--retro-accent); color: var(--retro-accent); }
+.retro-train :where(.rt-screen, .rt-steps) button:disabled { opacity: .35; cursor: default; }
 .retro-train .rt-steps { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: .35rem; margin-top: .75rem; }
 .retro-train .rt-steps button { border: 0; border-top: 2px solid var(--retro-line); border-radius: 0; padding: .55rem .2rem; background: transparent; color: var(--retro-muted); font-size: .78rem; text-align: left; }
 .retro-train .rt-steps button span { margin-right: .25rem; opacity: .65; }
@@ -276,7 +270,7 @@
 .retro-train button.rt-sample-row:hover:not(:disabled) { border-color: var(--retro-accent); border-left-color: transparent; color: var(--retro-ink); }
 .retro-train button.rt-sample-row::before { content: ""; position: absolute; left: -2px; top: 50%; width: 2px; height: 60%; max-height: 64px; transform: translateY(-50%); background: var(--rt-route); pointer-events: none; }
 .retro-train .rt-sample-meta b { color: var(--rt-route); }
-.retro-train button:focus-visible { outline: 2px solid var(--retro-accent); outline-offset: 3px; }
+.retro-train :where(.rt-screen, .rt-steps) button:focus-visible { outline: 2px solid var(--retro-accent); outline-offset: 3px; }
 .retro-train .rt-sample-chemical { display: block; width: 100%; min-width: 0; }
 .retro-train .rt-route-molecule { display: block; width: 100%; height: auto; }
 .retro-train .rt-sample-chemical svg, .retro-train .rt-sample-chemical img { display: block; width: 100%; max-height: 150px; height: auto; object-fit: contain; }
@@ -475,8 +469,6 @@
   .retro-train .rt-flow-arrow { transform: rotate(90deg); }
   .retro-train .rt-predictions { width: 100%; }
   .retro-train .rt-steps { grid-template-columns: repeat(3,minmax(0,1fr)); }
-  .retro-train .rt-progress-label { margin-left: 0; padding-left: 0; }
-  .retro-train .rt-progress { max-width: none; }
   .retro-train .rt-sentence { font-size: .9rem; }
   .retro-train .rt-footnote { font-size: .76rem; }
   .retro-train .rt-dataset-map { grid-template-columns: minmax(0, 1fr); gap: 1.6rem; }
@@ -515,13 +507,12 @@
   .retro-train :is([data-rt-scene="3"], [data-rt-scene="4"]) .rt-count { margin-bottom: 0; }
   .retro-train .rt-dataset { flex-wrap: wrap; }
   .retro-train .rt-record { font-size: .45rem; }
-  .retro-train .rt-controls { gap: .35rem; }
-  .retro-train button { padding: .4rem .5rem; }
+  .retro-train :where(.rt-screen, .rt-steps) button { padding: .4rem .5rem; }
   .retro-train .rt-steps button { font-size: .74rem; }
 }
 @media print {
   .retro-project.retro-detail { font-size: 10pt; }
-  .retro-train .rt-controls, .retro-train .rt-steps { display: none !important; }
+  .retro-train .rt-steps { display: none !important; }
   .retro-train.is-ready .rt-screen { display: block; overflow: visible; }
   .retro-train.is-ready .rt-scene { display: flex !important; opacity: 1; visibility: visible; pointer-events: auto; }
   .retro-train .rt-scene { break-inside: avoid; min-height: 0; margin-bottom: 1rem; }

@@ -76,11 +76,14 @@
 </section>
 
 </div>
-<div class="rt-controls" hidden>
-  <button type="button" data-rt-play>{% if rt_zh %}播放讲解{% else %}Play walkthrough{% endif %}</button>
+<div class="rt-controls project-animation-controls" hidden>
+  <button class="project-animation-controls__play" type="button" data-rt-play>{% if rt_zh %}播放讲解{% else %}Play walkthrough{% endif %}</button>
   <button type="button" data-rt-prev aria-label="{% if rt_zh %}上一幕{% else %}Previous scene{% endif %}">←</button><button type="button" data-rt-next aria-label="{% if rt_zh %}下一幕{% else %}Next scene{% endif %}">→</button>
-  <button type="button" data-rt-redraw>{% if rt_zh %}重新抽样{% else %}Draw again{% endif %}</button><label class="rt-progress-label" for="rt-progress">{% if rt_zh %}讲解进度{% else %}Progress{% endif %}</label>
-  <input id="rt-progress" class="rt-progress" type="range" min="0" max="1000" step="1" value="0">
+  <button type="button" data-rt-redraw>{% if rt_zh %}重新抽样{% else %}Draw again{% endif %}</button>
+  <div class="project-animation-controls__timeline">
+    <label class="project-animation-controls__label" for="rt-progress">{% if rt_zh %}讲解进度{% else %}Progress{% endif %}</label>
+    <input id="rt-progress" class="project-animation-controls__progress" type="range" min="0" max="1000" step="1" value="0">
+  </div>
 </div>
 <nav class="rt-steps" aria-label="{% if rt_zh %}训练讲解步骤{% else %}Training walkthrough steps{% endif %}"><button type="button" data-rt-step="0" disabled><span>1</span> {% if rt_zh %}抽样本{% else %}Data{% endif %}</button><button type="button" data-rt-step="1" disabled><span>2</span> {% if rt_zh %}抽排列{% else %}Permutation{% endif %}</button><button type="button" data-rt-step="2" disabled><span>3</span> {% if rt_zh %}对齐原子{% else %}Alignment{% endif %}</button><button type="button" data-rt-step="3" disabled><span>4</span> {% if rt_zh %}并行插值{% else %}Interpolate{% endif %}</button><button type="button" data-rt-step="4" disabled><span>5</span> {% if rt_zh %}预测与去噪{% else %}Predict & denoise{% endif %}</button></nav>
 <p class="rt-announcement" role="status" aria-live="polite" data-rt-announcement></p>

@@ -60,7 +60,7 @@ layout: none
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-bottom: 1px solid var(--retro-line);
 }
-.protein-training button { color: inherit; font: inherit; cursor: pointer; }
+.protein-training__steps button { color: inherit; font: inherit; cursor: pointer; }
 .protein-training__steps button {
   --pt-stage: var(--pt-prior);
   display: flex;
@@ -154,15 +154,7 @@ layout: none
 .protein-training__diagram .pt-field-name { font: 11px system-ui, sans-serif; text-anchor: start; }
 .pt-sample-tag { fill: var(--pt-condition-fill); stroke: var(--pt-condition); stroke-width: .7; }
 .protein-training__diagram .pt-label-value { font-size: 12px; }
-.protein-training__controls {
-  display: flex;
-  align-items: center;
-  gap: .8rem;
-  padding: .45rem .95rem;
-  border-top: 1px solid var(--retro-line);
-}
-.protein-training__controls button { min-width: 4.2rem; padding: .2rem .4rem; border: 1px solid var(--retro-line); border-radius: 4px; background: var(--pt-canvas); font-size: .78rem; }
-.protein-training__controls input { min-width: 0; flex: 1; margin: 0; accent-color: var(--retro-accent); }
+.protein-training__controls { padding-inline: .95rem; }
 @container (max-width: 43rem) {
   .protein-training__steps button { display: grid; gap: .12rem; padding: .42rem .5rem; }
   .protein-training__view { padding: .4rem .1rem; }

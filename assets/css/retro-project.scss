@@ -46,6 +46,95 @@
   outline-offset: 4px;
 }
 
+.retro-project .project-animation-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.9rem 0 0.5rem;
+}
+.retro-project .project-animation-controls button {
+  appearance: none;
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--retro-line);
+  border-radius: 3px;
+  background: var(--retro-paper);
+  color: var(--retro-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: nowrap;
+  box-shadow: none;
+  text-shadow: none;
+  cursor: pointer;
+}
+.retro-project .project-animation-controls button:hover:not(:disabled) {
+  border-color: var(--retro-accent);
+  color: var(--retro-accent);
+}
+.retro-project .project-animation-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.retro-project .project-animation-controls .project-animation-controls__play {
+  min-width: 6.5rem;
+  border-color: var(--retro-accent);
+  background: var(--retro-accent);
+  color: var(--retro-paper);
+}
+.retro-project .project-animation-controls .project-animation-controls__play:hover:not(:disabled) {
+  color: var(--retro-paper);
+  filter: brightness(1.12);
+}
+.retro-project .project-animation-controls :is(button, .project-animation-controls__progress):focus-visible {
+  outline: 2px solid var(--retro-accent);
+  outline-offset: 3px;
+}
+.project-animation-controls__timeline {
+  display: flex;
+  flex: 1 1 10rem;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: inherit;
+  min-width: 0;
+}
+.project-animation-controls__label,
+.project-animation-controls__time {
+  margin: 0;
+  color: var(--retro-muted);
+  font-size: 0.76rem;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.retro-project .project-animation-controls__progress {
+  appearance: auto;
+  flex: 1 1 100px;
+  width: auto;
+  min-width: 80px;
+  max-width: 220px;
+  height: 24px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+  accent-color: var(--retro-accent);
+  cursor: pointer;
+}
+@media (max-width: 740px) {
+  .retro-project .project-animation-controls__progress { max-width: none; }
+}
+@media (max-width: 380px) {
+  .retro-project .project-animation-controls { gap: 0.35rem; }
+  .retro-project .project-animation-controls button { padding: 0.4rem 0.5rem; }
+}
+@media print {
+  .retro-project .project-animation-controls { display: none; }
+}
+
 .retro-back {
   display: inline-block;
   color: var(--retro-muted) !important;

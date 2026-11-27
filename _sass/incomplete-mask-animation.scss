@@ -13,14 +13,12 @@
   color: var(--retro-ink);
 }
 
-.mask-flow__header,
 .mask-flow__panel-head {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 0.45rem 1rem;
 }
-.mask-flow__header { align-items: center; }
 .incomplete-project .mask-flow__header h3 {
   margin: 0;
   font-size: clamp(1.08rem, 2.1vw, 1.35rem);
@@ -33,43 +31,6 @@
   font-size: 0.84rem;
   line-height: 1.7;
 }
-
-.mask-flow button {
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  cursor: pointer;
-}
-.mask-flow .mask-flow__play {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  gap: 0.45em;
-  min-height: 2rem;
-  padding: 0.25em 0.8em;
-  border: 1px solid var(--retro-line);
-  border-radius: 3px;
-  color: var(--retro-accent);
-  font-size: 0.78rem;
-  font-weight: 600;
-  line-height: 1.4;
-  white-space: nowrap;
-}
-.mask-flow__play::before {
-  content: "";
-  width: 0;
-  height: 0;
-  border-block: 0.36em solid transparent;
-  border-left: 0.61em solid currentColor;
-}
-.mask-flow__play[data-playing="true"]::before {
-  width: 0.58em;
-  height: 0.7em;
-  border: 0;
-  border-inline: 0.2em solid currentColor;
-}
-.mask-flow .mask-flow__play:hover { border-color: var(--retro-accent); }
 
 .mask-flow__steps {
   display: grid;
@@ -87,11 +48,14 @@
   padding: 0.4rem 0.5rem;
   border: 0;
   border-bottom: 2px solid var(--retro-line);
+  background: transparent;
   color: var(--retro-muted);
   text-align: start;
+  font: inherit;
   font-size: 0.8rem;
   line-height: 1.4;
   overflow-wrap: anywhere;
+  cursor: pointer;
 }
 .mask-flow__steps button:hover,
 .mask-flow__steps button[aria-current="step"] {
@@ -204,12 +168,10 @@
   .mask-flow__panels { grid-template-columns: minmax(0, 1fr); }
   .mask-flow__steps button { flex-direction: column; gap: 0.12rem; padding-inline: 0.25rem; }
   .mask-flow__step-index { font-size: 0.7rem; }
-  .mask-flow__header { align-items: flex-start; }
 }
 
 @media print {
-  .mask-flow__steps,
-  .mask-flow__play { display: none !important; }
+  .mask-flow__steps { display: none !important; }
   .mask-flow__panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mask-flow { break-inside: avoid; }
 }
